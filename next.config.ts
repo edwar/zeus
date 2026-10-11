@@ -42,6 +42,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // Solo se valida la navegación instantánea en los segmentos que exporten `instant`. El panel (/app) depende de la sesión
+  // de cada petición y se pinta con un Client Component (AppShell), así que la validación implícita fallaba en todas sus
+  // rutas con "Could not validate `instant`…". Es solo un aviso de desarrollo; no afecta al build.
+  experimental: { instantInsights: { validationLevel: "manual-warning" } },
   poweredByHeader: false,
   async redirects() {
     return [
