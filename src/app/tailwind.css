@@ -1,0 +1,65 @@
+/*
+ * Tailwind + shadcn/ui sobre el CSS propio de La Celosía.
+ * - Sin preflight: no resetea los estilos existentes.
+ * - Las hojas propias van dentro de capas (base/components) para que las utilidades de
+ *   los componentes shadcn ganen sobre las clases legacy (.btn, .input, .select…).
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "./globals.css" layer(base);
+@import "./site.css" layer(components);
+@import "./app.css" layer(components);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Tokens de shadcn → paleta de La Celosía (ver DESIGN.md). Solo modo claro. */
+:root {
+  --background: var(--white);
+  --foreground: var(--ink);
+  --card: var(--white);
+  --card-foreground: var(--ink);
+  --popover: var(--white);
+  --popover-foreground: var(--ink);
+  --primary: var(--emerald);
+  --primary-foreground: var(--white);
+  --secondary: var(--mist);
+  --secondary-foreground: var(--ink);
+  --muted: var(--mist);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--mist);
+  --accent-foreground: var(--ink);
+  --destructive: var(--alert);
+  --border: var(--line);
+  --input: #9fb0a7;
+  --ring: var(--emerald);
+  --radius: 6px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sun: var(--sun);
+  --color-sun-foreground: var(--canopy-deep);
+  --color-canopy: var(--canopy);
+  --color-canopy-deep: var(--canopy-deep);
+  --color-canopy-line: var(--canopy-line);
+  --color-leaf: var(--leaf);
+  --color-on-canopy: var(--on-canopy);
+  --radius-md: var(--radius);
+  --radius-lg: var(--r-lg);
+}

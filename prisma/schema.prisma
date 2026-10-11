@@ -1,0 +1,450 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Stage {
+  lead
+  visit
+  design
+  install
+  monitor
+}
+
+enum KitKind {
+  solar
+  automation
+}
+
+enum Audience {
+  home
+  business
+  automation
+}
+
+enum Crew {
+  A
+  B
+  E
+}
+
+enum Severity {
+  high
+  mid
+  low
+}
+
+model Project {
+  id          String        @id // p. ej. "z-101"
+  name        String
+  client      String
+  town        String
+  kwp         Float
+  stage       Stage
+  owner       String
+  due         DateTime      @db.Date
+  blocked     Boolean       @default(false)
+  progress    Int // 0-100 dentro de la etapa
+  // Solicitud aprobada de la que nació el proyecto (única: no se crea dos veces)
+  quoteId     String?       @unique
+  quote       QuoteRequest? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  // Equipo operativo asignado (visita técnica e instalación)
+  teamId      String?
+  team        Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  // Lo que cobra el equipo por esta instalación, congelado al aprobar (si cambia la tarifa, no cambia este proyecto)
+  installFee  Decimal?      @db.Decimal(14, 2)
+  // Enlace a la app/nube del inversor (Growatt, Deye, Fronius…) y una nota con el usuario o id de la planta
+  monitorUrl  String?
+  monitorNote String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  milestones Milestone[]
+  materials  Material[]
+  alerts     Alert[]
+
+  @@index([stage])
+  @@index([teamId])
+}
+
+model Kit {
+  id         String   @id // p. ej. "hogar-s"
+  kind       KitKind
+  audience   Audience
+  kwp        Float?
+  nameEs     String
+  nameEn     String
+  coversEs   String
+  coversEn   String
+  includesEs String[]
+  includesEn String[]
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  labelEs   String
+  labelEn   String
+  startDate DateTime @db.Date
+  len       Int // días
+  crew      Crew
+  done      Int      @default(0) // 0-100
+
+  @@index([projectId])
+}
+
+model Material {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  nameEs    String
+  nameEn    String
+  qty       Int
+  ready     Boolean @default(false)
+
+  @@index([projectId])
+}
+
+model Alert {
+  id         String    @id @default(cuid())
+  projectId  String
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  severity   Severity
+  messageEs  String
+  messageEn  String
+  occurredAt DateTime  @default(now())
+  // Quién la registró y, si ya se atendió, cuándo y quién
+  createdBy  String?
+  resolvedAt DateTime?
+  resolvedBy String?
+
+  @@index([projectId])
+}
+
+model FieldTask {
+  id       String @id
+  titleEs  String
+  titleEn  String
+  location String
+  at       String // hora local "HH:mm"
+}
+
+model User {
+  id            String       @id
+  name          String
+  email         String
+  emailVerified Boolean      @default(false)
+  image         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  role          String?
+  banned        Boolean?     @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  sessions      Session[]
+  accounts      Account[]
+  teams         TeamMember[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+enum ProductSource {
+  manual
+  autosolar
+}
+
+enum ProductKind {
+  panel
+  inverter_ongrid
+  inverter_hybrid
+  battery
+  structure
+  // Complementos de instalación (cableado, conectores, protecciones…) que el simulador agrega al kit
+  cable_dc
+  connector
+  terminal
+  battery_cable
+  cabinet
+  rack_tray
+  monitoring
+  electrical_kit
+  other
+}
+
+enum SyncStatus {
+  running
+  done
+  failed
+}
+
+model Manufacturer {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  website   String?
+  logoUrl   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id             String        @id @default(cuid())
+  source         ProductSource @default(manual)
+  sourceUrl      String?       @unique
+  sku            String?
+  name           String
+  slug           String        @unique
+  description    String?
+  // Ficha técnica: [{ label, value }]
+  specs          Json          @default("[]")
+  datasheetUrl   String?
+  // Copias propias: [{ src, url }] (src = URL de origen, url = almacenamiento propio)
+  images         Json          @default("[]")
+  category       String?
+  manufacturerId String
+  manufacturer   Manufacturer  @relation(fields: [manufacturerId], references: [id], onDelete: Restrict)
+  // Precio del proveedor (nulo en productos manuales) y comisión propia (nulo = usa la global)
+  supplierPrice  Decimal?      @db.Decimal(14, 2)
+  commissionPct  Decimal?      @db.Decimal(5, 2)
+  // Precio de venta
+  price          Decimal       @db.Decimal(14, 2)
+  currency       String        @default("COP")
+  active         Boolean       @default(true)
+  inStock        Boolean       @default(true)
+  // Clasificación para armar kits (se deduce del nombre/categoría; ver src/lib/catalog/classify.ts)
+  kind           ProductKind   @default(other)
+  powerW         Int?
+  capacityWh     Int?
+  voltageV       Int?
+  phases         Int?
+  // Unidades que trae el producto ("Pack 7 ud" = 7); la potencia/capacidad es por unidad
+  packQty        Int           @default(1)
+  lastSyncedAt   DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  quoteItems     QuoteItem[]
+
+  @@index([manufacturerId])
+  @@index([category])
+  @@index([active])
+  @@index([kind])
+}
+
+// Fila única (id = "default")
+model StoreSettings {
+  id            String   @id @default("default")
+  commissionPct Decimal  @default(0) @db.Decimal(5, 2)
+  updatedAt     DateTime @updatedAt
+}
+
+model SyncRun {
+  id         String     @id @default(cuid())
+  startedAt  DateTime   @default(now())
+  finishedAt DateTime?
+  status     SyncStatus @default(running)
+  created    Int        @default(0)
+  updated    Int        @default(0)
+  failed     Int        @default(0)
+  error      String?
+  // Avance por lotes (cron): índice dentro de la lista de URLs descubiertas
+  cursor     Int        @default(0)
+}
+
+// Uso del extractor de facturas (límite por IP y control de costo). No guarda archivos ni datos de la factura.
+model ExtractionLog {
+  id        String   @id @default(cuid())
+  ipHash    String
+  files     Int
+  ok        Boolean  @default(false)
+  tokens    Int?
+  createdAt DateTime @default(now())
+
+  @@index([ipHash, createdAt])
+}
+
+// Flujo: new → contacted → confirmed (cálculo validado con el cliente) → approved (el cliente aceptó); discarded en cualquier punto.
+enum QuoteStatus {
+  new
+  contacted
+  confirmed
+  approved
+  discarded
+}
+
+// Solicitud de cotización creada desde el simulador. No guarda la factura ni nombre/dirección/cuenta de ella.
+model QuoteRequest {
+  id              String       @id @default(cuid())
+  status          QuoteStatus  @default(new)
+  contactName     String
+  contactEmail    String
+  contactPhone    String
+  city            String?
+  systemType      String // ongrid | hybrid | offgrid
+  // Cifras confirmadas por el usuario (consumo, tarifa, fases…) y resultado del dimensionamiento
+  bill            Json
+  sizing          Json
+  total           Decimal      @db.Decimal(14, 2)
+  currency        String       @default("COP")
+  consentAt       DateTime
+  ipHash          String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  discardReason   String?
+  // Kit tal como lo pidió el cliente; se guarda la primera vez que el asesor lo modifica
+  originalItems   Json?
+  originalTotal   Decimal?     @db.Decimal(14, 2)
+  // install = dentro de la zona de instalación; kit_only = solo se vende el kit; unknown = sin ubicación para decidir
+  fulfillment     String       @default("unknown")
+  distanceKm      Float?
+  // Preferencia del cliente cuando hay equipo en su zona: zeus = que Zeus asigne uno; own = trae su propio instalador
+  installerChoice String?
+  // Si el cliente simuló financiar el kit: parámetros y resultado recalculado en el servidor (referencial, no es un crédito aprobado)
+  financing     Json?
+  teamId          String?
+  team            Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  items           QuoteItem[]
+  events          QuoteEvent[]
+  project         Project?
+
+  @@index([status, createdAt])
+  @@index([ipHash, createdAt])
+}
+
+// Historial de cambios de estado de una solicitud, con nota opcional (y obligatoria al descartar).
+model QuoteEvent {
+  id         String       @id @default(cuid())
+  quoteId    String
+  quote      QuoteRequest @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  fromStatus QuoteStatus?
+  toStatus   QuoteStatus
+  note       String?
+  kitChange  Boolean      @default(false) // true: el asesor ajustó el kit (el detalle va en note)
+  subject    String? // título del evento cuando no es un cambio de estado (p. ej. cambio de modalidad)
+  userName   String // copia del nombre de quien lo hizo
+  createdAt  DateTime     @default(now())
+
+  @@index([quoteId, createdAt])
+}
+
+model QuoteItem {
+  id           String       @id @default(cuid())
+  quoteId      String
+  quote        QuoteRequest @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  // El producto puede borrarse después: se conserva copia del nombre y del precio al momento de cotizar
+  productId    String?
+  product      Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  kind         ProductKind
+  nameSnapshot String
+  unitPrice    Decimal      @db.Decimal(14, 2)
+  qty          Int
+
+  @@index([quoteId])
+}
+
+// Contadores del límite de intentos de Better Auth (login, cambio de contraseña…)
+model RateLimit {
+  id          String @id
+  key         String
+  count       Int
+  lastRequest BigInt
+
+  @@unique([key])
+  @@map("rateLimit")
+}
+
+// Equipo operativo que visita e instala. Puede haber varios en una misma zona según la demanda.
+model Team {
+  id            String         @id @default(cuid())
+  name          String
+  contactName   String
+  phone         String // E.164, para abrir WhatsApp
+  email         String?
+  city          String
+  department    String?
+  lat           Float
+  lon           Float
+  // Hasta dónde se desplaza desde su base (km en línea recta)
+  radiusKm      Int            @default(100)
+  // Proyectos activos que puede llevar a la vez (nulo = sin tope)
+  maxActive     Int?
+  // Lo que cobra por instalar un kit: valor base por proyecto + valor por cada kWp instalado (COP). Ambos opcionales.
+  installBase   Decimal?       @db.Decimal(14, 2)
+  installPerKwp Decimal?       @db.Decimal(14, 2)
+  active        Boolean        @default(true)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  projects      Project[]
+  quotes        QuoteRequest[]
+  members       TeamMember[]
+
+  @@index([active])
+}
+
+// Usuarios de la plataforma que integran un equipo operativo.
+model TeamMember {
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([teamId, userId])
+  @@index([userId])
+}

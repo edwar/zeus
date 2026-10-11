@@ -1,0 +1,12 @@
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+  workerd: false
+
+# Parches de seguridad para dependencias transitivas de la CLI de Prisma (Studio, config, driver de MySQL).
+overrides:
+  lodash: ">=4.17.24"
+  mysql2: ">=3.23.1"
+  deepmerge-ts: ">=8.0.0"
+  "path-to-regexp@<6.3.0": ">=6.3.0" # solo herramienta de despliegue (@vercel/config)

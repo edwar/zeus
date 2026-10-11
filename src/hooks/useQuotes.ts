@@ -1,0 +1,75 @@
+"use client";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import type { QuoteStatus } from "@/lib/quote-flow";
+import type { Fulfillment } from "@/lib/service-area";
+
+export type { QuoteStatus };
+export type QuoteListItem = { id: string; status: QuoteStatus; contactName: string; city: string | null; systemType: "ongrid" | "hybrid" | "offgrid"; total: number; currency: string; itemCount: number; createdAt: string; fulfillment: Fulfillment };
+export type QuoteDetail = {
+  id: string; status: QuoteStatus; contactName: string; contactEmail: string; contactPhone: string; city: string | null;
+  systemType: "ongrid" | "hybrid" | "offgrid"; total: number; currency: string; createdAt: string;
+  bill: { lat?: number | null; lon?: number | null; monthlyKwh: number; tariff: number | null; operator: string | null; municipality: string | null; department: string | null; estrato: number | null; connection: string | null; coveragePct: number; peakSunHours: number; backupKw?: number; autonomyHours?: number };
+  sizing: { kwp: number; monthlySolarKwh: number; monthlySavings: number | null; batteryNominalKwh: number };
+  discardReason: string | null; originalTotal: number | null; projectId: string | null; fulfillment: Fulfillment; distanceKm: number | null; installerChoice: "zeus" | "own" | null; installFee: number | null;
+  financing: { downPct: number; termMonths: number; rateEA: number; entity: string | null; usuryEA: number | null; down: number; financed: number; monthly: number; interest: number; totalPaid: number } | null; team: { id: string; name: string } | null;
+  events: { id: string; kitChange: boolean; subject: string | null; from: QuoteStatus | null; to: QuoteStatus; note: string | null; by: string; at: string }[];
+  items: { id: string; productId: string | null; kind: string; name: string; unitPrice: number; qty: number }[];
+};
+
+async function json<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw Object.assign(new Error(String(res.status)), { code: body?.error });
+  }
+  return res.json();
+}
+
+export const useQuotes = () => useQuery({ queryKey: ["quotes"], queryFn: () => fetch("/api/quotes").then(json<QuoteListItem[]>) });
+export const useQuote = (id: string) => useQuery({ queryKey: ["quotes", id], queryFn: () => fetch(`/api/quotes/${id}`).then(json<QuoteDetail>) });
+
+export function useSetQuoteStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status, note }: { id: string; status: QuoteStatus; note?: string }) =>
+      fetch(`/api/quotes/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, note }) }).then(json<{ id: string; status: QuoteStatus }>),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["quotes"] }),
+  });
+}
+
+export type CatalogHit = { id: string; name: string; kind: string; unitPrice: number };
+export const useQuoteCatalog = (q: string, kind: string) =>
+  useQuery({
+    queryKey: ["quote-catalog", q, kind],
+    queryFn: () => fetch(`/api/quotes/catalog?${new URLSearchParams({ ...(q && { q }), ...(kind && { kind }) })}`).then(json<CatalogHit[]>),
+    placeholderData: (prev) => prev,
+    staleTime: 60_000,
+  });
+
+export function useSaveQuoteItems() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, items }: { id: string; items: { productId: string; qty: number }[] }) =>
+      fetch(`/api/quotes/${id}/items`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) }).then(json<{ id: string; total: number; changed: boolean }>),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["quotes"] }),
+  });
+}
+
+export function useSetFulfillment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, fulfillment, note }: { id: string; fulfillment: "install" | "kit_only"; note?: string }) =>
+      fetch(`/api/quotes/${id}/fulfillment`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fulfillment, note }) }).then(json<{ id: string; fulfillment: string }>),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["quotes"] }),
+  });
+}
+
+export function useSetQuoteTeam() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, teamId }: { id: string; teamId: string | null }) =>
+      fetch(`/api/quotes/${id}/team`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teamId }) }).then(json<{ id: string }>),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["quotes"] }),
+  });
+}
