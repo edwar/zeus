@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useCan } from "@/components/RoleContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { DatePicker } from "@/components/DatePicker";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -494,7 +495,7 @@ export function ProjectDetail({ t, lang, id }: { t: Dict; lang: Locale; id: stri
   const { data: p, isPending, isError, refetch } = useProject(id);
   const [tab, setTab] = useState("summary");
   const back = <Link href={`/${lang}/app/projects`} className="back">← {d.back}</Link>;
-  if (isPending) return <div className="pb">{back}<p role="status">{t.app.projects.loading}</p></div>;
+  if (isPending) return <div className="pb">{back}<Loading label={t.app.projects.loading} variant="detail" /></div>;
   if (isError || !p) return <div className="pb">{back}<p role="alert">{t.app.projects.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{t.app.projects.retry}</Button></p></div>;
   return (
     <Tabs value={tab} onValueChange={setTab} className="pb gap-(--s5)">

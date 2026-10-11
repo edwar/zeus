@@ -248,3 +248,60 @@ svg {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Carga (componente Loading): marcadores con la forma del contenido. Aparece con un leve retraso para no parpadear. */
+.loading {
+  animation: loading-in 0.2s ease-out 0.12s both;
+}
+@keyframes loading-in {
+  from {
+    opacity: 0;
+  }
+}
+.sk {
+  display: block;
+  height: 0.8rem;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--line) 65%, var(--mist));
+  animation: sk-pulse 1.4s ease-in-out infinite;
+}
+@keyframes sk-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+/* Sobre fondos que ya son `mist` (cabecera de tabla, columnas del tablero) el marcador usa `line` para verse. */
+.sk--head,
+.kan__col .sk {
+  background: var(--line);
+}
+.sk--head {
+  height: 0.7rem;
+}
+.sk--title {
+  height: 1.1rem;
+}
+.sk--bar {
+  height: 0.5rem;
+}
+.sk--input {
+  width: 100%;
+  height: 2.5rem;
+}
+.loading__field {
+  display: grid;
+  gap: var(--s2);
+}
+.loading__block {
+  display: grid;
+  gap: var(--s3);
+}
+.loading .panel {
+  gap: var(--s4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading,
+  .sk {
+    animation: none;
+  }
+}

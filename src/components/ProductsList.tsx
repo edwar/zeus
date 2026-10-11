@@ -6,6 +6,7 @@ import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ManualForm } from "@/components/ProductEditor";
@@ -96,7 +97,7 @@ export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAd
       </div>
 
       {list.isPending ? (
-        <p role="status">{p.loading}</p>
+        <Loading label={p.loading} variant="table" cols={6} rows={8} />
       ) : list.isError ? (
         <p role="alert">{p.loadError} <Button type="button" variant="outline" size="sm" onClick={() => list.refetch()}>{p.retry}</Button></p>
       ) : list.data.items.length === 0 ? (

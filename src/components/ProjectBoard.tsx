@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Loading } from "@/components/Loading";
 import { useMemo, useState } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, TouchSensor, pointerWithin, rectIntersection, type CollisionDetection, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type KeyboardCoordinateGetter, type DragStartEvent } from "@dnd-kit/core";
 import type { Dict } from "@/i18n";
@@ -138,7 +139,7 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
       <p className="sr-only" role="status" aria-live="polite">{msg}</p>
 
       {isPending ? (
-        <p role="status">{a.loading}</p>
+        <Loading label={a.loading} variant="board" />
       ) : isError ? (
         <p role="alert">
           {a.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{a.retry}</Button>
