@@ -1081,15 +1081,6 @@
   flex-wrap: wrap;
   gap: var(--s1);
 }
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s4);
-  margin-top: var(--s4);
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-}
 .apanel {
   display: grid;
   gap: var(--s4);

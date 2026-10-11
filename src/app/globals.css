@@ -328,3 +328,52 @@ textarea {
     animation: none;
   }
 }
+
+/* Paginador (DataPagination): filas por página a la izquierda, resumen y navegación a la derecha. */
+.dp {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3) var(--s5);
+  margin-top: var(--s5);
+}
+.dp__rows {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+.dp__label {
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.dp__select {
+  width: 5.25rem;
+}
+.dp__summary {
+  margin-left: auto;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.dp__nav {
+  width: auto;
+  margin: 0;
+}
+.dp__nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+@media (max-width: 40rem) {
+  .dp {
+    justify-content: center;
+  }
+  .dp__summary {
+    order: 3;
+    flex-basis: 100%;
+    margin: 0;
+    text-align: center;
+  }
+}

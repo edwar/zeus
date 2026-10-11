@@ -3,7 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ProductDetail, ProductListItem } from "@/lib/products";
 
-export type ProductFilters = { q: string; manufacturerId: string; source: string; page: number };
+export type ProductFilters = { q: string; manufacturerId: string; source: string; page: number; pageSize: number };
 export type ProductPage = { items: ProductListItem[]; total: number; page: number; pageSize: number };
 
 export type ProductInput = {
@@ -31,7 +31,7 @@ export function useProductList(f: ProductFilters) {
   return useQuery({
     queryKey: ["products", "list", f],
     queryFn: () => {
-      const p = new URLSearchParams({ page: String(f.page) });
+      const p = new URLSearchParams({ page: String(f.page), pageSize: String(f.pageSize) });
       if (f.q) p.set("q", f.q);
       if (f.manufacturerId) p.set("manufacturerId", f.manufacturerId);
       if (f.source) p.set("source", f.source);

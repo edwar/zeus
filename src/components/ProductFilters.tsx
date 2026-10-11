@@ -6,11 +6,12 @@ import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import type { Facets } from "@/lib/catalog";
 import { Input } from "@/components/ui/input";
+import { CATALOG_PAGE_SIZE } from "@/lib/catalog-page";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ALL = "all"; // Radix no admite value="" en un ítem
 
-type Value = { q: string; category: string; manufacturer: string };
+type Value = { q: string; category: string; manufacturer: string; size?: number };
 
 export function ProductFilters({ t, lang, facets, initial }: { t: Dict; lang: Locale; facets: Facets; initial: Value }) {
   const s = t.shop;
@@ -28,12 +29,13 @@ export function ProductFilters({ t, lang, facets, initial }: { t: Dict; lang: Lo
       if (q.trim()) p.set("q", q.trim());
       if (category !== ALL) p.set("category", category);
       if (manufacturer !== ALL) p.set("maker", manufacturer);
+      if (initial.size && initial.size !== CATALOG_PAGE_SIZE) p.set("size", String(initial.size)); // al filtrar se conserva el tamaño de página
       const next = `/${lang}/products${p.size ? `?${p}` : ""}`;
       const current = `${window.location.pathname}${window.location.search}`;
       if (next !== current) startTransition(() => router.replace(next, { scroll: false }));
     }, 300);
     return () => clearTimeout(id);
-  }, [q, category, manufacturer, lang, router]);
+  }, [q, category, manufacturer, initial.size, lang, router]);
 
   return (
     <div className="shopfilters">

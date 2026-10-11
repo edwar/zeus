@@ -7,6 +7,8 @@ import { hasLocale, type Locale } from "@/i18n/config";
 import { getDict } from "@/i18n";
 import { getCatalogPage, getFacets } from "@/lib/catalog";
 import { fill } from "@/lib/format";
+import { CATALOG_PAGE_SIZES, parseCatalogSize } from "@/lib/catalog-page";
+import { CatalogPagination } from "@/components/CatalogPagination";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductFilters } from "@/components/ProductFilters";
 import { Button } from "@/components/ui/button";
@@ -33,16 +35,9 @@ async function Listing({ params, searchParams }: Pick<PageProps<"/[lang]/product
   const t = getDict(lang);
   const f = { q: one(sp.q).trim().slice(0, 100), category: one(sp.category), manufacturer: one(sp.maker) };
   const page = Math.max(1, Math.floor(Number(one(sp.page))) || 1);
-  const [facets, data] = await Promise.all([getFacets(), getCatalogPage({ ...f, page })]);
+  const size = parseCatalogSize(one(sp.size));
+  const [facets, data] = await Promise.all([getFacets(), getCatalogPage({ ...f, page, size })]);
   const s = t.shop;
-  const href = (p: number) => {
-    const u = new URLSearchParams();
-    if (f.q) u.set("q", f.q);
-    if (f.category) u.set("category", f.category);
-    if (f.manufacturer) u.set("maker", f.manufacturer);
-    if (p > 1) u.set("page", String(p));
-    return `/${lang}/products${u.size ? `?${u}` : ""}`;
-  };
   const filtered = Boolean(f.q || f.category || f.manufacturer);
 
   return (
@@ -55,7 +50,7 @@ async function Listing({ params, searchParams }: Pick<PageProps<"/[lang]/product
       </section>
       <div className="on-light">
         <div className="wrap cat">
-          <ProductFilters t={t} lang={lang} facets={facets} initial={f} />
+          <ProductFilters t={t} lang={lang} facets={facets} initial={{ ...f, size }} />
           <p className="shopcount" role="status">{fill(s.results, { total: data.total })}</p>
           {data.items.length === 0 ? (
             <div className="shopempty">
@@ -65,12 +60,16 @@ async function Listing({ params, searchParams }: Pick<PageProps<"/[lang]/product
           ) : (
             <div className="pgrid">{data.items.map((it) => <ProductCard key={it.slug} item={it} lang={lang} t={t} />)}</div>
           )}
-          {data.pages > 1 && (
-            <nav className="pager" aria-label={s.title}>
-              {page > 1 ? <Button asChild variant="outline" size="sm"><Link href={href(page - 1)}>{s.prev}</Link></Button> : <Button variant="outline" size="sm" disabled>{s.prev}</Button>}
-              <span>{fill(s.pageOf, { page: Math.min(page, data.pages), pages: data.pages })}</span>
-              {page < data.pages ? <Button asChild variant="outline" size="sm"><Link href={href(page + 1)}>{s.next}</Link></Button> : <Button variant="outline" size="sm" disabled>{s.next}</Button>}
-            </nav>
+          {data.total > CATALOG_PAGE_SIZES[0] && (
+            <CatalogPagination
+              lang={lang}
+              page={Math.min(page, data.pages)}
+              pages={data.pages}
+              total={data.total}
+              pageSize={data.pageSize}
+              filters={{ q: f.q, category: f.category, maker: f.manufacturer }}
+              labels={{ rowsPerPage: s.rowsPerPage, prev: s.prev, next: s.next, pageOf: s.pageOf, goTo: s.goTo, nav: s.title }}
+            />
           )}
         </div>
       </div>

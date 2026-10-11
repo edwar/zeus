@@ -1260,14 +1260,6 @@ main > .pagehead + * {
   font-weight: 600;
   text-align: right;
 }
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s4);
-  margin-top: var(--s6);
-  font-size: 0.9rem;
-}
 
 /* Asistente: factura → datos → kit */
 .wiz {
