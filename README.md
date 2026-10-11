@@ -34,3 +34,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Pruebas
+
+- `pnpm test`: pruebas unitarias (`tests/`).
+- `pnpm e2e`: suite de Playwright (`e2e/`) contra un servidor local en `http://localhost:3000`. Crea usuarios y datos
+  con prefijo `e2e`/`E2E` en la base de `DATABASE_URL` y los borra al terminar; se niega a correr contra otro entorno.
+  La primera vez: `pnpm exec playwright install chromium`.
