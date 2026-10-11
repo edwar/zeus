@@ -11,11 +11,9 @@ import { Button } from "@/components/ui/button";
 export function Logo() {
   return (
     <span className="logo" aria-hidden="true">
-      <svg viewBox="0 0 28 28" width="28" height="28">
-        <rect x="0" y="0" width="28" height="28" rx="3" fill="#f5b82e" />
-        <rect x="4" y="0" width="4" height="28" fill="#082017" />
-        <rect x="12" y="0" width="4" height="28" fill="#082017" />
-        <rect x="20" y="0" width="4" height="28" fill="#082017" />
+      <svg viewBox="0 0 32 32" width="32" height="32">
+        <circle cx="16" cy="16" r="14" fill="#ffc21a" stroke="#0b1f18" strokeWidth="2.5" />
+        <path d="M18.5 5.5 9 18h6l-1.5 8.5L23 14h-6z" fill="#0b1f18" strokeLinejoin="round" />
       </svg>
     </span>
   );

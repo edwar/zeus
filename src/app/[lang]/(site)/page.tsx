@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { hasLocale } from "@/i18n/config";
 import { getDict } from "@/i18n";
-import { LatticeHero } from "@/components/LatticeHero";
+import { SolarDay } from "@/components/SolarDay";
+import { DomIcon, HouseArt, ShopArt, SunBurst, VillageArt } from "@/components/Scenes";
 import { Button } from "@/components/ui/button";
 import { absoluteUrl, jsonLd } from "@/lib/site";
 
@@ -26,20 +27,21 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structured) }} />
       <section className="hero">
+        <SunBurst className="hero__sun" />
         <div className="wrap hero__grid">
           <div className="hero__copy">
             <h1 className="hero__title">{t.hero.title}</h1>
             <p className="hero__sub">{t.hero.sub}</p>
             <div className="hero__cta">
-              <Button asChild variant="sun"><Link href={`/${lang}/simulator`}>{t.hero.primary}</Link></Button>
-              <Button asChild variant="outline-dark"><Link href={`/${lang}/products`}>{t.hero.secondary}</Link></Button>
+              <Button asChild variant="ink"><Link href={`/${lang}/simulator`}>{t.hero.primary}</Link></Button>
+              <Button asChild variant="outline"><Link href={`/${lang}/products`}>{t.hero.secondary}</Link></Button>
             </div>
           </div>
-          <LatticeHero t={t.hero} />
+          <SolarDay t={t.hero} />
         </div>
       </section>
 
-      <section className="sec sec--light on-light" aria-labelledby="process-h">
+      <section className="slab slab--white" aria-labelledby="process-h">
         <div className="wrap">
           <div className="sec__head">
             <h2 id="process-h" className="h2">{t.process.title}</h2>
@@ -48,6 +50,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           <ol className="steps">
             {t.process.steps.map((s, i) => (
               <li key={s.name} className="steps__item" style={{ ["--i" as string]: i }}>
+                <span className="steps__dot" aria-hidden="true">{i + 1}</span>
                 <h3 className="steps__name">{s.name}</h3>
                 <p>{s.text}</p>
               </li>
@@ -56,15 +59,16 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
 
-      <section className="sec sec--dark" aria-labelledby="dom-h">
+      <section className="slab slab--sky" aria-labelledby="dom-h">
         <div className="wrap dom">
-          <div>
+          <div className="dom__intro">
             <h2 id="dom-h" className="h2 h2--dark">{t.domotics.title}</h2>
             <p className="lead lead--dark">{t.domotics.text}</p>
           </div>
           <ul className="dom__list">
-            {t.domotics.items.map((i) => (
+            {t.domotics.items.map((i, k) => (
               <li key={i.name}>
+                <DomIcon index={k} className="dom__icon" />
                 <h3>{i.name}</h3>
                 <p>{i.text}</p>
               </li>
@@ -73,25 +77,31 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
 
-      <section className="sec sec--light on-light" aria-labelledby="aud-h">
+      <section className="slab slab--white" aria-labelledby="aud-h">
         <div className="wrap">
           <h2 id="aud-h" className="h2">{t.audiences.title}</h2>
           <div className="aud">
             {t.audiences.items.map((a, i) => (
               <div key={a.name} className={`aud__col aud__col--${i}`}>
-                <h3>{a.name}</h3>
-                <p>{a.text}</p>
+                <div className="aud__text">
+                  <h3>{a.name}</h3>
+                  <p>{a.text}</p>
+                </div>
+                {i === 0 && <HouseArt className="aud__art" />}
+                {i === 1 && <ShopArt className="aud__art" />}
+                {i === 2 && <VillageArt className="aud__art" />}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-<section className="closer">
+      <section className="slab slab--lima closer">
+        <SunBurst className="closer__sun" />
         <div className="wrap closer__in">
           <h2 className="closer__title">{t.close.title}</h2>
           <p>{t.close.text}</p>
-          <Button asChild variant="sun" className="bg-canopy-deep text-sun hover:bg-canopy"><Link href={`/${lang}/simulator`}>{t.close.cta}</Link></Button>
+          <Button asChild variant="ink"><Link href={`/${lang}/simulator`}>{t.close.cta}</Link></Button>
         </div>
       </section>
     </>
