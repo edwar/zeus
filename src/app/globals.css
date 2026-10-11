@@ -268,7 +268,13 @@ textarea {
 
 /* Carga (componente Loading): marcadores con la forma del contenido. Aparece con un leve retraso para no parpadear. */
 .loading {
+  /* Como hijo de una rejilla (.pb) no debe ensanchar la página con el ancho mínimo de la tabla que imita. */
+  min-width: 0;
   animation: loading-in 0.2s ease-out 0.12s both;
+}
+.loading .tbl {
+  min-width: 0;
+  table-layout: fixed;
 }
 @keyframes loading-in {
   from {
