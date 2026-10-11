@@ -5,6 +5,7 @@ import type { Dict } from "@/i18n";
 import { EmptyState } from "@/components/EmptyState";
 import { Factory } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCreateManufacturer, useDeleteManufacturer, useManufacturers } from "@/hooks/useManufacturers";
@@ -78,7 +79,7 @@ export function ManufacturersManager({ t, isAdmin }: { t: Dict; isAdmin: boolean
       <p role="status" className={msg ? "field-error" : "sr-only"}>{msg}</p>
 
       {isPending ? (
-        <p role="status">{m.loading}</p>
+        <Loading label={m.loading} variant="table" cols={4} />
       ) : isError ? (
         <p role="alert">{m.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{m.retry}</Button></p>
       ) : data.length === 0 ? (

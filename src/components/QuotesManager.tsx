@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -168,7 +169,7 @@ export function QuotesList({ t, lang }: { t: Dict; lang: Locale }) {
         </div>
       </header>
       {isPending ? (
-        <p role="status">{q.loading}</p>
+        <Loading label={q.loading} variant="table" cols={6} />
       ) : isError ? (
         <p role="alert">{q.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{q.retry}</Button></p>
       ) : data.length === 0 ? (
@@ -226,7 +227,7 @@ export function QuoteDetailView({ t, lang, id }: { t: Dict; lang: Locale; id: st
   const q = t.app.quotes;
   const { data: r, isPending, isError } = useQuote(id);
   const back = <Link href={`/${lang}/app/quotes`} className="back">← {q.back}</Link>;
-  if (isPending) return <div className="pb">{back}<p role="status">{q.loading}</p></div>;
+  if (isPending) return <div className="pb">{back}<Loading label={q.loading} variant="detail" /></div>;
   if (isError || !r) return <div className="pb">{back}<p role="alert">{q.notFound}</p></div>;
   const rows: [string, string][] = [
     [q.monthlyKwh, `${r.bill.monthlyKwh} kWh`],

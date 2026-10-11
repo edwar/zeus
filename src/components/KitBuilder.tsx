@@ -12,6 +12,7 @@ import { fill, money } from "@/lib/format";
 import { useKit } from "@/hooks/useKit";
 import { useKitOptions } from "@/hooks/useKitOptions";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SavingsPanel } from "./SavingsPanel";
@@ -130,7 +131,7 @@ export function KitBuilder({ t, lang, values, sizing, onBack, onSent }: Props) {
       </section>
 
       {isPending ? (
-        <p role="status">{k.loading}</p>
+        <Loading label={k.loading} rows={5} />
       ) : isError || !kit ? (
         <p role="alert">{k.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{k.retry}</Button></p>
       ) : (

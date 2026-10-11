@@ -5,6 +5,7 @@ import type { Dict } from "@/i18n";
 import { type Role, useCreateUser, useSetBanned, useSetRole, useUsers } from "@/hooks/useUsers";
 import { ROLES, normalizeRole } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -102,7 +103,7 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
       </Dialog>
 
       {isPending ? (
-        <p role="status">{u.loading}</p>
+        <Loading label={u.loading} variant="table" cols={5} />
       ) : isError ? (
         <p role="alert">
           {u.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{u.retry}</Button>

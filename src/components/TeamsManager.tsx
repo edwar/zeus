@@ -16,6 +16,7 @@ import { KanbanSquare, MapPin } from "lucide-react";
 import { useCan } from "@/components/RoleContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -32,7 +33,7 @@ export function TeamsList({ t, lang }: { t: Dict; lang: Locale }) {
         </div>
         <div className="ph__tools"><Button asChild><Link href={`/${lang}/app/teams/new`}>{m.add}</Link></Button></div>
       </header>
-      {isPending ? <p role="status">{m.loading}</p>
+      {isPending ? <Loading label={m.loading} variant="table" cols={8} />
         : isError ? <p role="alert">{m.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{m.retry}</Button></p>
         : rows.length === 0 ? (
           <EmptyState icon={MapPin} title={t.app.empty.teams.title} description={t.app.empty.teams.desc}>
@@ -96,7 +97,7 @@ export function TeamForm({ t, lang, id }: { t: Dict; lang: Locale; id?: string }
     setPlace({ city: p.municipality ?? undefined, department: p.department ?? undefined });
   }, []);
 
-  if (id && existing.isPending) return <div className="pb">{back}<p role="status">{m.loading}</p></div>;
+  if (id && existing.isPending) return <div className="pb">{back}<Loading label={m.loading} variant="detail" /></div>;
   if (id && (existing.isError || !existing.data)) return <div className="pb">{back}<p role="alert">{m.notFound}</p></div>;
   const e = id ? existing.data : undefined;
   const members = picked ?? e?.members.map((u) => u.id) ?? [];
@@ -166,7 +167,7 @@ export function TeamForm({ t, lang, id }: { t: Dict; lang: Locale; id?: string }
         <fieldset className="kform__sub">
           <legend>{m.membersTitle}</legend>
           <p className="wiz__hint">{m.membersHint}</p>
-          {users.isPending ? <p role="status">{m.loading}</p> : (users.data ?? []).length === 0 ? <p className="panel__meta">{m.noUsers}</p> : (
+          {users.isPending ? <Loading label={m.loading} rows={3} /> : (users.data ?? []).length === 0 ? <p className="panel__meta">{m.noUsers}</p> : (
             <ul className="members">
               {(users.data ?? []).map((u) => (
                 <li key={u.id}>

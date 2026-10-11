@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/config";
 import type { ProductDetail } from "@/lib/products";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +27,7 @@ export function ProductEditor({ id, ...rest }: Props) {
   const detail = useProduct(id ?? "");
 
   if (!id) return <div className="pb">{back}<ManualForm {...rest} /></div>;
-  if (detail.isPending) return <div className="pb">{back}<p role="status">{p.loading}</p></div>;
+  if (detail.isPending) return <div className="pb">{back}<Loading label={p.loading} variant="detail" /></div>;
   if (detail.isError || !detail.data) return <div className="pb">{back}<p role="alert">{p.notFound}</p></div>;
   return (
     <div className="pb">
