@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Simulador de ahorro solar, kits y gestión de proyectos de energía solar.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f4f7f5",
-    theme_color: "#082017",
+    background_color: "#ffc21a",
+    theme_color: "#ffc21a",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png" },

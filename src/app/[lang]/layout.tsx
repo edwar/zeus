@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-import { Bricolage_Grotesque, Inter } from "next/font/google";
+import { Gabarito, Figtree } from "next/font/google";
 import { hasLocale, locales } from "@/i18n/config";
 import { getDict } from "@/i18n";
 import { Providers } from "@/components/Providers";
 import { INDEXABLE, SITE_URL, languageAlternates } from "@/lib/site";
 import "../tailwind.css";
 
-const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], display: "swap" });
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
+const gabarito = Gabarito({ variable: "--font-gabarito", subsets: ["latin"], display: "swap" });
+const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"], display: "swap" });
 
-export const viewport: Viewport = { themeColor: "#082017", colorScheme: "light" };
+export const viewport: Viewport = { themeColor: "#ffc21a", colorScheme: "light" };
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -49,7 +49,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
   return (
-    <html lang={lang} className={`${bricolage.variable} ${inter.variable}`}>
+    <html lang={lang} className={`${gabarito.variable} ${figtree.variable}`}>
       <body><Providers>{children}</Providers></body>
     </html>
   );

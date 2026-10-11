@@ -1,32 +1,37 @@
-/* Zeus · La Celosía — tokens, base y primitivas compartidas */
+/* Zeus · Fruta de Sol — tokens, base y primitivas compartidas (ver DESIGN.md) */
 :root {
-  /* Color */
-  --canopy: #0e2f23;
-  --canopy-deep: #082017;
-  --canopy-line: #24493a;
-  --emerald: #14805a;
-  --emerald-deep: #0d6044;
-  --leaf: #8be0b0;
-  --sun: #f5b82e;
-  --sun-soft: #fff0c7;
-  --sun-ink: #7a4f00;
-  --sky: #1f6fb2;
-  --sky-soft: #dcecf8;
-  --sky-on-dark: #7cc0f5;
-  --paper: #f4f7f5;
-  --mist: #e6ece8;
-  --line: #cfd9d3;
-  --ink: #11201a;
-  --ink-soft: #435850;
+  /* Color: campos planos y jugosos. Los nombres antiguos (canopy, emerald, sun…) se conservan con la paleta nueva. */
+  --canopy: #06251b; /* selva */
+  --canopy-deep: #031811;
+  --canopy-line: #174a39;
+  --emerald: #0a7f55;
+  --emerald-deep: #07603f;
+  --leaf: #c8f24b; /* lima */
+  --lima: #c8f24b;
+  --lima-soft: #eefcc4;
+  --sun: #ffc21a; /* maracuyá */
+  --sun-soft: #fff1b8;
+  --sun-ink: #5c3b00;
+  --mango: #ff7a2f;
+  --sky: #2352e6; /* cielo */
+  --sky-soft: #dfe8ff;
+  --sky-on-dark: #9bb8ff;
+  --paper: #f7fbf8;
+  --lienzo: #eef4f0;
+  --mist: #e4eee8;
+  --line: #d3e0d9;
+  --input-edge: #7d9789;
+  --ink: #0b1f18;
+  --ink-soft: #3d544b;
   --white: #ffffff;
-  --alert: #b3361b;
-  --alert-soft: #fbe6df;
-  --on-canopy: #eaf5ee;
-  --on-canopy-soft: #a9c7b8;
+  --alert: #c8321b;
+  --alert-soft: #fde6e1;
+  --on-canopy: #f1faf5;
+  --on-canopy-soft: #a9cdbd;
 
   /* Type */
-  --font-display: var(--font-bricolage), "Segoe UI", system-ui, sans-serif;
-  --font-ui: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-gabarito), system-ui, sans-serif;
+  --font-ui: var(--font-figtree), system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Space (4px base) */
   --s1: 0.25rem;
@@ -39,17 +44,23 @@
   --s8: 4.5rem;
   --s9: 7rem;
 
-  /* Shape */
-  --r-sm: 2px;
-  --r-md: 6px;
-  --r-lg: 10px;
+  /* Shape: generosa. Píldoras para acciones, losas redondeadas para secciones. */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 24px;
+  --r-xl: 36px;
+  --r-pill: 999px;
 
-  /* Light cast by slats: the only shadow in the system */
-  --slat-shadow: 6px 0 0 -2px rgb(8 32 23 / 0.16);
+  /* Profundidad: en el portal, sombra dura de tinta (efecto tapa/pegatina); en el panel, sombra suave. */
+  --stroke: 2px solid var(--ink);
+  --shadow-hard: 0 5px 0 var(--ink);
+  --shadow-hard-sm: 0 3px 0 var(--ink);
+  --shadow-soft: 0 1px 2px rgb(6 37 27 / 0.06), 0 14px 28px -16px rgb(6 37 27 / 0.28);
+  --shadow-lift: 0 2px 4px rgb(6 37 27 / 0.06), 0 22px 40px -18px rgb(6 37 27 / 0.38);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --gutter: clamp(1rem, 4vw, 2.5rem);
-  --max: 76rem;
+  --max: 78rem;
 }
 
 *,
@@ -69,7 +80,7 @@ body {
   font-size: 1rem;
   line-height: 1.55;
   color: var(--ink);
-  background: var(--paper);
+  background: var(--white);
   -webkit-font-smoothing: antialiased;
   font-variant-numeric: tabular-nums;
 }
@@ -98,15 +109,26 @@ svg {
   max-width: 100%;
 }
 
-:focus-visible {
-  outline: 3px solid var(--sun);
-  outline-offset: 2px;
-  border-radius: 2px;
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
-.on-light :focus-visible,
-.app :focus-visible {
-  outline-color: var(--emerald);
+:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+/* Sobre fondos oscuros el foco es amarillo; sobre claros, azul cielo. */
+.sec--dark :focus-visible,
+.sitefoot :focus-visible,
+.app__side :focus-visible,
+.app__tabs :focus-visible,
+.app__top :focus-visible {
+  outline-color: var(--sun);
 }
 
 .skip {
@@ -118,7 +140,7 @@ svg {
   padding: var(--s3) var(--s4);
   font-weight: 700;
   z-index: 100;
-  border-radius: var(--r-md);
+  border-radius: var(--r-pill);
 }
 .skip:focus {
   top: var(--s3);
@@ -152,7 +174,7 @@ svg {
   width: 100%;
   min-height: 2.9rem;
   padding: 0.65rem 0.85rem;
-  border: 1.5px solid #9fb0a7;
+  border: 1.5px solid var(--input-edge);
   border-radius: var(--r-md);
   background: var(--white);
   color: var(--ink);
@@ -177,7 +199,7 @@ svg {
   font-weight: 600;
 }
 
-/* Range: a slat on a rail */
+/* Range: pomo redondo sobre un riel en píldora */
 .range {
   -webkit-appearance: none;
   appearance: none;
@@ -187,47 +209,42 @@ svg {
   cursor: pointer;
 }
 .range::-webkit-slider-runnable-track {
-  height: 10px;
-  border-radius: 2px;
+  height: 12px;
+  border-radius: var(--r-pill);
   background: var(--track, var(--line));
 }
 .range::-moz-range-track {
-  height: 10px;
-  border-radius: 2px;
+  height: 12px;
+  border-radius: var(--r-pill);
   background: var(--track, var(--line));
 }
 .range::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 34px;
-  margin-top: -12px;
-  border-radius: 3px;
-  background: var(--thumb, var(--emerald));
-  border: 2px solid var(--thumb-edge, var(--white));
-  box-shadow: var(--slat-shadow);
+  width: 30px;
+  height: 30px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: var(--thumb, var(--sun));
+  border: 3px solid var(--thumb-edge, var(--ink));
+  box-shadow: 0 3px 0 var(--thumb-edge, var(--ink));
 }
 .range::-moz-range-thumb {
-  width: 14px;
-  height: 30px;
-  border-radius: 3px;
-  background: var(--thumb, var(--emerald));
-  border: 2px solid var(--thumb-edge, var(--white));
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--thumb, var(--sun));
+  border: 3px solid var(--thumb-edge, var(--ink));
 }
 .range:focus-visible {
   outline: none;
 }
 .range:focus-visible::-webkit-slider-thumb {
-  outline: 3px solid var(--sun);
-  outline-offset: 2px;
+  outline: 3px solid var(--sky);
+  outline-offset: 3px;
 }
 .range:focus-visible::-moz-range-thumb {
-  outline: 3px solid var(--sun);
-  outline-offset: 2px;
-}
-
-/* Lattice motif: vertical slats */
-.slats {
-  background-image: repeating-linear-gradient(90deg, var(--canopy-deep) 0 14px, transparent 14px 26px);
+  outline: 3px solid var(--sky);
+  outline-offset: 3px;
 }
 
 .wrap {

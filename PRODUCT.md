@@ -29,7 +29,7 @@ Zeus enfrenta el ahorro solar contra el costo real de la factura de luz (el aire
 
 ## Brand Commitments
 - Nombre: Zeus.
-- Dirección declarada por el usuario: moderna, limpia, profesional, minimalista, eco-amigable (naturaleza + tecnología limpia); verdes esmeralda/bosque con acentos azul limpio o amarillo solar cálido; fondos blancos y grises suaves; tipografía moderna y muy legible (sugeridas Inter / Plus Jakarta Sans, a validar en new-work).
+- Dirección declarada por el usuario (rediseño de oct. 2026): moderna, fresca y llamativa, sin perder legibilidad ni profesionalismo; campos de color jugosos (amarillo maracuyá, lima, azul cielo) con verde selva como ancla, formas redondeadas, fondos blancos y claros; tipografía Gabarito (titulares) y Figtree (interfaz). Mantiene el espíritu eco-amigable. Ver DESIGN.md.
 
 ## Evidence on Hand
 Ninguna. No hay logo, catálogo, precios, fotos de proyectos ni testimonios. Todo contenido será demo, marcado como sintético, con lista de reemplazo. No inventar precios reales, clientes, benchmarks ni garantías.

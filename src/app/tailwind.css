@@ -1,5 +1,5 @@
 /*
- * Tailwind + shadcn/ui sobre el CSS propio de La Celosía.
+ * Tailwind + shadcn/ui sobre el CSS propio de Fruta de Sol.
  * - Sin preflight: no resetea los estilos existentes.
  * - Las hojas propias van dentro de capas (base/components) para que las utilidades de
  *   los componentes shadcn ganen sobre las clases legacy (.btn, .input, .select…).
@@ -11,7 +11,7 @@
 @import "./app.css" layer(components);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* Tokens de shadcn → paleta de La Celosía (ver DESIGN.md). Solo modo claro. */
+/* Tokens de shadcn → paleta de Fruta de Sol (ver DESIGN.md). Solo modo claro. */
 :root {
   --background: var(--white);
   --foreground: var(--ink);
@@ -29,9 +29,9 @@
   --accent-foreground: var(--ink);
   --destructive: var(--alert);
   --border: var(--line);
-  --input: #9fb0a7;
-  --ring: var(--emerald);
-  --radius: 6px;
+  --input: var(--input-edge);
+  --ring: var(--sky);
+  --radius: 14px;
 }
 
 @theme inline {
@@ -54,7 +54,10 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-sun: var(--sun);
-  --color-sun-foreground: var(--canopy-deep);
+  --color-sun-foreground: var(--ink);
+  --color-lima: var(--lima);
+  --color-mango: var(--mango);
+  --color-sky: var(--sky);
   --color-canopy: var(--canopy);
   --color-canopy-deep: var(--canopy-deep);
   --color-canopy-line: var(--canopy-line);
@@ -62,4 +65,6 @@
   --color-on-canopy: var(--on-canopy);
   --radius-md: var(--radius);
   --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --color-ink: var(--ink);
 }

@@ -1,178 +1,131 @@
 ---
 name: Zeus
-description: Plataforma solar y domótica donde la sombra de una celosía tropical se vuelve ahorro medible.
+description: Plataforma solar y domótica con espíritu de puesto de frutas tropicales: el sol es el ingrediente, el color es plano y jugoso.
 colors:
-  canopy: "#0e2f23"
-  canopy-deep: "#082017"
-  canopy-line: "#24493a"
-  emerald: "#14805a"
-  emerald-deep: "#0d6044"
-  leaf: "#8be0b0"
-  sun: "#f5b82e"
-  sun-soft: "#fff0c7"
-  sun-ink: "#7a4f00"
-  sky: "#1f6fb2"
-  sky-on-dark: "#7cc0f5"
-  paper: "#f4f7f5"
-  mist: "#e6ece8"
-  line: "#cfd9d3"
-  ink: "#11201a"
-  ink-soft: "#435850"
-  alert: "#b3361b"
+  maracuya: "#ffc21a"
+  maracuya-soft: "#fff1b8"
+  maracuya-ink: "#5c3b00"
+  lima: "#c8f24b"
+  lima-soft: "#eefcc4"
+  cielo: "#2352e6"
+  cielo-soft: "#dfe8ff"
+  mango: "#ff7a2f"
+  selva: "#06251b"
+  selva-deep: "#031811"
+  selva-line: "#174a39"
+  esmeralda: "#0a7f55"
+  esmeralda-deep: "#07603f"
+  tinta: "#0b1f18"
+  tinta-soft: "#3d544b"
+  lienzo: "#eef4f0"
+  niebla: "#e4eee8"
+  linea: "#d3e0d9"
+  blanco: "#ffffff"
+  alerta: "#c8321b"
 typography:
   display:
-    fontFamily: "Bricolage Grotesque, Segoe UI, system-ui, sans-serif"
-    fontSize: "clamp(2.3rem, 5.6vw, 4.4rem)"
+    fontFamily: "Gabarito, system-ui, sans-serif"
+    fontSize: "clamp(2.8rem, 7vw, 6rem)"
+    fontWeight: 800
+    lineHeight: 0.98
+    letterSpacing: "-0.03em"
+  headline:
+    fontFamily: "Gabarito, system-ui, sans-serif"
+    fontSize: "clamp(2rem, 4.4vw, 3.4rem)"
     fontWeight: 800
     lineHeight: 1.02
-    letterSpacing: "-0.035em"
-  headline:
-    fontFamily: "Bricolage Grotesque, Segoe UI, system-ui, sans-serif"
-    fontSize: "clamp(1.7rem, 3.4vw, 2.6rem)"
-    fontWeight: 800
-    lineHeight: 1.1
-    letterSpacing: "-0.03em"
+    letterSpacing: "-0.025em"
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Figtree, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.55
-  title:
-    fontFamily: "Inter, system-ui, sans-serif"
-    fontSize: "1.05rem"
-    fontWeight: 700
   label:
-    fontFamily: "Inter, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 600
-  caption:
-    fontFamily: "Inter, system-ui, sans-serif"
-    fontSize: "0.8rem"
-    fontWeight: 600
-  micro:
-    fontFamily: "Inter, system-ui, sans-serif"
-    fontSize: "0.75rem"
+    fontFamily: "Figtree, system-ui, sans-serif"
+    fontSize: "0.9rem"
     fontWeight: 700
 rounded:
-  sm: "2px"
-  md: "6px"
-  lg: "10px"
+  sm: "8px"
+  md: "14px"
+  lg: "24px"
+  xl: "36px"
+  pill: "999px"
 spacing:
   xs: "8px"
   sm: "16px"
   md: "24px"
-  lg: "32px"
-  xl: "72px"
+  lg: "40px"
+  xl: "88px"
 components:
   button-primary:
-    backgroundColor: "{colors.emerald}"
-    textColor: "#ffffff"
-    rounded: "{rounded.md}"
-    padding: "11px 22px"
-    height: "46px"
-  button-sun:
-    backgroundColor: "{colors.sun}"
-    textColor: "{colors.canopy-deep}"
-    rounded: "{rounded.md}"
-    padding: "11px 22px"
+    backgroundColor: "{colors.maracuya}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.pill}"
+    height: "52px"
+  button-secondary:
+    backgroundColor: "{colors.blanco}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.pill}"
+    height: "52px"
   input:
-    backgroundColor: "#ffffff"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.blanco}"
+    textColor: "{colors.tinta}"
     rounded: "{rounded.md}"
-    height: "46px"
+    height: "48px"
 ---
 
 # Design System: Zeus
 
 ## Overview
 
-**Creative North Star: "La Celosía"**
+**Creative North Star: "Fruta de Sol"**
 
-Zeus toma su mundo de la arquitectura tropical: la celosía y el brise-soleil, el muro perforado que deja pasar el aire y detiene el sol. La retícula del producto es una celosía: listones verticales de bosque profundo con aberturas por donde se cuela la luz. En el portal, la luz se mueve con la hora del día y compara la generación solar con el consumo de una casa, oficina, local o taller. En la operación, la celosía se vuelve disciplina: retícula clara, superficies luminosas, color reservado para el estado.
+Zeus se ve y se siente como un puesto de frutas y refrescos tropicales donde el ingrediente es el sol: color plano, jugoso y saturado, formas redondeadas como gajos y píldoras, pegatinas inclinadas y una tapa de botella que se presiona. Reemplaza el portal verde bosque casi negro y la celosía de listones del diseño anterior.
 
-Escena de uso: cliente en casa, por la tarde y con calor, en móvil o portátil (portal oscuro por decisión de mundo: la sombra); técnico en campo bajo sol directo, una mano, conexión irregular (operación clara, alto contraste, objetivos táctiles de 44px o más).
+Escena de uso: cliente en casa, por la tarde y con calor, en móvil o portátil (portal claro y luminoso); técnico en campo bajo sol directo, una mano (panel claro, alto contraste, objetivos de 44px o más).
 
 **Key Characteristics:**
-- Estrategia de color **Drenched** en el portal (bosque como suelo) y **Restrained** en la operación.
-- Un solo motivo gráfico: listones verticales (14px de listón, 12px de abertura).
-- El color significa dato: amarillo = luz y generación, azul = consumo, verde = acción y avance.
+- Estrategia de color **Full palette** en el portal (maracuyá, lima, cielo y selva como campos de color a escala de página) y **Restrained** en el panel (lienzo claro, selva para la barra, maracuyá como acento).
+- Un motivo gráfico: el **disco solar** (círculo con contorno de tinta) y las **losas redondeadas** que se apilan entre secciones.
+- El color significa dato: amarillo = sol y generación, azul = consumo, verde = avance y confirmación, naranja = atención.
+- Texto siempre sobre tinta o blanco con contraste AA; el amarillo y la lima llevan tinta, nunca blanco.
 
 ## Colors
 
-Bosque profundo con una única luz cálida; neutros verdosos, nunca grises puros.
-
-### Primary
-- **Bosque de dosel** (#0e2f23): suelo del portal, barra lateral y navegación inferior operativa.
-- **Esmeralda de acción** (#14805a / hover #0d6044): botón primario, avance, casillas marcadas.
-
-### Secondary
-- **Luz solar** (#f5b82e): generación, foco, estado activo de navegación y cierre del portal. Texto sobre él: bosque profundo (#082017).
-- **Azul de consumo** (#1f6fb2; #7cc0f5 sobre fondos oscuros): consumo y demanda de energía.
-
-### Neutral
-- **Papel verdoso** (#f4f7f5): fondo operativo. **Bruma** (#e6ece8): columnas y fondos de sección. **Tinta** (#11201a) y **Tinta suave** (#435850) para texto. **Línea** (#cfd9d3).
-- **Alerta** (#b3361b): bloqueos y alertas altas únicamente.
-
-### Named Rules
-**The Light-Is-Data Rule.** El amarillo solo representa luz o generación; nunca decora.
-**The One-Warm-Light Rule.** En cada pantalla hay una sola zona amarilla dominante.
+- **Maracuyá `#ffc21a`:** el sol. Campo del hero, botón principal, píldora activa del panel.
+- **Lima `#c8f24b`:** frescura y confirmación. Campos de apoyo y cierre.
+- **Cielo `#2352e6`:** consumo y domótica. Texto blanco encima (≥4.5:1).
+- **Selva `#06251b`:** ancla oscura (pie, barra lateral, texto de gran contraste). Ya no es el suelo de todo el portal.
+- **Esmeralda `#0a7f55`:** acciones secundarias y progreso sobre blanco.
+- **Mango `#ff7a2f`:** acentos de atención y atardecer.
+- **Lienzo `#eef4f0`:** fondo del panel; el portal usa blanco.
 
 ## Typography
 
-**Display Font:** Bricolage Grotesque (con Segoe UI, system-ui)
-**Body Font:** Inter (con system-ui). Cifras tabulares globales.
-
-**Character:** display con carácter y compacto para el portal; Inter, neutro y legible, para datos y operación.
-
-### Hierarchy
-- **Display** (800, clamp 2.3–4.4rem, 1.02): titular del portal.
-- **Headline** (800, clamp 1.7–2.6rem, 1.1): secciones.
-- **Title** (700, 1.05–1.5rem): tarjetas, paneles.
-- **Body** (400, 1rem, 1.55): 65–75ch.
-- **Label** (600, 0.875rem), **Caption** (600, 0.8rem) y **Micro** (700, 0.75rem): campos, metadatos y rótulos de gráfico. Pasos intermedios de 0.85–0.95rem se usan en navegación y tablas como variantes del label. Sin mayúsculas tracked.
-
-## Layout
-
-Mobile-first. Portal: columna de hasta 76rem con rejilla 1.1fr/0.9fr en el hero. Operación: barra lateral de 15rem en escritorio; en móvil, barra inferior de 3 pestañas (4.5rem). Kanban de 5 columnas con scroll horizontal y ajuste en móvil. Ritmo vertical de 72px entre secciones.
-
-## Elevation & Depth
-
-Tonal y plano. Sin sombras difusas; la profundidad es luz y sombra de listones (sombra dura lateral de 6px al 16%, solo en el pulgar del control de rango).
+- **Gabarito** (800) para titulares y números grandes: redondeada, geométrica y amistosa.
+- **Figtree** para interfaz y cuerpo.
+- Cuerpo 65–75ch; titulares equilibrados con `text-wrap: balance`.
 
 ## Shapes
 
-Esquinas de 2–10px, aberturas rectangulares, listones rectos. Sin cápsulas. Un borde superior de 6px identifica etapa o tipo de ficha; no se usan bordes laterales de color en tarjetas.
+Radios generosos: 14px en controles, 24px en tarjetas, 36px en losas de sección; botones, chips, pestañas e interruptores en píldora. Contornos de tinta de 2px en las superficies de persuasión y en todos los botones; las tarjetas y tablas del panel usan 2px de `linea` y sombra suave.
+
+## Elevation & Depth
+
+- **Botones (portal y panel):** sombra dura de tinta (`0 3px 0`), efecto tapa; al presionar se hunden 3px y pierden la sombra. Los botones `sm` e `icon` no llevan sombra.
+- **Portal:** tarjetas y paneles de persuasión con contorno de tinta y sombra dura (`0 5–8px 0`); las secciones se apilan como losas redondeadas (margen negativo del tamaño del radio).
+- **Panel:** `0 1px 2px` + `0 14px 28px -16px` de selva a baja opacidad; las tarjetas de proyecto ganan sombra dura al pasar el cursor.
 
 ## Components
 
-### Buttons
-- **Primary (esmeralda):** blanco sobre #14805a, 46px de alto, radio 6px.
-- **Sun:** bosque profundo sobre luz solar; solo sobre fondos oscuros o el cierre.
-- **Ghost:** borde de 2px, para acciones secundarias.
-
-### Inputs / Fields
-Borde 1.5px #9fb0a7, radio 6px, 46px de alto; foco con anillo esmeralda. Error en alerta con texto de recuperación.
-
-### Range (listón sobre riel)
-Pulgar rectangular de 18×34px sobre un riel de 10px; en el portal, el pulgar es solar sobre riel de bosque.
-
-### Navigation
-Portal: barra bosque profundo, enlace actual subrayado en luz solar. Operación: lateral con actual en luz solar; inferior en móvil.
-
-### Tarjeta de proyecto
-Ficha blanca con nombre, cliente·localidad·responsable, barra de avance de 8px, capacidad y entrega, y selector «Mover a» accesible (alternativa al arrastre).
-
-### Instrumento de celosía (firma)
-Ventana de listones con luz solar que se desplaza según la hora, debajo curva de generación (amarillo) frente a demanda de A/A (azul) con marcador de hora y control de recorrido.
+- **Cabecera del portal:** píldora blanca flotante con contorno de tinta; sobre un hero o cabecera de color, el color sube por debajo de ella.
+- **Hero:** campo de maracuyá con la escena interactiva *SolarDay* (casa con paneles, sol que recorre el cielo y gráfico generación vs. consumo) dentro de una tarjeta tipo pegatina.
+- **Panel:** barra lateral flotante de selva con píldora amarilla activa; en móvil, barra inferior en píldora flotante.
+- **Etiquetas pegatina:** píldora de lima inclinada 3° (por ejemplo, «Día típico, curvas ilustrativas»).
+- **Carga:** `Loading` con marcadores que reutilizan la geometría real de tablas, tablero y paneles.
 
 ## Do's and Don'ts
 
-### Do:
-- **Do** usar amarillo para luz/generación y azul para consumo en todo gráfico, con leyenda.
-- **Do** etiquetar como demostración cualquier cifra o contenido comercial no real.
-- **Do** mantener objetivos táctiles de 44px o más en la operación.
-
-### Don't:
-- **Don't** anidar tarjetas ni usar degradado en texto.
-- **Don't** usar fotos de paneles de stock ni íconos genéricos de hoja o bombilla.
-- **Don't** inventar precios, clientes ni garantías.
+- Sí: campos de color a escala de página, píldoras, números grandes en Gabarito, ilustraciones planas con contorno de tinta.
+- No: degradados en texto, bordes laterales de color, tarjetas idénticas de icono + título + texto como estructura de página, blanco sobre amarillo o lima, texto sin contraste AA.
+- Ilustraciones y datos de la escena del hero son demostrativos (curvas ilustrativas); no son datos reales de ningún cliente.
