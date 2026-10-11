@@ -31,9 +31,15 @@
   padding: 12px var(--gutter) 0;
   pointer-events: none;
 }
-/* No se exige que sea el primer hijo: en la portada va antes un <script> de datos estructurados. */
-.sitehead:has(+ main > :is(.hero, .pagehead)) {
+/* La cabecera siempre flota sobre el inicio de la página. Las páginas con hero o cabecera de color dejan que su color
+   suba por debajo; las demás reservan su altura (ver .pdetail). No se usa :has(): al navegar, Next 16 conserva la
+   página anterior oculta dentro de <main> y un selector estructural la seguiría viendo. */
+.sitehead {
   margin-bottom: calc(var(--head-h) * -1);
+}
+main > .pdetail,
+main > .wrap.pdetail {
+  padding-top: calc(var(--head-h) + var(--s5));
 }
 .sitehead__bar {
   pointer-events: auto;
@@ -713,6 +719,8 @@
 .closer {
   overflow: hidden;
   isolation: isolate;
+  /* Cancela el aire de <main> y se mete bajo el pie, que se apila sobre ella como una losa más. */
+  margin-bottom: calc((var(--s7) + var(--r-xl)) * -1);
 }
 .closer__sun {
   width: 30rem;
@@ -737,18 +745,19 @@
 }
 
 /* Pie */
+/* El aire antes del pie lo pone <main>; la sección de cierre lo cancela y se mete bajo el pie redondeado. */
+.site main {
+  padding-bottom: var(--s7);
+}
 .sitefoot {
   position: relative;
-  margin-top: var(--s7);
+  z-index: 1;
+  margin-top: 0;
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   background: var(--canopy-deep);
   color: var(--on-canopy-soft);
   padding-block: var(--s7) var(--s6);
   font-size: 0.9rem;
-}
-/* Tras la sección de cierre, el pie se apila sobre ella como una losa más. */
-main:has(> .closer:last-child) + .sitefoot {
-  margin-top: calc(var(--r-xl) * -1);
 }
 .sitefoot .brand {
   color: var(--on-canopy);
