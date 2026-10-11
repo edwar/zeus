@@ -125,7 +125,7 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
           <p className="ph__sub">{a.sub}</p>
         </div>
         <div className="ph__tools">
-          <div className="field field--inline">
+          <div className="field field--inline field--search">
             <label htmlFor="pq" className="sr-only">{a.search}</label>
             <Input id="pq" type="search" placeholder={a.search} value={q} onChange={(e) => setQ(e.target.value)} />
           </div>

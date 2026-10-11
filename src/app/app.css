@@ -314,8 +314,13 @@
   }
 }
 .field--inline {
-  width: min(100%, 14rem);
+  width: 14rem;
+  max-width: 100%;
   min-width: 0;
+}
+/* El buscador de la cabecera necesita más ancho que los filtros: su texto de ayuda no debe cortarse. */
+.field--search {
+  width: 24rem;
 }
 .seg {
   display: inline-flex;
