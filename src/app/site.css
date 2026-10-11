@@ -31,7 +31,8 @@
   padding: 12px var(--gutter) 0;
   pointer-events: none;
 }
-.sitehead:has(+ main > :first-child:is(.hero, .pagehead)) {
+/* No se exige que sea el primer hijo: en la portada va antes un <script> de datos estructurados. */
+.sitehead:has(+ main > :is(.hero, .pagehead)) {
   margin-bottom: calc(var(--head-h) * -1);
 }
 .sitehead__bar {
