@@ -47,7 +47,8 @@
   padding: var(--s5) var(--gutter) calc(var(--tabs-h) + var(--s7));
   min-width: 0;
 }
-/* Barra inferior en móvil: píldora flotante */
+/* Barra inferior en móvil: píldora flotante. Todas las secciones caben sin desplazarse: las inactivas
+   muestran solo el icono y la activa muestra también su nombre. */
 .app__tabs {
   position: fixed;
   left: 10px;
@@ -55,35 +56,80 @@
   bottom: calc(10px + env(safe-area-inset-bottom));
   z-index: 40;
   height: calc(var(--tabs-h) - 6px);
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(4.9rem, 1fr);
-  gap: 4px;
+  display: flex;
   align-items: center;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 6px;
+  justify-content: space-between;
+  gap: 0;
+  padding: 5px;
   background: var(--canopy-deep);
   border-radius: var(--r-pill);
   box-shadow: var(--shadow-lift);
 }
 .app__tab {
+  flex: 0 1 2.75rem;
+  min-width: 2.75rem; /* objetivo táctil mínimo */
+  height: 100%;
+  min-height: 3rem;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  height: 100%;
+  gap: 0.4rem;
+  padding-inline: 0.4rem;
   color: var(--on-canopy-soft);
   text-decoration: none;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  min-height: 3rem;
   border-radius: var(--r-pill);
+  transition: background-color 0.15s, color 0.15s;
+}
+.app__tab svg {
+  flex: none;
+}
+/* El nombre sigue en el DOM (lectores de pantalla) pero solo se ve en la sección activa. */
+.app__tab span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 .app__tab[aria-current="page"] {
+  flex: 0 1 auto;
+  min-width: 2.75rem;
+  padding-inline: 0.8rem;
   color: var(--ink);
   background: var(--sun);
+}
+.app__tab[aria-current="page"] span {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: hidden;
+  clip: auto;
+  text-overflow: ellipsis;
+  animation: tab-label 0.25s var(--ease-out);
+}
+@keyframes tab-label {
+  from {
+    opacity: 0;
+  }
+}
+/* En pantallas muy angostas no hay lugar para el nombre: solo el icono, con la píldora amarilla. */
+@media (max-width: 23rem) {
+  .app__tab[aria-current="page"] span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    clip: rect(0 0 0 0);
+  }
+  .app__tab[aria-current="page"] {
+    flex-basis: 2.75rem;
+    padding-inline: 0.4rem;
+  }
 }
 
 @media (min-width: 62rem) {
