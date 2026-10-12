@@ -79,6 +79,9 @@ export const en: Dict = {
   },
   footer: {
     note: "Zeus · Solar energy and home automation",
+    legal: "Legal information",
+    privacy: "Privacy and personal data",
+    security: "Security",
   },
   wiz: {
     title: "Build your kit from your energy bill",
@@ -93,7 +96,8 @@ export const en: Dict = {
       analyze: "Read my bills",
       reading: "Reading your bill… this can take a few seconds.",
       manual: "I'd rather enter the data by hand",
-      privacy: "Your bill is only used to read the data and is not stored. We ignore your name, address and account number.",
+      privacy: "Your bill is sent to an AI reading service only to extract consumption and tariff; we do not store it nor extract your name, address or account number.",
+      privacyLink: "How we handle your data",
     },
     errors: {
       unsupported: "That file is not a PDF or a JPG, PNG or WEBP image.",
@@ -281,7 +285,8 @@ export const en: Dict = {
       phone: "Phone (WhatsApp)",
       country: "Country",
       city: "City",
-      consent: "I authorize the processing of my contact data to receive this quote.",
+      consent: "I authorize the processing of my contact data to receive this quote, under the",
+      consentLink: "Privacy and personal data processing policy",
       submit: "Send request",
       sending: "Sending…",
       errorGeneric: "We couldn't send the request. Please try again.",

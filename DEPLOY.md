@@ -50,6 +50,16 @@ El dominio ya está agregado al proyecto en Vercel. Falta solo el registro DNS e
 Cuando el DNS propague, Vercel emite el certificado HTTPS solo. Comprueba con `vercel domains verify zeus.cognilab.dev`.
 La app ya envía HSTS, `canonical` y `hreflang` con ese dominio.
 
+## Políticas de privacidad y seguridad (antes de publicar)
+
+El sitio publica `/es/privacy`, `/es/security` (y su versión en inglés) y `/.well-known/security.txt`. Los datos del responsable y los plazos viven en **`src/lib/legal/config.ts`**; mientras haya valores `[POR COMPLETAR: …]` las páginas los muestran resaltados en rojo y `security.txt` no se publica (responde 404).
+
+1. Completa los valores de `src/lib/legal/config.ts` (razón social, NIT, domicilio, correo para consultas y reclamos, correo de seguridad, plazos de conservación).
+2. Ejecuta `pnpm legal:check`: debe decir que no queda nada pendiente.
+3. Que un abogado revise los textos de `src/lib/legal/privacy.ts` y `security.ts` (están redactados según la Ley 1581 de 2012 y el Decreto 1377 de 2013, pero no son asesoría legal).
+4. Si cambias el código de forma que afecte a los datos (otra analítica, otro proveedor, otra finalidad), actualiza los textos y sube `LEGAL.version` y `LEGAL.updated`.
+5. Cuando haya un correo de seguridad real, activa también el reporte privado de GitHub en *Settings → Code security → Private vulnerability reporting* (lo menciona `SECURITY.md`).
+
 ## Roles
 
 | | Administrador | Gestión | Equipo |

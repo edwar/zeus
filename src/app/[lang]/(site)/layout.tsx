@@ -30,6 +30,10 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
         <div className="wrap sitefoot__in">
           <Link href={`/${lang}`} className="brand"><Logo /><span>{t.brand}</span></Link>
           <p className="sitefoot__note">{t.footer.note}</p>
+          <nav className="sitefoot__links" aria-label={t.footer.legal}>
+            <Link href={`/${lang}/privacy`}>{t.footer.privacy}</Link>
+            <Link href={`/${lang}/security`}>{t.footer.security}</Link>
+          </nav>
         </div>
       </footer>
     </div>

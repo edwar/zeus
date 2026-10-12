@@ -1,6 +1,7 @@
 "use client";
 
 import { hasBattery } from "@/lib/sizing";
+import Link from "next/link";
 import { useId, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import type { Dict } from "@/i18n";
@@ -110,7 +111,7 @@ export function QuoteRequestForm({ t, lang, lines, values: v, sizing, financing,
         </fieldset>
       )}
       {financing && <p className="wiz__hint">{t.wiz.finance.attached}</p>}
-      <label className="wiz__consent"><input type="checkbox" required /> {s.consent}</label>
+      <label className="wiz__consent"><input type="checkbox" required /> <span>{s.consent} <Link href={`/${lang}/privacy`} target="_blank" rel="noopener">{s.consentLink}</Link>.</span></label>
       <p className="field-error" role="alert" hidden={!error}>{error}</p>
       <div className="wiz__actions">
         <Button type="submit" disabled={send.isPending || disabled}>{send.isPending ? s.sending : t.wiz.kit.request}</Button>
