@@ -25,7 +25,7 @@ async function signIn(page: Page, email: string, password: string): Promise<numb
 
 async function login(page: Page, email: string, password: string) {
   expect(await signIn(page, email, password)).toBe(200);
-  await page.goto("/es/app");
+  await page.goto("/es/app/projects");
 }
 
 test.describe("contraseña", () => {
@@ -49,7 +49,6 @@ test.describe("contraseña", () => {
 
   test("con contraseña temporal solo se ve el cambio obligatorio y las APIs responden 403", async ({ page }) => {
     await login(page, account.email, account.password);
-    await page.goto("/es/app/projects");
     await expect(page.getByRole("heading", { name: "Crea tu contraseña" })).toBeVisible();
     await expect(page.locator(".app__side")).toHaveCount(0);
     const res = await page.request.get("/api/projects");
@@ -59,7 +58,6 @@ test.describe("contraseña", () => {
 
   test("valida la contraseña actual, la longitud y la confirmación; luego entra", async ({ page }) => {
     await login(page, account.email, account.password);
-    await page.goto("/es/app/projects");
     const fill = async (cur: string, next: string, conf: string) => {
       await page.locator("input[name=current]").fill(cur);
       await page.locator("input[name=next]").fill(next);
@@ -90,6 +88,7 @@ test.describe("contraseña", () => {
     await dialog.locator("input[name=confirm]").fill(NEW2);
     await dialog.getByRole("button", { name: "Cambiar contraseña" }).click();
     await expect(dialog.getByRole("status").filter({ hasText: "Contraseña cambiada" })).toBeVisible();
+    await expect(dialog).toBeHidden(); // se cierra solo tras confirmar
   });
 
   test("el enlace del correo (token) permite crear una contraseña nueva, una sola vez", async ({ page }) => {
@@ -123,7 +122,6 @@ test.describe("contraseña", () => {
 
     expect(await signIn(page, account.email, NEW1)).toBe(401);
     await login(page, account.email, TEMP2);
-    await page.goto("/es/app/projects");
     await expect(page.getByRole("heading", { name: "Crea tu contraseña" })).toBeVisible();
   });
 });

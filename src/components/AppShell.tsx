@@ -91,7 +91,7 @@ export function AppShell({ lang, t, user, children }: { lang: Locale; t: Dict; u
             <DialogTitle>{t.auth.changeTitle}</DialogTitle>
             <DialogDescription>{t.auth.resetSub}</DialogDescription>
           </DialogHeader>
-          <ChangePasswordForm t={t} />
+          <ChangePasswordForm t={t} onDone={() => setTimeout(() => setPwOpen(false), 1500)} />
         </DialogContent>
       </Dialog>
       <main id="appmain" className="app__main">{children}</main>
