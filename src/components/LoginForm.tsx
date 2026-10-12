@@ -6,6 +6,7 @@ import type { Locale } from "@/i18n/config";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export function LoginForm({ lang, t }: { lang: Locale; t: Dict }) {
   const a = t.auth;
@@ -40,7 +41,7 @@ export function LoginForm({ lang, t }: { lang: Locale; t: Dict }) {
       </div>
       <div className="field">
         <label htmlFor={`${uid}p`}>{a.password}</label>
-        <Input id={`${uid}p`} name="password" type="password" autoComplete="current-password" required />
+        <PasswordInput id={`${uid}p`} name="password" autoComplete="current-password" required showLabel={a.showPassword} hideLabel={a.hidePassword} />
       </div>
       <p className="field-error" role="alert" hidden={!error}>{error}</p>
       <Button type="submit" disabled={busy}>{busy ? a.submitting : a.submit}</Button>

@@ -349,6 +349,8 @@ export const es = {
     banned: "Esta cuenta está desactivada. Contacta a un administrador.",
     generic: "No se pudo ingresar. Intenta de nuevo.",
     signOut: "Cerrar sesión",
+    showPassword: "Mostrar contraseña",
+    hidePassword: "Ocultar contraseña",
     back: "Volver al sitio",
   },
   app: {

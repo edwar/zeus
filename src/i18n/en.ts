@@ -351,6 +351,8 @@ export const en: Dict = {
     banned: "This account is disabled. Contact an administrator.",
     generic: "Could not sign in. Please try again.",
     signOut: "Sign out",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     back: "Back to the site",
   },
   app: {
