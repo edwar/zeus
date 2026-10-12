@@ -6,7 +6,9 @@ import { safeHttpUrl } from "./url";
 import type { Spec } from "./scraper/autosolar";
 
 export const CATALOG_TAG = "catalog";
-export const PAGE_SIZE = 12;
+import { CATALOG_PAGE_SIZE } from "./catalog-page";
+
+export const PAGE_SIZE = CATALOG_PAGE_SIZE;
 
 export type CatalogItem = {
   slug: string;
@@ -45,11 +47,12 @@ const toItem = (p: Row): CatalogItem => ({
 });
 
 /** Listado público: solo productos visibles. Los agotados van al final. */
-export async function getCatalogPage(f: { q: string; category: string; manufacturer: string; page: number }) {
+export async function getCatalogPage(f: { q: string; category: string; manufacturer: string; page: number; size?: number }) {
   "use cache";
   cacheLife("minutes");
   cacheTag(CATALOG_TAG);
 
+  const size = f.size ?? PAGE_SIZE;
   const where: Prisma.ProductWhereInput = {
     active: true,
     ...(f.category && { category: f.category }),
@@ -68,11 +71,11 @@ export async function getCatalogPage(f: { q: string; category: string; manufactu
       where,
       include: { manufacturer: { select: { name: true } } },
       orderBy: [{ inStock: "desc" }, { name: "asc" }, { id: "asc" }],
-      skip: (f.page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (f.page - 1) * size,
+      take: size,
     }),
   ]);
-  return { items: rows.map(toItem), total, page: f.page, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
+  return { items: rows.map(toItem), total, page: f.page, pageSize: size, pages: Math.max(1, Math.ceil(total / size)) };
 }
 
 export async function getFacets(): Promise<Facets> {

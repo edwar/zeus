@@ -16,9 +16,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useManufacturers } from "@/hooks/useManufacturers";
 import { useProductList } from "@/hooks/useProducts";
 import { useCommission, useSetCommission, useSync } from "@/hooks/useCatalogAdmin";
+import { DataPagination } from "@/components/DataPagination";
 import { fill, money } from "@/lib/format";
 
 const ALL = "all"; // Radix no admite value="" en un ítem
+const PAGE_SIZES = [10, 25, 50, 100] as const;
 
 export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAdmin: boolean }) {
   const p = t.app.products;
@@ -28,6 +30,7 @@ export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAd
   const [manufacturerId, setManufacturerId] = useState(ALL);
   const [source, setSource] = useState(ALL);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
   const [creating, setCreating] = useState(false);
 
   // Busca 300 ms después de dejar de escribir.
@@ -37,7 +40,7 @@ export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAd
   }, [qInput]);
 
   const makers = useManufacturers();
-  const list = useProductList({ q, manufacturerId: manufacturerId === ALL ? "" : manufacturerId, source: source === ALL ? "" : source, page });
+  const list = useProductList({ q, manufacturerId: manufacturerId === ALL ? "" : manufacturerId, source: source === ALL ? "" : source, page, pageSize });
   const commission = useCommission();
   const globalPct = commission.data?.commissionPct ?? 0;
   const pages = list.data ? Math.max(1, Math.ceil(list.data.total / list.data.pageSize)) : 1;
@@ -139,11 +142,16 @@ export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAd
               </tbody>
             </table>
           </div>
-          <nav className="pager" aria-label={p.title}>
-            <Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((n) => n - 1)}>{p.prev}</Button>
-            <span role="status">{fill(p.pageOf, { page, pages, total: list.data.total })}</span>
-            <Button type="button" variant="outline" size="sm" disabled={page >= pages} onClick={() => setPage((n) => n + 1)}>{p.next}</Button>
-          </nav>
+          <DataPagination
+            page={page}
+            pages={pages}
+            total={list.data.total}
+            pageSize={pageSize}
+            pageSizes={PAGE_SIZES}
+            labels={{ rowsPerPage: p.rowsPerPage, prev: p.prev, next: p.next, pageOf: p.pageOf, goTo: p.goTo, nav: p.title }}
+            onPageChange={setPage}
+            onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
+          />
         </>
       )}
     </div>
