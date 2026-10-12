@@ -363,6 +363,7 @@ export const es = {
     forgotSend: "Enviar enlace",
     forgotSending: "Enviando…",
     forgotSent: "Si ese correo tiene una cuenta, te enviamos un enlace que vale 30 minutos. Revisa también el correo no deseado.",
+    forgotError: "No se pudo enviar el enlace. Intenta de nuevo.",
     forgotOff: "El envío de correos aún no está activo. Pide a un administrador que restablezca tu contraseña.",
     resetTitle: "Crea una contraseña nueva",
     resetSub: "Elige una contraseña de al menos 10 caracteres. Cerraremos tus otras sesiones.",

@@ -365,6 +365,7 @@ export const en: Dict = {
     forgotSend: "Send link",
     forgotSending: "Sending…",
     forgotSent: "If that email has an account, we sent a link that is valid for 30 minutes. Check your spam folder too.",
+    forgotError: "Could not send the link. Please try again.",
     forgotOff: "Email sending is not active yet. Ask an administrator to reset your password.",
     resetTitle: "Create a new password",
     resetSub: "Choose a password of at least 10 characters. We'll sign out your other sessions.",

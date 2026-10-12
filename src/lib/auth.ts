@@ -15,11 +15,13 @@ export const auth = betterAuth({
   // El dominio real (zeus.cognilab.dev en producción). BETTER_AUTH_URL tiene prioridad si está definida.
   baseURL: process.env.BETTER_AUTH_URL || SITE_URL,
   // Orígenes desde los que se aceptan peticiones con sesión: el dominio propio, la URL de producción que asigna Vercel
-  // (útil mientras el dominio propio no apunta aún) y, en previews, la URL del despliegue.
+  // (útil mientras el dominio propio no apunta aún) y, en previews, la URL del despliegue y la de su rama.
   trustedOrigins: [
     SITE_URL,
     ...(process.env.VERCEL_PROJECT_PRODUCTION_URL ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    // El alias estable de la rama (zeus-git-<rama>-….vercel.app) es el que se abre en los previews, no la URL única.
+    ...(process.env.VERCEL_BRANCH_URL ? [`https://${process.env.VERCEL_BRANCH_URL}`] : []),
   ],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {

@@ -21,7 +21,7 @@ export function ForgotPasswordForm({ lang, t }: { lang: Locale; t: Dict }) {
     const { error } = await authClient.requestPasswordReset({ email: String(new FormData(e.currentTarget).get("email")).trim(), redirectTo: `/${lang}/reset-password` });
     setBusy(false);
     // La respuesta es la misma exista o no la cuenta: nunca se revela si el correo está registrado.
-    if (error) return setError(error.status === 429 ? a.tooMany : a.generic);
+    if (error) return setError(error.status === 429 ? a.tooMany : a.forgotError);
     setSent(true);
   }
 
