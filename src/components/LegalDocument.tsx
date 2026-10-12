@@ -8,7 +8,7 @@ import type { Block, LegalDoc } from "@/lib/legal/types";
 const TOKEN = /(\[[^\]]+\]\([^)]+\)|\[POR COMPLETAR[^\]]*\])/g;
 
 function Inline({ text, lang }: { text: string; lang: Locale }) {
-  const filled = fill(text, legalVars());
+  const filled = fill(text, legalVars(lang));
   return (
     <>
       {filled.split(TOKEN).map((part, i) => {

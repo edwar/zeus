@@ -16,29 +16,29 @@ export const LEGAL = {
 
   controller: {
     /** Persona natural o jurídica responsable de las bases de datos. */
-    name: todo("razón social o nombre completo del responsable"),
+    name: "Edwar Orlando Amaya Diaz",
     /** NIT o documento de identidad. */
-    id: todo("NIT o documento de identidad"),
-    address: todo("dirección física del responsable"),
-    city: todo("ciudad y país"),
-    phone: todo("teléfono de contacto (opcional)"),
+    id: "C.C. 1075627303",
+    address: "Calle 1 # 11-30",
+    city: "Tocaima, Cundinamarca, Colombia",
+    phone: "+57 317 522 7672",
     /** Canal oficial para consultas y reclamos sobre datos personales (derechos de los titulares). */
-    privacyEmail: todo("correo para consultas y reclamos de datos personales"),
+    privacyEmail: "edwaramayadiaz@gmail.com",
     /** Persona o área que atiende las solicitudes de los titulares. */
-    privacyOwner: todo("persona o área que atiende las solicitudes (p. ej. «Atención al titular»)"),
+    privacyOwner: "Edwar Orlando Amaya Diaz",
   },
 
   security: {
     /** Correo para reportar vulnerabilidades (también se publica en /.well-known/security.txt). */
-    email: todo("correo para reportar vulnerabilidades"),
+    email: "edwaramayadiaz@gmail.com",
     /** Plazo (días hábiles) en que se compromete a acusar recibo de un reporte. */
-    ackBusinessDays: todo("días hábiles para acusar recibo (p. ej. 3)"),
+    ackBusinessDays: "3",
   },
 
-  /** Cuánto se conservan los datos. Decisión del responsable; la ley exige que sea el necesario para la finalidad. */
+  /** Cuánto se conservan los datos (por idioma). Decisión del responsable; la ley exige que sea el necesario para la finalidad. */
   retention: {
-    quotes: todo("meses de conservación de solicitudes y cotizaciones"),
-    accounts: todo("plazo de conservación de cuentas del equipo tras su baja"),
+    quotes: { es: "durante 24 meses desde la última interacción", en: "for 24 months from the last interaction" },
+    accounts: { es: "durante 12 meses después de la baja de la cuenta", en: "for 12 months after the account is closed" },
   },
 
   site: "https://zeus.cognilab.dev",
@@ -55,7 +55,7 @@ export function pendingFields(obj: Record<string, unknown> = LEGAL, prefix = "")
 }
 
 /** Valores listos para `fill()` dentro de los textos: {name}, {id}, {address}… */
-export const legalVars = (): Record<string, string> => ({
+export const legalVars = (lang: "es" | "en" = "es"): Record<string, string> => ({
   name: LEGAL.controller.name,
   id: LEGAL.controller.id,
   address: LEGAL.controller.address,
@@ -65,8 +65,8 @@ export const legalVars = (): Record<string, string> => ({
   privacyOwner: LEGAL.controller.privacyOwner,
   securityEmail: LEGAL.security.email,
   ackDays: LEGAL.security.ackBusinessDays,
-  retentionQuotes: LEGAL.retention.quotes,
-  retentionAccounts: LEGAL.retention.accounts,
+  retentionQuotes: LEGAL.retention.quotes[lang],
+  retentionAccounts: LEGAL.retention.accounts[lang],
   site: LEGAL.site,
   version: LEGAL.version,
 });
