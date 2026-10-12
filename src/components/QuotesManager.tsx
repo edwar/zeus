@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
-import { money } from "@/lib/format";
+import { money, num } from "@/lib/format";
 import { formatPhone, whatsappUrl } from "@/lib/phone";
 import { distanceKm } from "@/lib/service-area";
 import { useTeams } from "@/hooks/useTeams";
@@ -234,6 +234,7 @@ export function QuotesList({ t, lang }: { t: Dict; lang: Locale }) {
             total={data.total}
             pageSize={pageSize}
             pageSizes={PAGE_SIZES}
+            lang={lang}
             labels={{ ...t.app.pager, pageOf: q.pageOf, nav: q.title }}
             onPageChange={setPage}
             onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
@@ -252,8 +253,8 @@ export function QuoteDetailView({ t, lang, id }: { t: Dict; lang: Locale; id: st
   if (isPending) return <div className="pb">{back}<Loading label={q.loading} variant="detail" /></div>;
   if (isError || !r) return <div className="pb">{back}<p role="alert">{q.notFound}</p></div>;
   const rows: [string, string][] = [
-    [q.monthlyKwh, `${r.bill.monthlyKwh} kWh`],
-    [q.tariff, r.bill.tariff == null ? "—" : `${new Intl.NumberFormat(lang, { maximumFractionDigits: 2 }).format(r.bill.tariff)} ${r.currency} / kWh`],
+    [q.monthlyKwh, `${num(lang, r.bill.monthlyKwh)} kWh`],
+    [q.tariff, r.bill.tariff == null ? "—" : `${money(lang, r.bill.tariff, r.currency, 2)} / kWh`],
     [q.operator, r.bill.operator ?? "—"],
     [q.city, [r.bill.municipality, r.bill.department].filter(Boolean).join(", ") || "—"],
     [q.connection, r.bill.connection ? (t.wiz.review.connections[r.bill.connection as keyof typeof t.wiz.review.connections] ?? r.bill.connection) : "—"],
@@ -307,7 +308,7 @@ export function QuoteDetailView({ t, lang, id }: { t: Dict; lang: Locale; id: st
           <h2 className="panel__title">{q.sizing}</h2>
           <dl className="pspecs">
             <div><dt>{q.kwp}</dt><dd>{r.sizing.kwp} kWp</dd></div>
-            <div><dt>{q.generation}</dt><dd>{Math.round(r.sizing.monthlySolarKwh)} kWh</dd></div>
+            <div><dt>{q.generation}</dt><dd>{num(lang, Math.round(r.sizing.monthlySolarKwh))} kWh</dd></div>
             {r.sizing.monthlySavings != null && <div><dt>{q.savings}</dt><dd>{money(lang, r.sizing.monthlySavings, r.currency)}</dd></div>}
             {r.sizing.batteryNominalKwh > 0 && <div><dt>{q.battery}</dt><dd>{r.sizing.batteryNominalKwh} kWh</dd></div>}
           </dl>

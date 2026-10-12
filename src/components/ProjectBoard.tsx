@@ -229,6 +229,7 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
             total={filtered.length}
             pageSize={pageSize}
             pageSizes={PAGE_SIZES}
+            lang={lang}
             labels={{ ...t.app.pager, pageOf: a.pageOf, nav: a.title }}
             onPageChange={setPage}
             onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}

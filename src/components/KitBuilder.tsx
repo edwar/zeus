@@ -8,7 +8,7 @@ import type { ExtraKey } from "@/lib/install-kit";
 import type { Sizing } from "@/lib/sizing";
 import { hasBattery, paybackYears } from "@/lib/sizing";
 import { phasesOf, type ReviewValues } from "@/lib/wizard";
-import { fill, money } from "@/lib/format";
+import { fill, money, num } from "@/lib/format";
 import { useKit } from "@/hooks/useKit";
 import { useKitOptions } from "@/hooks/useKitOptions";
 import { Button } from "@/components/ui/button";
@@ -123,7 +123,7 @@ export function KitBuilder({ t, lang, values, sizing, onBack, onSent }: Props) {
         <dl className="wiz__facts">
           <div><dt>{k.kwp}</dt><dd>{sizing.kwp} kWp</dd></div>
           {kit && kit.panelCount > 0 && <div><dt>{k.array}</dt><dd>{kit.arrayKwp} kWp <small>{fill(k.panelsN, { n: kit.panelCount })}</small></dd></div>}
-          <div><dt>{k.gen}</dt><dd>{Math.round(sizing.monthlySolarKwh)} kWh <small>{k.perMonth}</small></dd></div>
+          <div><dt>{k.gen}</dt><dd>{num(lang, Math.round(sizing.monthlySolarKwh))} kWh <small>{k.perMonth}</small></dd></div>
           {sizing.monthlySavings != null && <div><dt>{k.savings}</dt><dd>{money(lang, sizing.monthlySavings, "COP")} <small>{k.perMonth}</small></dd></div>}
           <div><dt>{k.inverterRange}</dt><dd>{sizing.inverterKw.min}–{sizing.inverterKw.max} kW</dd></div>
           {hasBattery(values.systemType) && <div><dt>{k.battery}</dt><dd>{sizing.batteryNominalKwh} kWh</dd></div>}

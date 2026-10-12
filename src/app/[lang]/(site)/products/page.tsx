@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, type Locale } from "@/i18n/config";
 import { getDict } from "@/i18n";
 import { getCatalogPage, getFacets } from "@/lib/catalog";
-import { fill } from "@/lib/format";
+import { fill, num } from "@/lib/format";
 import { CATALOG_PAGE_SIZES, parseCatalogSize } from "@/lib/catalog-page";
 import { CatalogPagination } from "@/components/CatalogPagination";
 import { ProductCard } from "@/components/ProductCard";
@@ -51,7 +51,7 @@ async function Listing({ params, searchParams }: Pick<PageProps<"/[lang]/product
       <div className="on-light">
         <div className="wrap cat">
           <ProductFilters t={t} lang={lang} facets={facets} initial={{ ...f, size }} />
-          <p className="shopcount" role="status">{fill(s.results, { total: data.total })}</p>
+          <p className="shopcount" role="status">{fill(s.results, { total: num(lang, data.total) })}</p>
           {data.items.length === 0 ? (
             <div className="shopempty">
               <p>{s.empty}</p>

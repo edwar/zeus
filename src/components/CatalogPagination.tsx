@@ -34,6 +34,7 @@ export function CatalogPagination({ lang, page, pages, total, pageSize, filters,
       pageSize={pageSize}
       pageSizes={CATALOG_PAGE_SIZES}
       labels={labels}
+      lang={lang}
       hrefFor={(p) => href(p)}
       onPageSizeChange={(size) => router.push(href(1, size), { scroll: false })}
     />

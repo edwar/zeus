@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
-import { money } from "@/lib/format";
+import { money, num } from "@/lib/format";
 import { formatPhone, whatsappUrl } from "@/lib/phone";
 import { kitMonthlyKwh, stages } from "@/data/types";
 import {
@@ -125,7 +125,7 @@ function Summary({ t, lang, p, onGoto }: { t: Dict; lang: Locale; p: Detail; onG
           <dl className="kv">
             <div><dt>{d.client}</dt><dd>{p.client}</dd></div>
             <div><dt>{t.app.projects.size}</dt><dd>{p.kwp} kWp</dd></div>
-            <div><dt>{d.est}</dt><dd>{kitMonthlyKwh(p.kwp)} kWh</dd></div>
+            <div><dt>{d.est}</dt><dd>{num(lang, kitMonthlyKwh(p.kwp))} kWh</dd></div>
             <div><dt>{t.app.projects.owner}</dt><dd>{p.owner}</dd></div>
             {p.installFee != null && <div><dt>{d.installFee}</dt><dd>{money(lang, p.installFee, "COP")}</dd></div>}
             {p.teamDetail && p.teamDetail.members.length > 0 && <div><dt>{d.members}</dt><dd>{p.teamDetail.members.join(", ")}</dd></div>}

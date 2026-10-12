@@ -22,7 +22,7 @@ type Props = {
 export function SavingsPanel({ t, lang, monthlyKwh, tariff, monthlySavings, kwp, total }: Props) {
   const s = t.sim;
   const uid = useId().replace(/:/g, "");
-  const num = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
+  const num = new Intl.NumberFormat(lang, { maximumFractionDigits: 1, useGrouping: "always" });
   const cop = (n: number) => money(lang, n, "COP");
 
   if (!tariff || !monthlySavings || monthlySavings <= 0) {
