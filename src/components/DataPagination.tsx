@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { fill } from "@/lib/format";
+import { fill, num } from "@/lib/format";
 
 export type PaginationLabels = {
   /** «Filas por página» */
@@ -26,6 +26,8 @@ type Props = {
   pageSize: number;
   pageSizes: readonly number[];
   labels: PaginationLabels;
+  /** Idioma para formatear los números del resumen (p. ej. 1.297) */
+  lang: string;
   onPageChange?: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   /** Si se da, los números y los botones de página son enlaces (rastreables, para listados del servidor). */
@@ -43,7 +45,7 @@ export function pageWindow(page: number, pages: number, size = 3): number[] {
  * Paginador de listados: filas por página, anterior/siguiente y tres páginas intermedias (shadcn/ui Pagination).
  * Sirve para listados del cliente (`onPageChange`) y del servidor (`hrefFor`, con enlaces reales).
  */
-export function DataPagination({ page, pages, total, pageSize, pageSizes, labels, onPageChange, onPageSizeChange, hrefFor }: Props) {
+export function DataPagination({ page, pages, total, pageSize, pageSizes, labels, lang, onPageChange, onPageSizeChange, hrefFor }: Props) {
   const go = (n: number) => onPageChange?.(n);
   const control = (n: number, content: React.ReactNode, props: { disabled?: boolean } = {}) =>
     hrefFor && !props.disabled ? (
@@ -69,7 +71,7 @@ export function DataPagination({ page, pages, total, pageSize, pageSizes, labels
         </Select>
       </div>
 
-      <p className="dp__summary" role="status">{fill(labels.pageOf, { page, pages, total })}</p>
+      <p className="dp__summary" role="status">{fill(labels.pageOf, { page: num(lang, page), pages: num(lang, pages), total: num(lang, total) })}</p>
 
       <Pagination aria-label={labels.nav} className="dp__nav mx-0 w-auto">
         <PaginationContent>
@@ -80,7 +82,7 @@ export function DataPagination({ page, pages, total, pageSize, pageSizes, labels
           </PaginationItem>
           {pageWindow(page, pages).map((n) => (
             <PaginationItem key={n}>
-              <PaginationLink asChild isActive={n === page} aria-label={fill(labels.goTo, { page: n })}>
+              <PaginationLink asChild isActive={n === page} aria-label={fill(labels.goTo, { page: num(lang, n) })}>
                 {control(n, n)}
               </PaginationLink>
             </PaginationItem>

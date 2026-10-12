@@ -17,7 +17,7 @@ import { useManufacturers } from "@/hooks/useManufacturers";
 import { useProductList } from "@/hooks/useProducts";
 import { useCommission, useSetCommission, useSync } from "@/hooks/useCatalogAdmin";
 import { DataPagination } from "@/components/DataPagination";
-import { fill, money } from "@/lib/format";
+import { fill, money, num } from "@/lib/format";
 
 const ALL = "all"; // Radix no admite value="" en un ítem
 const PAGE_SIZES = [10, 25, 50, 100] as const;
@@ -67,7 +67,7 @@ export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAd
         </DialogContent>
       </Dialog>
 
-      {isAdmin && <AdminPanel t={t} />}
+      {isAdmin && <AdminPanel t={t} lang={lang} />}
 
       <div className="ph__tools ptools">
         <div className="field field--inline">
@@ -148,6 +148,7 @@ export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAd
             total={list.data.total}
             pageSize={pageSize}
             pageSizes={PAGE_SIZES}
+            lang={lang}
             labels={{ rowsPerPage: p.rowsPerPage, prev: p.prev, next: p.next, pageOf: p.pageOf, goTo: p.goTo, nav: p.title }}
             onPageChange={setPage}
             onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
@@ -159,7 +160,7 @@ export function ProductsList({ t, lang, isAdmin }: { t: Dict; lang: Locale; isAd
 }
 
 /** Solo administradores: comisión global y sincronización con Autosolar. */
-function AdminPanel({ t }: { t: Dict }) {
+function AdminPanel({ t, lang }: { t: Dict; lang: Locale }) {
   const p = t.app.products;
   const uid = useId().replace(/:/g, "");
   const commission = useCommission();
@@ -175,7 +176,7 @@ function AdminPanel({ t }: { t: Dict }) {
     if (!Number.isFinite(n) || n < 0) return;
     setMsg("");
     setCommission.mutate(n, {
-      onSuccess: (r) => { setValue(null); setMsg(fill(p.saved, { n: r.repriced })); },
+      onSuccess: (r) => { setValue(null); setMsg(fill(p.saved, { n: num(lang, r.repriced) })); },
       onError: () => setMsg(p.saveError),
     });
   }
@@ -193,10 +194,10 @@ function AdminPanel({ t }: { t: Dict }) {
 
       <div className="apanel__sync">
         <Button type="button" variant="outline" size="sm" onClick={sync.start} disabled={sync.running}>
-          {sync.running ? fill(p.syncing, { done: sync.step?.cursor ?? 0, total: sync.step?.total ?? "…" }) : p.sync}
+          {sync.running ? fill(p.syncing, { done: num(lang, sync.step?.cursor ?? 0), total: sync.step ? num(lang, sync.step.total) : "…" }) : p.sync}
         </Button>
         {sync.step?.done && !sync.running && (
-          <p role="status">{fill(p.syncDone, { created: sync.step.created, updated: sync.step.updated, failed: sync.step.failed })}</p>
+          <p role="status">{fill(p.syncDone, { created: num(lang, sync.step.created), updated: num(lang, sync.step.updated), failed: num(lang, sync.step.failed) })}</p>
         )}
         {sync.error && <p role="alert" className="field-error">{p.syncError}</p>}
       </div>

@@ -18,6 +18,23 @@ test.describe("sitio público", () => {
     expect(res?.status()).toBe(200);
   });
 
+  // En «es», Intl no agrupa los números de 4 cifras ("4000" pero "98.500"): se fuerza el separador de miles.
+  test("catálogo: todos los precios y el contador llevan separador de miles", async ({ page }) => {
+    await page.goto("/es/products");
+    await expect(page.locator(".pcard").first()).toBeVisible();
+    const prices = await page.locator(".pcard__price").allInnerTexts();
+    expect(prices.length).toBeGreaterThan(5);
+    for (const price of prices) {
+      const text = price.replace(/\u00a0/g, " ").trim();
+      // Con el símbolo del peso: «$ 98.500». Nunca un número de 4 o más cifras seguidas sin puntos.
+      expect(text, `precio «${text}»`).not.toMatch(/(^|[^.\d])\d{4,}(?![.\d])/);
+      expect(text, `precio «${text}»`).toMatch(/^\$\s?\d/); // símbolo del peso: «$ 98.500»
+    }
+    // 1.297 productos, no 1297 (si hay 1000 o más).
+    const count = (await page.locator(".shopcount").innerText()).replace(/\u00a0/g, " ");
+    expect(count).not.toMatch(/(^|[^.\d])\d{4,}(?![.\d])/);
+  });
+
   test("simulador: avanzar sin datos muestra errores de validación", async ({ page }) => {
     await page.goto("/es/simulator");
     await manualEntry(page);
