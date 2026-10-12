@@ -135,20 +135,22 @@ model FieldTask {
 }
 
 model User {
-  id            String       @id
-  name          String
-  email         String
-  emailVerified Boolean      @default(false)
-  image         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  role          String?
-  banned        Boolean?     @default(false)
-  banReason     String?
-  banExpires    DateTime?
-  sessions      Session[]
-  accounts      Account[]
-  teams         TeamMember[]
+  id                 String       @id
+  name               String
+  email              String
+  emailVerified      Boolean      @default(false)
+  image              String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  role               String?
+  banned             Boolean?     @default(false)
+  banReason          String?
+  banExpires         DateTime?
+  /// Contraseña temporal: la cuenta debe cambiarla antes de usar la plataforma (se activa al crearla o restablecerla un admin).
+  mustChangePassword Boolean      @default(false)
+  sessions           Session[]
+  accounts           Account[]
+  teams              TeamMember[]
 
   @@unique([email])
   @@map("user")
@@ -355,7 +357,7 @@ model QuoteRequest {
   // Preferencia del cliente cuando hay equipo en su zona: zeus = que Zeus asigne uno; own = trae su propio instalador
   installerChoice String?
   // Si el cliente simuló financiar el kit: parámetros y resultado recalculado en el servidor (referencial, no es un crédito aprobado)
-  financing     Json?
+  financing       Json?
   teamId          String?
   team            Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
   items           QuoteItem[]

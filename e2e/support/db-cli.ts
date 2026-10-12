@@ -16,6 +16,9 @@ async function cleanup() {
   await prisma.project.deleteMany({ where: { quoteId: { in: quotes.map((q) => q.id) } } });
   await prisma.quoteRequest.deleteMany({ where: { id: { in: quotes.map((q) => q.id) } } });
   await prisma.team.deleteMany({ where: { name: { startsWith: "E2E " } } });
+  await prisma.verification.deleteMany({ where: { identifier: { startsWith: "reset-password:e2e-reset-" } } });
+  // Los límites de intentos de cambio/restablecimiento se guardan en la base: se reinician para que la serie se pueda repetir.
+  await prisma.rateLimit.deleteMany({ where: { OR: ["/change-password", "/request-password-reset", "/reset-password"].map((path) => ({ key: { endsWith: path } })) } });
   await prisma.user.deleteMany({ where: { email: E2E_EMAIL } });
 }
 
@@ -23,6 +26,25 @@ async function createUsers() {
   for (const u of Object.values(USERS)) {
     await auth.api.createUser({ body: { email: u.email, password: PASSWORD, name: u.name, role: u.role } });
   }
+  // Toda cuenta que crea un admin nace con contraseña temporal; las de prueba ya entran a la plataforma.
+  await prisma.user.updateMany({ where: { email: { in: Object.values(USERS).map((u) => u.email) } }, data: { mustChangePassword: false } });
+}
+
+const TEMP_USER = { name: "E2E Temporal", email: "e2e-temp@example.com" };
+const TEMP_PASSWORD = "E2e-Temporal-12345";
+
+/** Cuenta con contraseña temporal (la marca la pone el hook de creación). Imprime su correo y contraseña. */
+async function createTempUser() {
+  await auth.api.createUser({ body: { ...TEMP_USER, password: TEMP_PASSWORD, role: "equipo" } });
+  console.log(JSON.stringify({ ...TEMP_USER, password: TEMP_PASSWORD }));
+}
+
+/** Token de restablecimiento válido para la cuenta temporal de prueba (equivale al del correo). Imprime el token. */
+async function createResetToken() {
+  const user = await prisma.user.findUniqueOrThrow({ where: { email: TEMP_USER.email } });
+  const token = `e2e-reset-${Date.now()}`;
+  await prisma.verification.create({ data: { id: token, identifier: `reset-password:${token}`, value: user.id, expiresAt: new Date(Date.now() + 10 * 60_000) } });
+  console.log(token);
 }
 
 
@@ -81,7 +103,7 @@ async function cleanupBulk() {
   await prisma.quoteRequest.deleteMany({ where: { id: { startsWith: "e2e-bulkq-" } } });
 }
 
-const actions = { cleanup, createUsers, seedBulk, cleanupBulk } as const;
+const actions = { cleanup, createUsers, createTempUser, createResetToken, seedBulk, cleanupBulk } as const;
 const action = process.argv[2] as keyof typeof actions;
 if (!actions[action]) {
   console.error(`Acción desconocida: ${action}`);

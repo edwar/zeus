@@ -2,7 +2,8 @@
 
 import { useId, useState } from "react";
 import type { Dict } from "@/i18n";
-import { type Role, useCreateUser, useSetBanned, useSetRole, useUsers } from "@/hooks/useUsers";
+import { fill } from "@/lib/format";
+import { type Role, useCreateUser, useResetPassword, useSetBanned, useSetRole, useUsers } from "@/hooks/useUsers";
 import { ROLES, normalizeRole } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
@@ -17,6 +18,9 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
   const create = useCreateUser();
   const setRole = useSetRole();
   const setBanned = useSetBanned();
+  const resetPw = useResetPassword();
+  const [resetFor, setResetFor] = useState<{ id: string; name: string } | null>(null);
+  const [resetError, setResetError] = useState("");
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [formError, setFormError] = useState("");
@@ -43,6 +47,17 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
         },
         onError: (err) => setFormError((err as { code?: string }).code === "USER_ALREADY_EXISTS" ? u.exists : u.actionError),
       },
+    );
+  }
+
+  function onReset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!resetFor) return;
+    const form = e.currentTarget;
+    setResetError("");
+    resetPw.mutate(
+      { userId: resetFor.id, password: String(new FormData(form).get("password")) },
+      { onSuccess: () => { form.reset(); setResetFor(null); setMsg(u.resetDone); }, onError: () => setResetError(u.actionError) },
     );
   }
 
@@ -79,7 +94,7 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
           </div>
           <div className="field">
             <label htmlFor={`${uid}p`}>{u.password}</label>
-            <Input id={`${uid}p`} name="password" type="text" minLength={8} autoComplete="off" required aria-describedby={`${uid}h`} />
+            <Input id={`${uid}p`} name="password" type="text" minLength={10} autoComplete="off" required aria-describedby={`${uid}h`} />
             <span id={`${uid}h`} className="uform__hint">{u.passwordHint}</span>
           </div>
           <div className="field">
@@ -99,6 +114,27 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
             <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{u.cancel}</Button>
           </div>
         </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={resetFor !== null} onOpenChange={(v) => { if (!v) { setResetFor(null); setResetError(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{u.resetTitle}</DialogTitle>
+            <DialogDescription>{fill(u.resetDesc, { name: resetFor?.name ?? "" })}</DialogDescription>
+          </DialogHeader>
+          <form className="uform uform--modal" onSubmit={onReset}>
+            <div className="field">
+              <label htmlFor={`${uid}rp`}>{u.password}</label>
+              <Input id={`${uid}rp`} name="password" type="text" minLength={10} maxLength={128} autoComplete="off" required aria-describedby={`${uid}rh`} />
+              <span id={`${uid}rh`} className="uform__hint">{u.passwordHint}</span>
+            </div>
+            <p className="field-error" role="alert" hidden={!resetError}>{resetError}</p>
+            <div className="uform__actions">
+              <Button type="submit" size="sm" disabled={resetPw.isPending}>{resetPw.isPending ? u.resetting : u.resetSubmit}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setResetFor(null)}>{u.cancel}</Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -143,6 +179,9 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
                     </td>
                     <td>{user.banned ? u.disabled : u.active}</td>
                     <td>
+                      <Button type="button" variant="outline" size="sm" aria-haspopup="dialog" aria-label={`${u.reset}: ${label}`} disabled={self} onClick={() => setResetFor({ id: user.id, name: user.name })}>
+                        {u.reset}
+                      </Button>{" "}
                       <Button
                         type="button"
                         variant="outline"

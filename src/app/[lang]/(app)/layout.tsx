@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { hasLocale, type Locale } from "@/i18n/config";
 import { getDict } from "@/i18n";
 import { AppShell } from "@/components/AppShell";
+import { ForcedPasswordChange } from "@/components/ForcedPasswordChange";
 import { getSession } from "@/lib/session";
 import { normalizeRole } from "@/lib/roles";
 
@@ -11,6 +12,7 @@ import { normalizeRole } from "@/lib/roles";
 async function Authed({ lang, children }: { lang: Locale; children: React.ReactNode }) {
   const session = await getSession();
   if (!session) redirect(`/${lang}/login`);
+  if (session.user.mustChangePassword) return <ForcedPasswordChange lang={lang} t={getDict(lang)} />;
   const { name, role } = session.user;
   return <AppShell lang={lang} t={getDict(lang)} user={{ name, role: normalizeRole(role) }}>{children}</AppShell>;
 }

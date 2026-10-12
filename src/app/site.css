@@ -1036,9 +1036,15 @@ main > .pagehead + * {
   display: grid;
   gap: var(--s4);
 }
-.auth__back {
+.auth__back,
+.auth__forgot {
   font-size: 0.9rem;
   text-underline-offset: 3px;
+}
+.auth__forgot {
+  justify-self: start;
+  margin-top: calc(var(--s2) * -1);
+  font-weight: 600;
 }
 
 /* Catálogo de productos */
