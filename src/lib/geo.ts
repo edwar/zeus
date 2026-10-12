@@ -1,7 +1,7 @@
 import { prisma } from "./prisma";
 import { ipHashOf } from "./ratelimit";
 
-export const UA = "ZeusSolarSimulator/1.0 (+https://zeus.example)";
+export const UA = "ZeusSolarSimulator/1.0 (+https://zeus.cognilab.dev)";
 
 /** Contador por IP y ventana fija usando la tabla `rateLimit`. Devuelve true si aún hay cupo. */
 export async function allow(req: Request, name: string, max: number, windowSec: number): Promise<boolean> {

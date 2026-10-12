@@ -1,16 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import type { Dict } from "@/i18n";
+import type { Locale } from "@/i18n/config";
 import type { BillData } from "@/lib/ai/bill";
 import { MAX_FILES, MAX_TOTAL_BYTES, prepareFile } from "@/lib/image";
 import { Button } from "@/components/ui/button";
 
 const ACCEPT = "application/pdf,image/jpeg,image/png,image/webp";
 
-type Props = { t: Dict; onExtracted: (bill: BillData) => void; onManual: () => void };
+type Props = { t: Dict; lang: Locale; onExtracted: (bill: BillData) => void; onManual: () => void };
 
-export function BillUpload({ t, onExtracted, onManual }: Props) {
+export function BillUpload({ t, lang, onExtracted, onManual }: Props) {
   const u = t.wiz.upload;
   const e = t.wiz.errors;
   const uid = useId().replace(/:/g, "");
@@ -80,7 +82,7 @@ export function BillUpload({ t, onExtracted, onManual }: Props) {
         <Button type="button" onClick={analyze} disabled={busy || files.length === 0}>{busy ? u.reading : u.analyze}</Button>
         <button type="button" className="wiz__link" onClick={onManual} disabled={busy}>{u.manual}</button>
       </div>
-      <p className="wiz__privacy">{u.privacy}</p>
+      <p className="wiz__privacy">{u.privacy} <Link href={`/${lang}/privacy`} target="_blank" rel="noopener">{u.privacyLink}</Link>.</p>
     </div>
   );
 }

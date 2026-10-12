@@ -69,7 +69,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
 
       <div className="wiz__panel">
         <h3 ref={heading} tabIndex={-1} className="wiz__title">{titles[step]}</h3>
-        {step === "upload" && <BillUpload t={t} onExtracted={onExtracted} onManual={() => setStep("review")} />}
+        {step === "upload" && <BillUpload t={t} lang={lang} onExtracted={onExtracted} onManual={() => setStep("review")} />}
         {step === "review" && (
           <BillReview
             t={t}
