@@ -17,7 +17,8 @@
     "db:migrate-images": "node --import tsx prisma/migrate-images.ts",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "e2e:headed": "playwright test --headed"
+    "e2e:headed": "playwright test --headed",
+    "legal:check": "node --import tsx scripts/legal-check.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1148.0",

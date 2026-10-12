@@ -77,6 +77,9 @@ export const es = {
   },
   footer: {
     note: "Zeus · Energía solar y domótica",
+    legal: "Información legal",
+    privacy: "Privacidad y datos personales",
+    security: "Seguridad",
   },
   wiz: {
     title: "Arma tu kit con tu factura de energía",
@@ -91,7 +94,8 @@ export const es = {
       analyze: "Leer mis facturas",
       reading: "Leyendo tu factura… puede tardar unos segundos.",
       manual: "Prefiero ingresar los datos a mano",
-      privacy: "Tu factura se usa solo para leer los datos y no se guarda. Ignoramos nombre, dirección y número de cuenta.",
+      privacy: "Tu factura se envía a un servicio de lectura con IA solo para extraer el consumo y la tarifa; no la guardamos ni extraemos tu nombre, dirección o número de cuenta.",
+      privacyLink: "Cómo tratamos tus datos",
     },
     errors: {
       unsupported: "Ese archivo no es un PDF ni una imagen JPG, PNG o WEBP.",
@@ -279,7 +283,8 @@ export const es = {
       phone: "Teléfono (WhatsApp)",
       country: "País",
       city: "Ciudad",
-      consent: "Autorizo el tratamiento de mis datos de contacto para recibir esta cotización.",
+      consent: "Autorizo el tratamiento de mis datos de contacto para recibir esta cotización, conforme a la",
+      consentLink: "Política de privacidad y tratamiento de datos personales",
       submit: "Enviar solicitud",
       sending: "Enviando…",
       errorGeneric: "No pudimos enviar la solicitud. Inténtalo de nuevo.",
