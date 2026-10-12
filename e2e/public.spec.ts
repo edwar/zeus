@@ -36,3 +36,39 @@ test.describe("sitio público", () => {
     }
   });
 });
+
+test.describe("escena del hero", () => {
+  test("cada tipo de lugar tiene su propio edificio", async ({ page }) => {
+    await page.goto("/es");
+    const scene = page.locator(".sd__svg");
+    await expect(scene.locator("[data-building]")).toHaveAttribute("data-building", "home");
+    for (const [label, building] of [["Oficina", "office"], ["Local comercial", "shop"], ["Taller", "workshop"], ["Casa", "home"]] as const) {
+      await page.getByRole("radio", { name: label }).click();
+      await expect(scene.locator("[data-building]")).toHaveCount(1);
+      await expect(scene.locator("[data-building]")).toHaveAttribute("data-building", building);
+    }
+  });
+
+  // Con «reducir movimiento» una transición CSS de 0.01ms congelaba el sol y los puntos del gráfico (cx/cy son propiedades
+  // CSS): el atributo cambiaba pero el valor pintado se quedaba en el inicial.
+  test("con movimiento reducido el sol y los puntos siguen a la hora", async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    await page.goto("/es");
+    await page.locator(".sd__play").click();
+    await page.waitForTimeout(1200);
+    const m = await page.evaluate(() => {
+      const circles = [...document.querySelectorAll(".sd__svg circle")];
+      const sun = circles.find((c) => c.getAttribute("r") === "26")!;
+      const dot = circles.find((c) => c.getAttribute("r") === "8")!;
+      const px = (v: string) => parseFloat(v);
+      return {
+        sun: [Number(sun.getAttribute("cx")), px(getComputedStyle(sun).cx)],
+        dot: [Number(dot.getAttribute("cx")), px(getComputedStyle(dot).cx)],
+      };
+    });
+    expect(m.sun[1]).toBeCloseTo(m.sun[0], 0);
+    expect(m.dot[1]).toBeCloseTo(m.dot[0], 0);
+    await ctx.close();
+  });
+});
