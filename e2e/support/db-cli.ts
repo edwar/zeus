@@ -27,7 +27,61 @@ async function createUsers() {
 
 
 
-const actions = { cleanup, createUsers } as const;
+const BULK_QUOTES = 230; // más que el antiguo tope de 200 de la API
+const BULK_PROJECTS = 60;
+const pad = (n: number) => String(n).padStart(3, "0");
+
+/** Muchas solicitudes y proyectos de prueba para probar la paginación (la 001 es la más antigua). */
+async function seedBulk() {
+  const statuses = ["new", "contacted", "confirmed", "approved", "discarded"] as const;
+  const stages = ["lead", "visit", "design", "install", "monitor"] as const;
+  const now = Date.now();
+  await prisma.quoteRequest.createMany({
+    data: Array.from({ length: BULK_QUOTES }, (_, k) => {
+      const n = k + 1;
+      return {
+        id: `e2e-bulkq-${pad(n)}`,
+        status: statuses[k % statuses.length],
+        contactName: `E2E Bulk ${pad(n)}`,
+        contactEmail: `e2e-bulk-${pad(n)}@example.com`,
+        contactPhone: "3001112233",
+        city: "Bucaramanga",
+        systemType: "ongrid",
+        bill: { monthlyKwh: 300, coveragePct: 100, peakSunHours: 4.5 },
+        sizing: { kwp: 3, monthlySolarKwh: 300, monthlySavings: null, batteryNominalKwh: 0 },
+        total: 1_000_000 + n,
+        consentAt: new Date(now),
+        ipHash: "e2e",
+        createdAt: new Date(now - (BULK_QUOTES - n) * 60_000),
+      };
+    }),
+  });
+  await prisma.project.createMany({
+    data: Array.from({ length: BULK_PROJECTS }, (_, k) => {
+      const n = k + 1;
+      return {
+        id: `e2e-bulkp-${pad(n)}`,
+        name: `Sistema E2E ${pad(n)}`,
+        client: `E2E Bulk ${pad(n)}`,
+        town: "Bucaramanga",
+        kwp: 3,
+        stage: stages[k % stages.length],
+        owner: "E2E Admin",
+        due: new Date(now + 30 * 86_400_000),
+        progress: 0,
+        quoteId: `e2e-bulkq-${pad(n)}`,
+      };
+    }),
+  });
+}
+
+/** Borra solo lo sembrado por seedBulk. */
+async function cleanupBulk() {
+  await prisma.project.deleteMany({ where: { id: { startsWith: "e2e-bulkp-" } } });
+  await prisma.quoteRequest.deleteMany({ where: { id: { startsWith: "e2e-bulkq-" } } });
+}
+
+const actions = { cleanup, createUsers, seedBulk, cleanupBulk } as const;
 const action = process.argv[2] as keyof typeof actions;
 if (!actions[action]) {
   console.error(`Acción desconocida: ${action}`);

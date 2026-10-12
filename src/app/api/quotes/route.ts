@@ -6,7 +6,8 @@ import { tooLarge } from "@/lib/http";
 import { findCoverage } from "@/lib/teams";
 import { currentUsury } from "@/lib/finance/rates";
 import { simulateLoan } from "@/lib/finance/loan";
-import { KIT_KINDS } from "@/lib/quote-flow";
+import { z } from "zod";
+import { KIT_KINDS, QUOTE_STATUSES } from "@/lib/quote-flow";
 
 const MAX_PER_HOUR = 5;
 
@@ -77,17 +78,39 @@ export async function POST(req: Request) {
   return Response.json({ id: created.id, total: Number(created.total), fulfillment, covered: cov.status === "install" }, { status: 201 });
 }
 
-/** Equipo: lista de solicitudes, las más recientes primero. */
+const listQuery = z.object({
+  status: z.enum(QUOTE_STATUSES).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(25),
+});
+
+/** Equipo: lista de solicitudes paginada (las más recientes primero), con el total y los conteos por estado. */
 export async function GET(req: Request) {
   const denied = await guardApi(req, { perm: "quotes" });
   if (denied) return denied;
-  const rows = await prisma.quoteRequest.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    include: { _count: { select: { items: true } } },
-  });
-  return Response.json(
-    rows.map((r) => ({
+  const parsed = listQuery.safeParse(Object.fromEntries(new URL(req.url).searchParams));
+  if (!parsed.success) return Response.json({ error: "invalid_query" }, { status: 400 });
+  const { status, page, pageSize } = parsed.data;
+  const where = status ? { status } : {};
+
+  const [total, rows, grouped] = await Promise.all([
+    prisma.quoteRequest.count({ where }),
+    prisma.quoteRequest.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: { _count: { select: { items: true } } },
+    }),
+    // Los conteos de las pestañas salen de toda la tabla, no de la página que se ve.
+    prisma.quoteRequest.groupBy({ by: ["status"], _count: { _all: true } }),
+  ]);
+  const counts = Object.fromEntries(QUOTE_STATUSES.map((st) => [st, 0])) as Record<(typeof QUOTE_STATUSES)[number], number>;
+  for (const g of grouped) counts[g.status as keyof typeof counts] = g._count._all;
+  const all = Object.values(counts).reduce((n, c) => n + c, 0);
+
+  return Response.json({
+    items: rows.map((r) => ({
       id: r.id,
       status: r.status,
       contactName: r.contactName,
@@ -99,5 +122,9 @@ export async function GET(req: Request) {
       fulfillment: r.fulfillment,
       createdAt: r.createdAt.toISOString(),
     })),
-  );
+    total,
+    page,
+    pageSize,
+    counts: { all, ...counts },
+  });
 }

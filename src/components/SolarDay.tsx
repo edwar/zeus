@@ -25,6 +25,7 @@ const SCENE = { x: 0, y: 0, w: 560, h: 290 };
 const CH = { x: 28, y: 322, w: 504, h: 118 };
 const H0 = 6;
 const H1 = 22;
+const MS_PER_HOUR = 600; // 16 horas en unos 10 segundos
 const hx = (h: number) => CH.x + ((h - H0) / (H1 - H0)) * CH.w;
 const cy = (kw: number) => CH.y + CH.h - (kw / 4.4) * CH.h;
 
@@ -62,6 +63,104 @@ function fmtHour(h: number) {
 const PANEL_ROWS = 2;
 const PANEL_COLS = 6;
 
+
+// ── Edificios de la escena: uno por tipo de lugar, todos con paneles en el techo ────────────────────────────────
+type Pt = [number, number];
+type Quad = [Pt, Pt, Pt, Pt]; // arriba-izq., arriba-der., abajo-der., abajo-izq.
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const at = ([tl, tr, br, bl]: Quad, u: number, v: number): Pt => {
+  const top: Pt = [lerp(tl[0], tr[0], u), lerp(tl[1], tr[1], u)];
+  const bot: Pt = [lerp(bl[0], br[0], u), lerp(bl[1], br[1], u)];
+  return [lerp(top[0], bot[0], v), lerp(top[1], bot[1], v)];
+};
+const INK = "#0b1f18";
+
+/** Paneles repartidos en un cuadrilátero (sirve para techos inclinados, planos o en perspectiva). `lit` va de 0 a 1. */
+function Panels({ quad, rows, cols, lit }: { quad: Quad; rows: number; cols: number; lit: number }) {
+  const gap = 0.12; // separación entre celdas, como fracción de cada celda
+  const cells: React.ReactNode[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const u0 = (c + gap / 2) / cols, u1 = (c + 1 - gap / 2) / cols;
+      const v0 = (r + gap / 2) / rows, v1 = (r + 1 - gap / 2) / rows;
+      const [a, b, d, e] = [at(quad, u0, v0), at(quad, u1, v0), at(quad, u1, v1), at(quad, u0, v1)];
+      const path = `M${a[0].toFixed(1)} ${a[1].toFixed(1)}L${b[0].toFixed(1)} ${b[1].toFixed(1)}L${d[0].toFixed(1)} ${d[1].toFixed(1)}L${e[0].toFixed(1)} ${e[1].toFixed(1)}Z`;
+      cells.push(
+        <g key={`${r}-${c}`}>
+          <path d={path} fill="#2352e6" stroke="#2352e6" strokeWidth="2" strokeLinejoin="round" />
+          <path d={path} fill="#ffc21a" stroke="#ffc21a" strokeWidth="2" strokeLinejoin="round" opacity={lit} />
+        </g>,
+      );
+    }
+  }
+  return <g>{cells}</g>;
+}
+
+type BuildingProps = { lit: number; windowLit: boolean };
+const glass = (windowLit: boolean) => (windowLit ? "#ffe27a" : "#bfe3ff");
+
+function House({ lit, windowLit }: BuildingProps) {
+  return (
+    <g>
+      <rect x="188" y="170" width="184" height="94" rx="6" fill="#fff" stroke={INK} strokeWidth="4" />
+      <rect x="262" y="206" width="36" height="58" rx="5" fill="#ff7a2f" stroke={INK} strokeWidth="4" />
+      <rect x="204" y="190" width="40" height="34" rx="5" fill={glass(windowLit)} stroke={INK} strokeWidth="4" />
+      <rect x="318" y="190" width="40" height="34" rx="5" fill={glass(windowLit)} stroke={INK} strokeWidth="4" />
+      <path d="M168 176 L 212 112 H 348 L 392 176 Z" fill={INK} stroke={INK} strokeWidth="4" strokeLinejoin="round" />
+      <Panels quad={[[218, 118], [342, 118], [374, 170], [186, 170]]} rows={2} cols={6} lit={lit} />
+    </g>
+  );
+}
+
+/** Oficina: torre de vidrio con paneles en la azotea. */
+function Office({ lit, windowLit }: BuildingProps) {
+  const windows = [];
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) windows.push(<rect key={`${r}-${c}`} x={214 + c * 33} y={126 + r * 28} width="22" height="17" rx="3" fill={glass(windowLit && (r + c) % 3 !== 0)} stroke={INK} strokeWidth="3" />);
+  return (
+    <g>
+      <rect x="200" y="108" width="160" height="156" rx="6" fill="#d9e6ff" stroke={INK} strokeWidth="4" />
+      {windows}
+      <rect x="262" y="236" width="36" height="28" rx="4" fill="#ff7a2f" stroke={INK} strokeWidth="4" />
+      <rect x="194" y="102" width="172" height="12" rx="4" fill={INK} />
+      <Panels quad={[[222, 78], [346, 78], [352, 100], [216, 100]]} rows={1} cols={6} lit={lit} />
+    </g>
+  );
+}
+
+/** Local comercial: tienda baja con toldo de rayas y paneles en la azotea. */
+function Shop({ lit, windowLit }: BuildingProps) {
+  const stripes = Array.from({ length: 8 }, (_, i) => <rect key={i} x={170 + i * 27.5} y="184" width="27.5" height="26" fill={i % 2 ? "#fff" : "#ff7a2f"} stroke={INK} strokeWidth="3" />);
+  return (
+    <g>
+      <rect x="176" y="170" width="208" height="94" rx="6" fill="#fff6d6" stroke={INK} strokeWidth="4" />
+      <rect x="170" y="162" width="220" height="14" rx="4" fill={INK} />
+      <Panels quad={[[196, 134], [366, 134], [374, 158], [188, 158]]} rows={1} cols={7} lit={lit} />
+      {stripes}
+      <path d="M170 210h220v8a13.75 13.75 0 0 1-27.5 0 13.75 13.75 0 0 1-27.5 0 13.75 13.75 0 0 1-27.5 0 13.75 13.75 0 0 1-27.5 0 13.75 13.75 0 0 1-27.5 0 13.75 13.75 0 0 1-27.5 0 13.75 13.75 0 0 1-27.5 0 13.75 13.75 0 0 1-27.5 0z" fill="#ff7a2f" stroke={INK} strokeWidth="3" strokeLinejoin="round" />
+      <rect x="196" y="228" width="92" height="36" rx="4" fill={glass(windowLit)} stroke={INK} strokeWidth="4" />
+      <rect x="312" y="224" width="44" height="40" rx="4" fill="#c8f24b" stroke={INK} strokeWidth="4" />
+    </g>
+  );
+}
+
+/** Taller: nave industrial de techo inclinado, chimenea y portón. */
+function Workshop({ lit, windowLit }: BuildingProps) {
+  const slats = Array.from({ length: 5 }, (_, i) => <line key={i} x1="214" x2="296" y1={218 + i * 9} y2={218 + i * 9} stroke={INK} strokeWidth="3" />);
+  return (
+    <g>
+      <rect x="352" y="118" width="22" height="64" rx="3" fill="#ff7a2f" stroke={INK} strokeWidth="4" />
+      <rect x="170" y="190" width="220" height="74" rx="4" fill="#ffe1c2" stroke={INK} strokeWidth="4" />
+      <path d="M164 192 L 164 146 L 396 176 L 396 192 Z" fill={INK} stroke={INK} strokeWidth="4" strokeLinejoin="round" />
+      <Panels quad={[[174, 152], [388, 180], [388, 190], [174, 164]]} rows={1} cols={9} lit={lit} />
+      <rect x="208" y="212" width="94" height="52" rx="4" fill="#cfd8d3" stroke={INK} strokeWidth="4" />
+      {slats}
+      <rect x="326" y="206" width="44" height="30" rx="4" fill={glass(windowLit)} stroke={INK} strokeWidth="4" />
+    </g>
+  );
+}
+
+const BUILDINGS = { home: House, office: Office, shop: Shop, workshop: Workshop } as const;
+
 export function SolarDay({ t }: { t: Dict["hero"] }) {
   const uid = useId().replace(/:/g, "");
   const [hour, setHour] = useState(13);
@@ -73,24 +172,25 @@ export function SolarDay({ t }: { t: Dict["hero"] }) {
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
-    setHour(6.5);
+    setHour(H0); // el recorrido arranca al amanecer (06:00)
     setPlaying(true);
   }, []);
 
+  // El recorrido va de las 06:00 a las 22:00 y se queda en la noche. Si se pulsa play al final, vuelve a empezar;
+  // si se pausó a mitad, sigue desde esa hora.
   useEffect(() => {
     if (!playing) return;
     const start = performance.now();
-    const from = hour;
-    const span = 17.5 - from;
-    const dur = Math.max(1, span) * 650; // ~650 ms por hora
+    const from = hour >= H1 - 0.01 ? H0 : hour;
+    const span = H1 - from;
+    const dur = span * MS_PER_HOUR;
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / dur);
-      const eased = 1 - Math.pow(1 - p, 2);
-      setHour(from + span * eased);
+      setHour(from + span * p);
       if (p < 1) raf.current = requestAnimationFrame(tick);
       else {
+        setHour(H1);
         setPlaying(false);
-        setHour(13);
       }
     };
     raf.current = requestAnimationFrame(tick);
@@ -106,6 +206,7 @@ export function SolarDay({ t }: { t: Dict["hero"] }) {
   const covered = a > 0 ? Math.min(100, Math.round((g / a) * 100)) : 0;
   const night = hour < 6 || hour > 18;
   const sky = skyAt(hour);
+  const Building = BUILDINGS[profile];
 
   // El sol recorre un arco de izquierda a derecha y se oculta tras la colina.
   const st = (hour - 5.5) / (19.5 - 5.5);
@@ -167,28 +268,9 @@ export function SolarDay({ t }: { t: Dict["hero"] }) {
           <path d="M-10 244 Q 120 196 260 232 T 570 214 V 300 H -10 Z" fill="#5fcf8a" stroke="#0b1f18" strokeWidth="4" />
           <path d="M-10 268 Q 160 236 300 262 T 570 256 V 300 H -10 Z" fill="#c8f24b" stroke="#0b1f18" strokeWidth="4" />
 
-          {/* Casa */}
-          <g>
-            <rect x="188" y="170" width="184" height="94" rx="6" fill="#fff" stroke="#0b1f18" strokeWidth="4" />
-            <rect x="262" y="206" width="36" height="58" rx="5" fill="#ff7a2f" stroke="#0b1f18" strokeWidth="4" />
-            <rect x="204" y="190" width="40" height="34" rx="5" fill={night && a > 0.8 ? "#ffe27a" : "#bfe3ff"} stroke="#0b1f18" strokeWidth="4" />
-            <rect x="318" y="190" width="40" height="34" rx="5" fill={night && a > 0.8 ? "#ffe27a" : "#bfe3ff"} stroke="#0b1f18" strokeWidth="4" />
-            {/* Tejado con paneles solares */}
-            <path d="M168 176 L 212 112 H 348 L 392 176 Z" fill="#0b1f18" />
-            {Array.from({ length: PANEL_ROWS }).map((_, r) =>
-              Array.from({ length: PANEL_COLS }).map((__, c) => {
-                const y0 = 118 + r * 28;
-                const inset = (1 - (y0 - 112) / 64) * 0; // sin perspectiva extra: celdas rectas
-                const x0 = 214 + c * 22.2 + inset;
-                return (
-                  <g key={`${r}-${c}`}>
-                    <rect x={x0} y={y0} width="19.6" height="25" rx="3" fill="#2352e6" />
-                    <rect x={x0} y={y0} width="19.6" height="25" rx="3" fill="#ffc21a" opacity={night ? 0 : Math.min(1, share * 1.15)} />
-                  </g>
-                );
-              }),
-            )}
-            <path d="M168 176 L 212 112 H 348 L 392 176 Z" fill="none" stroke="#0b1f18" strokeWidth="4" strokeLinejoin="round" />
+          {/* Edificio del tipo de lugar elegido, con paneles en el techo */}
+          <g data-building={profile}>
+            <Building lit={night ? 0 : Math.min(1, share * 1.15)} windowLit={night && a > 0.8} />
           </g>
         </g>
         <rect x="2" y="2" width={W - 4} height={SCENE.h - 4} rx="25" fill="none" stroke="#0b1f18" strokeWidth="4" />

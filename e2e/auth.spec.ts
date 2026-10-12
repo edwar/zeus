@@ -11,6 +11,28 @@ test.describe("inicio de sesión", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
+  test("la contraseña se puede mostrar y ocultar", async ({ page }) => {
+    await page.goto("/es/login");
+    const input = page.locator("input[name=password]");
+    await input.fill("mi-clave-secreta");
+    await expect(input).toHaveAttribute("type", "password");
+
+    const show = page.getByRole("button", { name: "Mostrar contraseña" });
+    await expect(show).toHaveAttribute("aria-pressed", "false");
+    await show.click();
+    await expect(input).toHaveAttribute("type", "text");
+    await expect(input).toHaveValue("mi-clave-secreta");
+    const hide = page.getByRole("button", { name: "Ocultar contraseña" });
+    await expect(hide).toHaveAttribute("aria-pressed", "true");
+
+    await hide.click();
+    await expect(input).toHaveAttribute("type", "password");
+    await expect(page.getByRole("button", { name: "Mostrar contraseña" })).toBeVisible();
+    // Mostrar la contraseña no envía el formulario ni borra lo escrito.
+    await expect(page).toHaveURL(/\/login/);
+    await expect(input).toHaveValue("mi-clave-secreta");
+  });
+
   test("admin entra y aterriza en solicitudes", async ({ page }) => {
     await page.goto("/es/login");
     await page.getByLabel(/Correo/i).first().fill(USERS.admin.email);

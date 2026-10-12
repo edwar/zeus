@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { money } from "@/lib/format";
@@ -15,11 +15,14 @@ import { FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
+import { DataPagination } from "@/components/DataPagination";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type QuoteStatus, useQuote, useQuotes, useSetFulfillment, useSetQuoteStatus, useSetQuoteTeam } from "@/hooks/useQuotes";
 import { QUOTE_STATUSES, TRANSITIONS, kitEditable, needsNote } from "@/lib/quote-flow";
+
+const PAGE_SIZES = [10, 25, 50, 100] as const;
 
 const variant = (s: QuoteStatus) => (s === "new" ? "warning" : s === "contacted" ? "outline" : s === "discarded" ? "secondary" : "default");
 
@@ -154,12 +157,19 @@ function FulfillmentControl({ t, r }: { t: Dict; r: { id: string; status: QuoteS
 
 export function QuotesList({ t, lang }: { t: Dict; lang: Locale }) {
   const q = t.app.quotes;
-  const { data, isPending, isError, refetch } = useQuotes();
   const date = new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" });
   const [filter, setFilter] = useState<"all" | QuoteStatus>("all");
-  const all = data ?? [];
-  const shown = filter === "all" ? all : all.filter((r) => r.status === filter);
-  const count = (s: "all" | QuoteStatus) => (s === "all" ? all.length : all.filter((r) => r.status === s).length);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
+  const { data, isPending, isError, refetch } = useQuotes({ status: filter, page, pageSize });
+  const shown = data?.items ?? [];
+  const count = (s: "all" | QuoteStatus) => data?.counts[s] ?? 0;
+  const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
+
+  // Si al cambiar de estado (o aprobar/descartar una solicitud) la página actual ya no existe, vuelve a la última.
+  useEffect(() => {
+    if (data && data.total > 0 && page > pages) setPage(pages);
+  }, [data, page, pages]);
   return (
     <div className="pb">
       <header className="ph">
@@ -172,13 +182,13 @@ export function QuotesList({ t, lang }: { t: Dict; lang: Locale }) {
         <Loading label={q.loading} variant="table" cols={6} />
       ) : isError ? (
         <p role="alert">{q.loadError} <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>{q.retry}</Button></p>
-      ) : data.length === 0 ? (
+      ) : data.counts.all === 0 ? (
         <EmptyState icon={FileText} title={t.app.empty.quotes.title} description={t.app.empty.quotes.desc}>
           <Button asChild variant="outline"><Link href={`/${lang}/simulator`} target="_blank">{t.app.empty.quotes.action}</Link></Button>
         </EmptyState>
       ) : (
         <>
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as "all" | QuoteStatus)}>
+        <Tabs value={filter} onValueChange={(v) => { setFilter(v as "all" | QuoteStatus); setPage(1); }}>
           <TabsList aria-label={q.status} className="h-auto flex-wrap bg-(--mist) p-1">
             {(["all", ...QUOTE_STATUSES] as const).map((s) => (
               <TabsTrigger key={s} value={s} className="px-3 py-2 text-[0.88rem] font-bold text-(--ink-soft) hover:text-(--ink) data-[state=active]:bg-white data-[state=active]:text-(--ink) data-[state=active]:shadow-sm">
@@ -217,6 +227,18 @@ export function QuotesList({ t, lang }: { t: Dict; lang: Locale }) {
             </tbody>
           </table>
         </div>
+        {data.total > 0 && (
+          <DataPagination
+            page={Math.min(page, pages)}
+            pages={pages}
+            total={data.total}
+            pageSize={pageSize}
+            pageSizes={PAGE_SIZES}
+            labels={{ ...t.app.pager, pageOf: q.pageOf, nav: q.title }}
+            onPageChange={setPage}
+            onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
+          />
+        )}
         </>
       )}
     </div>

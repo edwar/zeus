@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Loading } from "@/components/Loading";
+import { DataPagination } from "@/components/DataPagination";
 import { useMemo, useState } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, TouchSensor, pointerWithin, rectIntersection, type CollisionDetection, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type KeyboardCoordinateGetter, type DragStartEvent } from "@dnd-kit/core";
 import type { Dict } from "@/i18n";
@@ -30,6 +31,7 @@ const stageCoordinates: KeyboardCoordinateGetter = (event, { context: { droppabl
 // Con puntero/dedo manda dónde está el cursor; con teclado no hay cursor y se usa la intersección del rectángulo.
 const collision: CollisionDetection = (args) => (args.pointerCoordinates ? pointerWithin(args) : rectIntersection(args));
 
+const PAGE_SIZES = [10, 25, 50, 100] as const;
 const tabClass = "px-4 text-[0.9rem] font-bold text-(--ink-soft) hover:text-(--ink) data-[state=active]:bg-white data-[state=active]:text-(--ink) data-[state=active]:shadow-sm";
 
 function CardBody({ p, lang, t, ...rest }: { p: Project; lang: Locale; t: Dict } & React.ComponentProps<"article">) {
@@ -85,6 +87,8 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
   const moveProject = useMoveProject();
   const [view, setView] = useState<"board" | "list">("board");
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
   const [msg, setMsg] = useState("");
   const [dragging, setDragging] = useState<Project | null>(null);
   const sensors = useSensors(
@@ -104,6 +108,11 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
     const s = q.trim().toLowerCase();
     return s ? items.filter((p) => `${p.name} ${p.town} ${p.client}`.toLowerCase().includes(s)) : items;
   }, [items, q]);
+
+  // La vista Lista se pagina en el cliente; el tablero siempre muestra todo para poder arrastrar entre etapas.
+  const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const listPage = Math.min(page, pages);
+  const rows = filtered.slice((listPage - 1) * pageSize, listPage * pageSize);
 
   const move = (id: string, stage: Stage) => {
     const p = items.find((i) => i.id === id);
@@ -127,7 +136,7 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
         <div className="ph__tools">
           <div className="field field--inline field--search">
             <label htmlFor="pq" className="sr-only">{a.search}</label>
-            <Input id="pq" type="search" placeholder={a.search} value={q} onChange={(e) => setQ(e.target.value)} />
+            <Input id="pq" type="search" placeholder={a.search} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
           </div>
           <TabsList aria-label={a.view} className="bg-(--mist) p-1 group-data-[orientation=horizontal]/tabs:h-11">
             <TabsTrigger value="board" className={tabClass}>{a.board}</TabsTrigger>
@@ -199,7 +208,7 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {rows.map((p) => (
                 <tr key={p.id}>
                   <th scope="row"><Link href={`/${lang}/app/projects/${p.id}`}>{p.name}</Link>{p.blocked && <span className="pc__flag">{a.blocked}</span>}</th>
                   <td>{p.client}</td>
@@ -213,6 +222,18 @@ export function ProjectBoard({ t, lang }: { t: Dict; lang: Locale }) {
             </tbody>
           </table>
         </div>
+        {filtered.length > 0 && (
+          <DataPagination
+            page={listPage}
+            pages={pages}
+            total={filtered.length}
+            pageSize={pageSize}
+            pageSizes={PAGE_SIZES}
+            labels={{ ...t.app.pager, pageOf: a.pageOf, nav: a.title }}
+            onPageChange={setPage}
+            onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
+          />
+        )}
         </TabsContent>
         </>
       )}

@@ -264,6 +264,14 @@ textarea {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+  /* Las formas SVG (cx, cy, r…) son propiedades CSS: con una transición de 0.01ms que se reinicia en cada fotograma
+     de una animación movida por JavaScript, el valor pintado se queda en el inicial (el sol y los puntos del gráfico
+     de la portada se congelaban). Sus cambios deben ser inmediatos. */
+  svg *,
+  svg *::before,
+  svg *::after {
+    transition: none !important;
+  }
 }
 
 /* Carga (componente Loading): marcadores con la forma del contenido. Aparece con un leve retraso para no parpadear. */

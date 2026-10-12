@@ -349,9 +349,12 @@ export const es = {
     banned: "Esta cuenta está desactivada. Contacta a un administrador.",
     generic: "No se pudo ingresar. Intenta de nuevo.",
     signOut: "Cerrar sesión",
+    showPassword: "Mostrar contraseña",
+    hidePassword: "Ocultar contraseña",
     back: "Volver al sitio",
   },
   app: {
+    pager: { rowsPerPage: "Filas por página", prev: "Anterior", next: "Siguiente", goTo: "Ir a la página {page}" },
     empty: {
       quotes: { title: "Aún no hay solicitudes", desc: "Cuando un cliente use el simulador y pida una cotización, aparecerá aquí para que lo contactes.", action: "Probar el simulador" },
       projects: { title: "Aún no hay proyectos", desc: "Los proyectos se crean solos cuando apruebas una solicitud que incluye instalación.", action: "Ir a solicitudes" },
@@ -461,6 +464,7 @@ export const es = {
       actions: "Acciones",
     },
     quotes: {
+      pageOf: "Página {page} de {pages} · {total} solicitudes",
       title: "Solicitudes",
       sub: "Cotizaciones pedidas desde el simulador, con el kit que armó cada cliente.",
       empty: "Aún no hay solicitudes.",
@@ -672,6 +676,7 @@ export const es = {
       retry: "Reintentar",
     },
     projects: {
+      pageOf: "Página {page} de {pages} · {total} proyectos",
       team: "Equipo",
       alerts: "alertas",
       title: "Proyectos",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { QuoteStatus } from "@/lib/quote-flow";
 import type { Fulfillment } from "@/lib/service-area";
@@ -26,7 +26,20 @@ async function json<T>(res: Response): Promise<T> {
   return res.json();
 }
 
-export const useQuotes = () => useQuery({ queryKey: ["quotes"], queryFn: () => fetch("/api/quotes").then(json<QuoteListItem[]>) });
+export type QuoteListFilters = { status: "all" | QuoteStatus; page: number; pageSize: number };
+export type QuotePage = { items: QuoteListItem[]; total: number; page: number; pageSize: number; counts: Record<"all" | QuoteStatus, number> };
+
+/** Solicitudes paginadas en el servidor; los conteos por estado cubren todas las solicitudes, no solo la página. */
+export const useQuotes = (f: QuoteListFilters) =>
+  useQuery({
+    queryKey: ["quotes", "list", f],
+    queryFn: () => {
+      const p = new URLSearchParams({ page: String(f.page), pageSize: String(f.pageSize) });
+      if (f.status !== "all") p.set("status", f.status);
+      return fetch(`/api/quotes?${p}`).then(json<QuotePage>);
+    },
+    placeholderData: keepPreviousData,
+  });
 export const useQuote = (id: string) => useQuery({ queryKey: ["quotes", id], queryFn: () => fetch(`/api/quotes/${id}`).then(json<QuoteDetail>) });
 
 export function useSetQuoteStatus() {
