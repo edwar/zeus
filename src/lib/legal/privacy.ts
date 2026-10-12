@@ -90,6 +90,8 @@ const es: LegalDoc = {
               ["Vercel", "Alojamiento del sitio, funciones del servidor y puerta de enlace de IA (AI Gateway).", "Todo lo que pasa por el sitio, incluida tu dirección IP."],
               ["Neon (sobre Amazon Web Services, EE. UU.)", "Base de datos donde se guardan las solicitudes y las cuentas del equipo.", "Los datos de las secciones 3 y 4 que guardamos."],
               ["Proveedor del modelo de IA (Anthropic, a través de Vercel AI Gateway)", "Leer la factura que subes y extraer consumo y tarifa.", "La factura completa que subes. No la guardamos; su tratamiento por el proveedor se rige por sus términos."],
+              ["Resend (EE. UU.)", "Enviar al equipo el correo para restablecer su contraseña.", "Solo el correo y el nombre de quien pide restablecerla, con el enlace de un solo uso. No se usa para publicidad."],
+              ["Resend (USA)", "Sending staff the email to reset their password.", "Only the email and name of whoever asks for the reset, with a single-use link. Not used for marketing."],
               ["OpenStreetMap", "Mapa y búsqueda de lugares.", "Tu navegador pide las teselas del mapa directamente a su servidor (recibe tu IP y la zona que ves). La búsqueda de un lugar la hace nuestro servidor, con el texto buscado."],
               ["NASA POWER", "Horas de sol de tu zona.", "Las coordenadas del lugar de instalación, enviadas desde nuestro servidor."],
               ["datos.gov.co (Gobierno de Colombia)", "Tasas de interés públicas para la simulación de financiación.", "Nada personal."],
@@ -98,7 +100,7 @@ const es: LegalDoc = {
           },
         },
         "También podemos entregar datos a autoridades cuando la ley lo exija.",
-        { note: "Transferencia internacional: Vercel, Neon y el proveedor de IA pueden tratar datos en servidores fuera de Colombia, principalmente en Estados Unidos. Lo hacemos con proveedores que ofrecen garantías contractuales de seguridad y confidencialidad, conforme al artículo 26 de la Ley 1581 de 2012." },
+        { note: "Transferencia internacional: Vercel, Neon, Resend y el proveedor de IA pueden tratar datos en servidores fuera de Colombia, principalmente en Estados Unidos. Lo hacemos con proveedores que ofrecen garantías contractuales de seguridad y confidencialidad, conforme al artículo 26 de la Ley 1581 de 2012." },
       ],
     },
     {
@@ -254,7 +256,7 @@ const en: LegalDoc = {
           },
         },
         "We may also hand data to authorities when the law requires it.",
-        { note: "International transfer: Vercel, Neon and the AI provider may process data on servers outside Colombia, mainly in the United States. We do so with providers that offer contractual security and confidentiality guarantees, under article 26 of Law 1581 of 2012." },
+        { note: "International transfer: Vercel, Neon, Resend and the AI provider may process data on servers outside Colombia, mainly in the United States. We do so with providers that offer contractual security and confidentiality guarantees, under article 26 of Law 1581 of 2012." },
       ],
     },
     {

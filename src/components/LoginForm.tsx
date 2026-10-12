@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useState } from "react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
@@ -43,6 +44,7 @@ export function LoginForm({ lang, t }: { lang: Locale; t: Dict }) {
         <label htmlFor={`${uid}p`}>{a.password}</label>
         <PasswordInput id={`${uid}p`} name="password" autoComplete="current-password" required showLabel={a.showPassword} hideLabel={a.hidePassword} />
       </div>
+      <Link href={`/${lang}/forgot-password`} className="auth__forgot">{a.forgot}</Link>
       <p className="field-error" role="alert" hidden={!error}>{error}</p>
       <Button type="submit" disabled={busy}>{busy ? a.submitting : a.submit}</Button>
     </form>

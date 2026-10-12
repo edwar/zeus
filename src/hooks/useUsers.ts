@@ -45,3 +45,10 @@ export const useSetBanned = () =>
   useUserMutation((v: { userId: string; banned: boolean }) =>
     unwrap(v.banned ? authClient.admin.banUser({ userId: v.userId }) : authClient.admin.unbanUser({ userId: v.userId })),
   );
+
+/** Un admin define una contraseña temporal para otra cuenta; la persona tendrá que cambiarla al ingresar. */
+export const useResetPassword = () =>
+  useUserMutation(async (v: { userId: string; password: string }) => {
+    const res = await fetch(`/api/users/${v.userId}/password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: v.password }) });
+    if (!res.ok) throw new Error(String(res.status));
+  });

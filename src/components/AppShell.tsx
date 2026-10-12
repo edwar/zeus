@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { Logo, LocaleSwitch } from "./SiteHeader";
 import { authClient } from "@/lib/auth-client";
 import { can, homeFor, type Perm, type Role } from "@/lib/roles";
 import { RoleProvider } from "@/components/RoleContext";
+import { ChangePasswordForm } from "@/components/ChangePasswordForm";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const icons: Record<string, React.ReactNode> = {
   projects: <path d="M3 4h5v16H3zM10 4h5v10h-5zM17 4h4v13h-4z" />,
@@ -20,6 +23,7 @@ const icons: Record<string, React.ReactNode> = {
 
 export function AppShell({ lang, t, user, children }: { lang: Locale; t: Dict; user: { name: string; role: Role }; children: React.ReactNode }) {
   const pathname = usePathname();
+  const [pwOpen, setPwOpen] = useState(false);
   const signOut = async () => {
     await authClient.signOut();
     // Navegación completa: evita que el caché del router conserve páginas de la sesión cerrada.
@@ -66,6 +70,9 @@ export function AppShell({ lang, t, user, children }: { lang: Locale; t: Dict; u
           <div className="app__account">
             <span className="app__avatar" aria-hidden="true">{user.name.trim().charAt(0).toUpperCase()}</span>
             <span className="app__user">{user.name}</span>
+            <button type="button" className="app__exit" onClick={() => setPwOpen(true)} aria-haspopup="dialog" aria-label={t.auth.changeTitle} title={t.auth.changeTitle}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true"><circle cx="8" cy="15" r="4" /><path d="M11 12l9-9M16 7l3 3M14 9l2 2" /></svg>
+            </button>
             <button type="button" className="app__exit" onClick={signOut} aria-label={t.auth.signOut} title={t.auth.signOut}>
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true"><path d="M10 4H5v16h5M16 8l4 4-4 4M20 12H9" /></svg>
             </button>
@@ -75,8 +82,18 @@ export function AppShell({ lang, t, user, children }: { lang: Locale; t: Dict; u
       <div className="app__top">
         <Link href={homeFor(user.role, lang)} className="app__brand"><Logo /><span>{t.app.brand}</span></Link>
         <LocaleSwitch lang={lang} label={t.nav.language} />
+        <button type="button" className="app__signout" onClick={() => setPwOpen(true)} aria-haspopup="dialog">{t.auth.changeTitle}</button>
         <button type="button" className="app__signout" onClick={signOut}>{t.auth.signOut}</button>
       </div>
+      <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.auth.changeTitle}</DialogTitle>
+            <DialogDescription>{t.auth.resetSub}</DialogDescription>
+          </DialogHeader>
+          <ChangePasswordForm t={t} onDone={() => setTimeout(() => setPwOpen(false), 1500)} />
+        </DialogContent>
+      </Dialog>
       <main id="appmain" className="app__main">{children}</main>
       <nav aria-label="Principal" className="app__tabs">
         {items.map((i) => (

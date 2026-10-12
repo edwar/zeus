@@ -44,6 +44,8 @@ export async function authorize(req: Request, perm?: Perm): Promise<Access> {
   if (!sameOriginOk(req)) return { denied: Response.json({ error: "Forbidden" }, { status: 403 }) };
   const session = await auth.api.getSession({ headers: req.headers });
   if (!session) return { denied: Response.json({ error: "Unauthorized" }, { status: 401 }) };
+  // Con contraseña temporal solo se puede cambiarla (eso va por /api/auth): ninguna otra API responde.
+  if (session.user.mustChangePassword) return { denied: Response.json({ error: "PasswordChangeRequired" }, { status: 403 }) };
   const role = normalizeRole(session.user.role);
   if (perm && !can(role, perm)) return { denied: Response.json({ error: "Forbidden" }, { status: 403 }) };
   return { denied: null, userId: session.user.id, name: session.user.name, role };

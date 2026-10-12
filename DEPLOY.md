@@ -30,6 +30,7 @@ Rota estos valores antes de publicar (se compartieron en conversaciones de traba
 | `CRON_SECRET` | cadena aleatoria larga (Vercel la envía al cron de sincronización) |
 | `RATE_LIMIT_SALT` | cadena aleatoria larga |
 | `STORAGE_ENDPOINT`, `STORAGE_PUBLIC_URL`, `STORAGE_REGION`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY_ID`, `STORAGE_SECRET_ACCESS_KEY` | almacenamiento de imágenes (bucket de lectura pública) |
+| `RESEND_API_KEY`, `MAIL_FROM` | correo para «olvidé mi contraseña» ([Resend](https://resend.com), remitente de un dominio verificado, p. ej. `Zeus <no-reply@cognilab.dev>`). Sin ellas la página explica que un administrador debe restablecerla |
 | `EXTRACT_DAILY_CAP` | opcional; tope diario de lecturas de facturas con IA (300 por defecto) |
 
 No definas `NEXT_PUBLIC_SITE_INDEXABLE`: en producción de Vercel ya se indexa y en previews no.
@@ -83,6 +84,11 @@ ADMIN_EMAIL=tu@correo.com ADMIN_PASSWORD='una-contraseña-larga' ADMIN_NAME='Tu 
 ```
 
 Luego entra a `https://zeus.cognilab.dev/es/login` y crea los demás usuarios desde **Usuarios**.
+
+### Contraseñas
+- Toda cuenta que crea un administrador (también la del script de arriba) nace con **contraseña temporal**: al ingresar solo se ve la pantalla para elegir una propia (mínimo 10 caracteres) y las APIs responden 403 hasta entonces.
+- Un administrador puede **restablecer** la contraseña de otra cuenta desde **Usuarios**: define una temporal, cierra las sesiones de esa persona y esta debe cambiarla al ingresar.
+- «¿Olvidaste tu contraseña?» envía un enlace de 30 minutos y un solo uso (requiere `RESEND_API_KEY` y `MAIL_FROM`). Cualquiera puede cambiar la suya desde el ícono de llave del panel.
 
 ## 5. Datos iniciales
 - **Catálogo:** el cron `/api/cron/sync` corre cada día a las 12:00 a. m. (Colombia; 05:00 UTC, dentro de esa hora en el plan Hobby) y se encadena hasta completar el catálogo. Para llenarlo antes, ejecútalo desde Productos → **Sincronizar con Autosolar**.
