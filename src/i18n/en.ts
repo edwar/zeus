@@ -354,6 +354,7 @@ export const en: Dict = {
     back: "Back to the site",
   },
   app: {
+    pager: { rowsPerPage: "Rows per page", prev: "Previous", next: "Next", goTo: "Go to page {page}" },
     empty: {
       quotes: { title: "No requests yet", desc: "When a customer uses the simulator and asks for a quote, it will show up here so you can contact them.", action: "Try the simulator" },
       projects: { title: "No projects yet", desc: "Projects are created automatically when you approve a request that includes installation.", action: "Go to requests" },
@@ -463,6 +464,7 @@ export const en: Dict = {
       actions: "Actions",
     },
     quotes: {
+      pageOf: "Page {page} of {pages} · {total} requests",
       title: "Requests",
       sub: "Quotes requested from the simulator, with the kit each customer built.",
       empty: "No requests yet.",
@@ -674,6 +676,7 @@ export const en: Dict = {
       retry: "Retry",
     },
     projects: {
+      pageOf: "Page {page} of {pages} · {total} projects",
       team: "Team",
       alerts: "alerts",
       title: "Projects",
