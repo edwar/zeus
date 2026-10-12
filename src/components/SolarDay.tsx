@@ -25,6 +25,7 @@ const SCENE = { x: 0, y: 0, w: 560, h: 290 };
 const CH = { x: 28, y: 322, w: 504, h: 118 };
 const H0 = 6;
 const H1 = 22;
+const MS_PER_HOUR = 600; // 16 horas en unos 10 segundos
 const hx = (h: number) => CH.x + ((h - H0) / (H1 - H0)) * CH.w;
 const cy = (kw: number) => CH.y + CH.h - (kw / 4.4) * CH.h;
 
@@ -171,24 +172,25 @@ export function SolarDay({ t }: { t: Dict["hero"] }) {
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
-    setHour(6.5);
+    setHour(H0); // el recorrido arranca al amanecer (06:00)
     setPlaying(true);
   }, []);
 
+  // El recorrido va de las 06:00 a las 22:00 y se queda en la noche. Si se pulsa play al final, vuelve a empezar;
+  // si se pausó a mitad, sigue desde esa hora.
   useEffect(() => {
     if (!playing) return;
     const start = performance.now();
-    const from = hour;
-    const span = 17.5 - from;
-    const dur = Math.max(1, span) * 650; // ~650 ms por hora
+    const from = hour >= H1 - 0.01 ? H0 : hour;
+    const span = H1 - from;
+    const dur = span * MS_PER_HOUR;
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / dur);
-      const eased = 1 - Math.pow(1 - p, 2);
-      setHour(from + span * eased);
+      setHour(from + span * p);
       if (p < 1) raf.current = requestAnimationFrame(tick);
       else {
+        setHour(H1);
         setPlaying(false);
-        setHour(13);
       }
     };
     raf.current = requestAnimationFrame(tick);

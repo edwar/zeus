@@ -38,6 +38,37 @@ test.describe("sitio público", () => {
 });
 
 test.describe("escena del hero", () => {
+  test("el recorrido va de las 06:00 a las 22:00 y se queda en la noche", async ({ page }) => {
+    await page.goto("/es");
+    const time = page.locator(".sd__timeval");
+    const hourNow = async () => {
+      const [h, m] = (await time.innerText()).split(":").map(Number);
+      return h + m / 60;
+    };
+    // Arranca solo al amanecer.
+    await expect.poll(hourNow, { timeout: 15_000 }).toBeLessThan(7.5);
+    await expect(page.locator(".sd__play")).toHaveAccessibleName("Pausar recorrido del sol");
+
+    // Termina a las 22:00, de noche, y queda en pausa con el control al final.
+    await expect(time).toHaveText("22:00", { timeout: 25_000 });
+    await expect(page.locator(".sd__play")).toHaveAccessibleName("Reanudar recorrido del sol");
+    await expect(page.locator(".sd__range")).toHaveValue("22");
+    await expect(page.locator(".sd__svg circle[r='2']").first()).toBeVisible(); // estrellas
+
+    // Play al final: vuelve a empezar desde las 06:00.
+    await page.locator(".sd__play").click();
+    await expect.poll(hourNow, { timeout: 5_000 }).toBeLessThan(8);
+    await expect(page.locator(".sd__play")).toHaveAccessibleName("Pausar recorrido del sol");
+
+    // Pausar a mitad y reanudar continúa desde esa hora, sin volver al inicio.
+    await page.locator(".sd__play").click();
+    const paused = await hourNow();
+    await page.waitForTimeout(600);
+    expect(await hourNow()).toBeCloseTo(paused, 1);
+    await page.locator(".sd__play").click();
+    await expect.poll(hourNow, { timeout: 5_000 }).toBeGreaterThan(paused);
+  });
+
   test("cada tipo de lugar tiene su propio edificio", async ({ page }) => {
     await page.goto("/es");
     const scene = page.locator(".sd__svg");
