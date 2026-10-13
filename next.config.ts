@@ -40,26 +40,37 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Las pruebas E2E del modo sin conexión compilan y sirven una versión de producción aparte (otro directorio): no pisa el servidor de desarrollo.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
   // Solo se valida la navegación instantánea en los segmentos que exporten `instant`. El panel (/app) depende de la sesión
   // de cada petición y se pinta con un Client Component (AppShell), así que la validación implícita fallaba en todas sus
   // rutas con "Could not validate `instant`…". Es solo un aviso de desarrollo; no afecta al build.
-  experimental: { instantInsights: { validationLevel: "manual-warning" } },
+  experimental: {
+    instantInsights: { validationLevel: "manual-warning" },
+    // 404 para URLs que no coinciden con ninguna ruta: el layout raíz depende de [lang], así que no puede componerlo.
+    globalNotFound: true,
+  },
   poweredByHeader: false,
+  // La guía del equipo se lee de archivos Markdown en tiempo de ejecución: hay que incluirlos en el despliegue.
+  outputFileTracingIncludes: { "/[lang]/app/guide": ["./docs/guia-equipo/**/*.md"], "/[lang]/app/guide/[slug]": ["./docs/guia-equipo/**/*.md"] },
   async redirects() {
     return [
       { source: "/:lang/catalog", destination: "/:lang/simulator", permanent: true },
       { source: "/:lang/quote", destination: "/:lang/simulator", permanent: true },
       // Al entrar a la plataforma se empieza por las solicitudes (temporal: puede cambiar).
       { source: "/:lang/app", destination: "/:lang/app/quotes", permanent: false },
-      // Cronograma y campo viven ahora dentro de cada proyecto.
+      // El cronograma vive ahora dentro de cada proyecto (el modo campo volvió como pantalla propia: /app/field).
       { source: "/:lang/app/schedule", destination: "/:lang/app/projects", permanent: true },
-      { source: "/:lang/app/field", destination: "/:lang/app/projects", permanent: true },
     ];
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // El service worker se revisa en cada visita: una versión nueva no se queda atrás por el caché del navegador.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
+    ];
   },
 };
 

@@ -78,10 +78,11 @@ test.describe("contraseña", () => {
   test("desde el panel se puede cambiar la propia contraseña", async ({ page }) => {
     await login(page, account.email, NEW1);
     await page.waitForURL(/\/app\/projects/); // /app redirige según el rol; hay que esperar a que termine antes de abrir el diálogo
-    // En móvil la barra superior lleva el idioma y los dos botones: no debe desbordar la pantalla.
+    // En móvil la barra superior lleva el idioma y el menú de cuenta: no debe desbordar la pantalla.
     await page.setViewportSize({ width: 375, height: 800 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    await page.locator(".app__top").getByRole("button", { name: "Cambiar contraseña" }).click();
+    await page.locator(".app__top").getByRole("button", { name: "Mi cuenta" }).click();
+    await page.getByRole("menuitem", { name: "Cambiar contraseña" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.locator("input[name=current]").fill(NEW1);
     await dialog.locator("input[name=next]").fill(NEW2);

@@ -1,5 +1,6 @@
 import type { BillData } from "./ai/bill";
 import { baseMonthlyKwh, hasBattery, size, type Sizing, type SystemType } from "./sizing";
+import type { KitInput } from "./kit";
 
 /** Valores del formulario de revisión (todo como texto, tal como se escribe). */
 export type ReviewValues = {
@@ -109,3 +110,12 @@ export const sunFor = (type: SystemType, annual: string, min: string): string | 
   const v = type === "offgrid" && min ? min : annual;
   return v || null;
 };
+
+/** Lo que pide el simulador de kits para una potencia dada: se comparte entre el kit elegido y los escenarios (así comparten caché). */
+export const kitBaseOf = (v: ReviewValues, sizing: Sizing): Omit<KitInput, "selection"> => ({
+  systemType: v.systemType,
+  phases: phasesOf(v.connection),
+  targetKwp: sizing.kwp,
+  backupKw: hasBattery(v.systemType) ? Number(v.backupKw.replace(",", ".")) : undefined,
+  backupNominalKwh: sizing.batteryNominalKwh,
+});

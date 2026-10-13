@@ -5,6 +5,7 @@ import { hasLocale } from "@/i18n/config";
 import { getDict } from "@/i18n";
 import { SiteHeader, Logo } from "@/components/SiteHeader";
 import { SiteAuthButton } from "@/components/SiteAuthButton";
+import { SourceCapture } from "@/components/SourceCapture";
 
 export default async function SiteLayout({ children, params }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
@@ -25,6 +26,7 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
       >
         <SiteHeader lang={lang} t={t} cta={<SiteAuthButton lang={lang} t={t} />} />
       </Suspense>
+      <Suspense fallback={null}><SourceCapture /></Suspense>
       <main id="main">{children}</main>
       <footer className="sitefoot">
         <div className="wrap sitefoot__in">

@@ -6,11 +6,15 @@ import { SolarDay } from "@/components/SolarDay";
 import { DomIcon, HouseArt, ShopArt, SunBurst, VillageArt } from "@/components/Scenes";
 import { Button } from "@/components/ui/button";
 import { absoluteUrl, jsonLd } from "@/lib/site";
+import { getPublishedCases } from "@/lib/cases-data";
+import { CasesSection } from "@/components/CasesSection";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
   const t = getDict(lang);
+  // Casos reales publicados (con autorización y ahorro verificado). Sin ninguno, la sección no se pinta.
+  const cases = await getPublishedCases().catch(() => []);
   const structured = [
     {
       "@context": "https://schema.org",
@@ -59,6 +63,43 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
 
+      <section id="guia" className="slab slab--paper guide" aria-labelledby="guide-h">
+        <div className="wrap">
+          <div className="sec__head">
+            <h2 id="guide-h" className="h2">{t.guide.title}</h2>
+            <p className="lead">{t.guide.sub}</p>
+          </div>
+          <ol className="guide__list">
+            {t.guide.steps.map((s, i) => (
+              <li key={s.name} className="guide__step">
+                <span className="guide__num" aria-hidden="true">{i + 1}</span>
+                <h3 className="guide__name">{s.name}</h3>
+                <div className="guide__cols">
+                  <div>
+                    <h4>{t.guide.you}</h4>
+                    <ul>{s.you.map((x) => <li key={x}>{x}</li>)}</ul>
+                  </div>
+                  <div>
+                    <h4>{t.guide.we}</h4>
+                    <ul>{s.we.map((x) => <li key={x}>{x}</li>)}</ul>
+                  </div>
+                </div>
+                <p className="guide__get"><strong>{t.guide.get}:</strong> {s.get}</p>
+              </li>
+            ))}
+          </ol>
+          <h3 className="guide__faqtitle">{t.guide.faqTitle}</h3>
+          <div className="guide__faq">
+            {t.guide.faq.map((f) => (
+              <details key={f.q}>
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="slab slab--sky" aria-labelledby="dom-h">
         <div className="wrap dom">
           <div className="dom__intro">
@@ -95,6 +136,8 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           </div>
         </div>
       </section>
+
+      <CasesSection t={t} lang={lang} cases={cases} />
 
       <section className="slab slab--lima closer">
         <SunBurst className="closer__sun" />

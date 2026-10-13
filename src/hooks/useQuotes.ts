@@ -4,16 +4,19 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 
 import type { QuoteStatus } from "@/lib/quote-flow";
 import type { Fulfillment } from "@/lib/service-area";
+import type { Source } from "@/lib/crm";
+import type { FollowUp } from "@/hooks/useCrm";
 
 export type { QuoteStatus };
 export type QuoteListItem = { id: string; status: QuoteStatus; contactName: string; city: string | null; systemType: "ongrid" | "hybrid" | "offgrid"; total: number; currency: string; itemCount: number; createdAt: string; fulfillment: Fulfillment };
 export type QuoteDetail = {
-  id: string; status: QuoteStatus; contactName: string; contactEmail: string; contactPhone: string; city: string | null;
+  id: string; status: QuoteStatus; lang: "es" | "en"; source: Source; lead: { id: string; name: string } | null; followUps: FollowUp[]; contactName: string; contactEmail: string; contactPhone: string; city: string | null;
   systemType: "ongrid" | "hybrid" | "offgrid"; total: number; currency: string; createdAt: string;
   bill: { lat?: number | null; lon?: number | null; monthlyKwh: number; tariff: number | null; operator: string | null; municipality: string | null; department: string | null; estrato: number | null; connection: string | null; coveragePct: number; peakSunHours: number; backupKw?: number; autonomyHours?: number };
   sizing: { kwp: number; monthlySolarKwh: number; monthlySavings: number | null; batteryNominalKwh: number };
   discardReason: string | null; originalTotal: number | null; projectId: string | null; fulfillment: Fulfillment; distanceKm: number | null; installerChoice: "zeus" | "own" | null; installFee: number | null;
   financing: { downPct: number; termMonths: number; rateEA: number; entity: string | null; usuryEA: number | null; down: number; financed: number; monthly: number; interest: number; totalPaid: number } | null; team: { id: string; name: string } | null;
+  share: { expiresAt: string | null; decision: "accepted" | "declined" | null; decidedAt: string | null; note: string | null };
   events: { id: string; kitChange: boolean; subject: string | null; from: QuoteStatus | null; to: QuoteStatus; note: string | null; by: string; at: string }[];
   items: { id: string; productId: string | null; kind: string; name: string; unitPrice: number; qty: number }[];
 };
@@ -83,6 +86,26 @@ export function useSetQuoteTeam() {
   return useMutation({
     mutationFn: ({ id, teamId }: { id: string; teamId: string | null }) =>
       fetch(`/api/quotes/${id}/team`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teamId }) }).then(json<{ id: string }>),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["quotes"] }),
+  });
+}
+
+/** Crea o rota el enlace público de la cotización; la URL solo viaja en esta respuesta. */
+export function useShareQuote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string }) => fetch(`/api/quotes/${id}/share`, { method: "POST" }).then(json<{ url: string; expiresAt: string }>),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["quotes"] }),
+  });
+}
+
+export type NoticeOutcome = "sent" | "failed" | "skipped";
+/** Manda por correo el enlace recién generado (el servidor comprueba que sea el vigente de esa solicitud). */
+export function useEmailQuoteLink() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, url }: { id: string; url: string }) =>
+      fetch(`/api/quotes/${id}/share/email`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) }).then(json<{ outcome: NoticeOutcome | null }>),
     onSettled: () => qc.invalidateQueries({ queryKey: ["quotes"] }),
   });
 }

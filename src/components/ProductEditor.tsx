@@ -17,6 +17,7 @@ import { useCommission } from "@/hooks/useCatalogAdmin";
 import { useCreateProduct, useDeleteProduct, useProduct, useUpdateProduct, type ProductInput } from "@/hooks/useProducts";
 import { fill, money } from "@/lib/format";
 import { effectiveCommission, salePrice } from "@/lib/pricing";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 type Props = { t: Dict; lang: Locale; isAdmin: boolean; id?: string };
 
@@ -46,6 +47,7 @@ export function ManualForm({ t, lang, isAdmin, product, embedded, onCreated }: P
   const create = useCreateProduct();
   const update = useUpdateProduct(product?.id ?? "");
   const remove = useDeleteProduct();
+  const confirm = useConfirm();
   const [makerId, setMakerId] = useState(product?.manufacturer.id ?? "");
   const [specs, setSpecs] = useState(product?.specs ?? []);
   const [active, setActive] = useState(product?.active ?? true);
@@ -79,8 +81,8 @@ export function ManualForm({ t, lang, isAdmin, product, embedded, onCreated }: P
     }
   }
 
-  function onDelete() {
-    if (!product || !window.confirm(p.confirmDelete)) return;
+  async function onDelete() {
+    if (!product || !(await confirm({ message: p.confirmDelete, subject: product.name, confirmLabel: p.delete }))) return;
     remove.mutate(product.id, { onSuccess: () => router.replace(`/${lang}/app/products`), onError: () => setError(p.saveError) });
   }
 
@@ -156,6 +158,7 @@ function ImportedPanel({ t, lang, isAdmin, product }: Props & { product: Product
   const global = useCommission().data?.commissionPct ?? 0;
   const update = useUpdateProduct(product.id);
   const remove = useDeleteProduct();
+  const confirm = useConfirm();
   const [own, setOwn] = useState(product.commissionPct == null ? "" : String(product.commissionPct));
   const [active, setActive] = useState(product.active);
   const [msg, setMsg] = useState("");
@@ -173,8 +176,8 @@ function ImportedPanel({ t, lang, isAdmin, product }: Props & { product: Product
     update.mutate({ commissionPct: ownNum, active }, { onSuccess: () => setMsg(p.saved), onError: () => setError(p.saveError) });
   }
 
-  function onDelete() {
-    if (!window.confirm(p.confirmDelete)) return;
+  async function onDelete() {
+    if (!(await confirm({ message: p.confirmDelete, subject: product.name, confirmLabel: p.delete }))) return;
     remove.mutate(product.id, { onSuccess: () => router.replace(`/${lang}/app/products`), onError: () => setError(p.saveError) });
   }
 

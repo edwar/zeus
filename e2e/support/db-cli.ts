@@ -15,11 +15,88 @@ async function cleanup() {
   // Project.quoteId es SetNull al borrar la solicitud: el proyecto se borra antes por su solicitud de origen.
   await prisma.project.deleteMany({ where: { quoteId: { in: quotes.map((q) => q.id) } } });
   await prisma.quoteRequest.deleteMany({ where: { id: { in: quotes.map((q) => q.id) } } });
+  // Contactos del seguimiento (CRM): sus notas y recordatorios se borran en cascada.
+  await prisma.lead.deleteMany({ where: { OR: [{ name: { startsWith: "E2E " } }, { email: E2E_EMAIL }] } });
+  // Proyectos de obra de prueba (checklist, fotos y acta se borran en cascada). Van antes que los equipos: al borrar un equipo el proyecto solo se desasigna.
+  await prisma.project.deleteMany({ where: { id: { startsWith: "e2e-campo" } } });
+  // Casos reales de prueba (titulados «E2E …»).
+  await prisma.caseStudy.deleteMany({ where: { titleEs: { startsWith: "E2E " } } });
+  await cleanupStock();
   await prisma.team.deleteMany({ where: { name: { startsWith: "E2E " } } });
   await prisma.verification.deleteMany({ where: { identifier: { startsWith: "reset-password:e2e-reset-" } } });
   // Los límites de intentos de cambio/restablecimiento se guardan en la base: se reinician para que la serie se pueda repetir.
   await prisma.rateLimit.deleteMany({ where: { OR: ["/change-password", "/request-password-reset", "/reset-password"].map((path) => ({ key: { endsWith: path } })) } });
   await prisma.user.deleteMany({ where: { email: E2E_EMAIL } });
+  await prisma.simulation.deleteMany({ where: { email: E2E_EMAIL } });
+  await prisma.rateLimit.deleteMany({ where: { key: { startsWith: "simulation-" } } });
+}
+
+/**
+ * El simulador limita las solicitudes por conexión (5 por hora). Una corrida de la suite crea más que eso desde la misma IP:
+ * aquí las de prueba cambian de «huella» para dejar de contar contra el límite (siguen siendo de prueba y se borran al final).
+ */
+async function releaseQuoteLimit() {
+  await prisma.quoteRequest.updateMany({ where: { contactEmail: E2E_EMAIL }, data: { ipHash: "e2e-released" } });
+  // Los límites de guardar cálculos (por conexión y por correo) también se reinician entre pruebas.
+  await prisma.rateLimit.deleteMany({ where: { key: { startsWith: "simulation-" } } });
+}
+
+/**
+ * Un proyecto de obra para el equipo de prueba (y otro de un equipo ajeno, para comprobar que no se ve). Imprime sus ids.
+ * No nace de una cotización: el modo campo no la necesita.
+ */
+async function seedField() {
+  // La etiqueta permite sembrar más de un juego de datos en la misma corrida (modo normal y modo sin conexión).
+  const tag = process.argv[3] || "1";
+  const equipo = await prisma.user.findUniqueOrThrow({ where: { email: USERS.equipo.email } });
+  // Lejos de donde simulan los demás flujos e inactivos: estos equipos no deben darle cobertura a ninguna solicitud de prueba.
+  const base = { contactName: "Contacto E2E", phone: "+573001112233", city: "Leticia", lat: -4.2, lon: -69.94, active: false };
+  const mine = await prisma.team.create({ data: { ...base, name: `E2E Campo ${tag}`, members: { create: { userId: equipo.id } } } });
+  const other = await prisma.team.create({ data: { ...base, name: `E2E Campo ajeno ${tag}` } });
+  const due = new Date(Date.now() + 30 * 86_400_000);
+  const start = new Date();
+  const common = { owner: "E2E Admin", due, progress: 0, stage: "install" as const, kwp: 4, town: "Girardot" };
+  await prisma.project.create({
+    data: {
+      ...common, id: `e2e-campo-${tag}`, name: tag === "1" ? "E2E Sistema de campo" : `E2E Sistema de campo ${tag}`, client: "E2E Cliente Campo", teamId: mine.id,
+      milestones: { create: [{ labelEs: "Montaje E2E", labelEn: "E2E mounting", startDate: start, len: 2, crew: "A" }, { labelEs: "Conexión E2E", labelEn: "E2E wiring", startDate: start, len: 1, crew: "B" }] },
+      materials: { create: [{ nameEs: "Panel E2E", nameEn: "E2E panel", qty: 8 }, { nameEs: "Inversor E2E", nameEn: "E2E inverter", qty: 1 }] },
+    },
+  });
+  await prisma.project.create({ data: { ...common, id: `e2e-campo-ajeno-${tag}`, name: "E2E Proyecto ajeno", client: "E2E Cliente Ajeno", teamId: other.id } });
+  console.log(JSON.stringify({ mine: `e2e-campo-${tag}`, other: `e2e-campo-ajeno-${tag}` }));
+}
+
+/** Quita los proyectos y equipos de obra de prueba: otras pruebas esperan que no haya proyectos ni equipos al empezar. */
+async function cleanupField() {
+  await prisma.project.deleteMany({ where: { id: { startsWith: "e2e-campo" } } });
+  await prisma.team.deleteMany({ where: { name: { startsWith: "E2E Campo" } } });
+}
+
+/** Dos productos de prueba (uno manual y uno de Autosolar con su costo de proveedor) y un proyecto que los usa. Imprime sus ids. */
+async function seedStock() {
+  const maker = await prisma.manufacturer.upsert({ where: { slug: "e2e-fabricante-stock" }, update: {}, create: { name: "E2E Fabricante Stock", slug: "e2e-fabricante-stock" } });
+  const base = { manufacturerId: maker.id, category: "E2E", kind: "panel" as const, active: true, currency: "COP" };
+  const own = await prisma.product.create({ data: { ...base, name: "E2E Panel de bodega", slug: "e2e-panel-de-bodega", sku: "E2E-PAN", price: 1_000_000, inStock: true } });
+  const supplier = await prisma.product.create({
+    data: { ...base, name: "E2E Inversor Autosolar", slug: "e2e-inversor-autosolar", sku: "E2E-INV", source: "autosolar", sourceUrl: "https://e2e.invalid/inversor", price: 900_000, supplierPrice: 700_000, inStock: false },
+  });
+  await prisma.project.create({
+    data: {
+      id: "e2e-campo-stock", name: "E2E Proyecto con inventario", client: "E2E Cliente Inventario", town: "Girardot", kwp: 4, stage: "install", owner: "E2E Admin", due: new Date(Date.now() + 30 * 86_400_000), progress: 0,
+      materials: { create: [
+        { id: "e2e-stock-m1", nameEs: "E2E Panel de bodega", nameEn: "E2E Panel de bodega", qty: 2, productId: own.id, unitPrice: 1_000_000 },
+        { id: "e2e-stock-m2", nameEs: "E2E Inversor Autosolar", nameEn: "E2E Inversor Autosolar", qty: 1, productId: supplier.id, unitPrice: 900_000, unitCost: 700_000 },
+      ] },
+    },
+  });
+  console.log(JSON.stringify({ own: own.id, supplier: supplier.id, project: "e2e-campo-stock", m1: "e2e-stock-m1", m2: "e2e-stock-m2" }));
+}
+
+async function cleanupStock() {
+  await prisma.project.deleteMany({ where: { id: "e2e-campo-stock" } });
+  await prisma.product.deleteMany({ where: { slug: { in: ["e2e-panel-de-bodega", "e2e-inversor-autosolar"] } } }); // el inventario y sus movimientos se borran en cascada
+  await prisma.manufacturer.deleteMany({ where: { slug: "e2e-fabricante-stock" } });
 }
 
 async function createUsers() {
@@ -103,7 +180,7 @@ async function cleanupBulk() {
   await prisma.quoteRequest.deleteMany({ where: { id: { startsWith: "e2e-bulkq-" } } });
 }
 
-const actions = { cleanup, createUsers, createTempUser, createResetToken, seedBulk, cleanupBulk } as const;
+const actions = { cleanup, releaseQuoteLimit, seedField, cleanupField, seedStock, cleanupStock, createUsers, createTempUser, createResetToken, seedBulk, cleanupBulk } as const;
 const action = process.argv[2] as keyof typeof actions;
 if (!actions[action]) {
   console.error(`Acción desconocida: ${action}`);

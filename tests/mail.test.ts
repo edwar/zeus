@@ -35,3 +35,15 @@ test("sin RESEND_API_KEY y MAIL_FROM el correo no está configurado", () => {
     if (saved.f === undefined) delete process.env.MAIL_FROM; else process.env.MAIL_FROM = saved.f;
   }
 });
+
+test("aviso de respuesta del cliente: asunto, comentario escapado y enlace", async () => {
+  const { quoteDecisionEmail } = await import("../src/lib/mail");
+  const url = "https://zeus.cognilab.dev/es/app/quotes/abc";
+  const yes = quoteDecisionEmail({ client: "Ana <b>", decision: "accepted", url });
+  assert.match(yes.subject, /aceptó/);
+  assert.ok(yes.text.includes(url) && yes.text.includes("Falta tu aprobación"));
+  assert.ok(!yes.html.includes("<b>"), "el nombre se escapa");
+  const no = quoteDecisionEmail({ client: "Ana", decision: "declined", note: "muy caro <script>", url });
+  assert.match(no.subject, /no aceptó/);
+  assert.ok(no.text.includes("muy caro") && !no.html.includes("<script>"));
+});

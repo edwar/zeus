@@ -9,7 +9,9 @@ import { money } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { BillUpload } from "./BillUpload";
 import { BillReview } from "./BillReview";
-import { KitBuilder } from "./KitBuilder";
+import { KitBuilder, type KitInitial } from "./KitBuilder";
+import { Loading } from "@/components/Loading";
+import { TOKEN_RE } from "@/lib/quote-share";
 
 type Step = "upload" | "review" | "kit" | "sent";
 const ORDER = ["upload", "review", "kit"] as const;
@@ -21,6 +23,9 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
   const [sources, setSources] = useState<Sources>({});
   const [warnings, setWarnings] = useState<string[]>([]);
   const [sent, setSent] = useState<{ id: string; total: number; fulfillment: string } | null>(null);
+  // Cálculo guardado: si la URL trae ?s=<token> se recupera y se salta directo al kit.
+  const [restore, setRestore] = useState<"idle" | "loading" | "error">("idle");
+  const [restored, setRestored] = useState<{ savedAt: string; initial: KitInitial } | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const first = useRef(true);
 
@@ -31,6 +36,27 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
   }, [step]);
 
   const sizing = useMemo(() => sizingOf(values), [values]);
+
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("s");
+    if (!token || !TOKEN_RE.test(token)) return;
+    let cancelled = false;
+    setRestore("loading");
+    fetch(`/api/simulations/${token}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(String(res.status));
+        return (await res.json()) as { state: { values: ReviewValues; kit: KitInitial; fin: KitInitial["fin"] }; savedAt: string };
+      })
+      .then((r) => {
+        if (cancelled) return;
+        setValues(r.state.values);
+        setRestored({ savedAt: r.savedAt, initial: { ...r.state.kit, fin: r.state.fin } });
+        setRestore("idle");
+        setStep("kit");
+      })
+      .catch(() => !cancelled && setRestore("error"));
+    return () => { cancelled = true; };
+  }, []);
 
   function onExtracted(bill: BillData) {
     const r = valuesFromBill(bill);
@@ -45,6 +71,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
     setSources({});
     setWarnings([]);
     setSent(null);
+    setRestored(null);
     setStep("upload");
   }
 
@@ -69,7 +96,9 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
 
       <div className="wiz__panel">
         <h3 ref={heading} tabIndex={-1} className="wiz__title">{titles[step]}</h3>
-        {step === "upload" && <BillUpload t={t} lang={lang} onExtracted={onExtracted} onManual={() => setStep("review")} />}
+        {restore === "loading" && <Loading label={w.save.restoring} rows={4} />}
+        {restore === "error" && <p className="wiz__hint" role="alert">{w.save.restoreError}</p>}
+        {step === "upload" && restore !== "loading" && <BillUpload t={t} lang={lang} onExtracted={onExtracted} onManual={() => setStep("review")} />}
         {step === "review" && (
           <BillReview
             t={t}
@@ -82,7 +111,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
           />
         )}
         {step === "kit" && sizing && (
-          <KitBuilder t={t} lang={lang} values={values} sizing={sizing} onBack={() => setStep("review")} onSent={(id, total, fulfillment) => { setSent({ id, total, fulfillment }); setStep("sent"); }} />
+          <KitBuilder t={t} lang={lang} values={values} sizing={sizing} initial={restored?.initial} restoredAt={restored?.savedAt} onCoverage={(pct) => setValues((v) => ({ ...v, coveragePct: String(pct) }))} onBack={() => setStep("review")} onSent={(id, total, fulfillment) => { setSent({ id, total, fulfillment }); setStep("sent"); }} />
         )}
         {step === "sent" && sent && (
           <div className="wiz__done" role="status">

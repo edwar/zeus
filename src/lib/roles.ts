@@ -10,6 +10,8 @@ export type Role = (typeof ROLES)[number];
 
 export type Perm =
   | "quotes" //            solicitudes de clientes (datos de contacto y precios)
+  | "cases" //             casos reales y testimonios que se publican en la landing
+  | "stock" //             inventario propio, costos y margen (nunca lo ve el equipo de instalación)
   | "catalog" //           productos, fabricantes, comisión y sincronización
   | "users" //             cuentas del equipo de trabajo
   | "teams.view" //        ver los equipos operativos
@@ -20,8 +22,8 @@ export type Perm =
   | "projects.progress"; // avance de hitos, materiales listos, registrar/atender alertas
 
 const MATRIX: Record<Role, readonly Perm[]> = {
-  admin: ["quotes", "catalog", "users", "teams.view", "teams.edit", "teams.delete", "projects.view", "projects.manage", "projects.progress"],
-  gestion: ["quotes", "teams.view", "teams.edit", "projects.view", "projects.manage", "projects.progress"],
+  admin: ["quotes", "cases", "stock", "catalog", "users", "teams.view", "teams.edit", "teams.delete", "projects.view", "projects.manage", "projects.progress"],
+  gestion: ["quotes", "cases", "stock", "teams.view", "teams.edit", "projects.view", "projects.manage", "projects.progress"],
   equipo: ["projects.view", "projects.progress"],
 };
 

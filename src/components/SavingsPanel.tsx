@@ -2,6 +2,7 @@ import { useId } from "react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { money } from "@/lib/format";
+import { cumulativeSavings } from "@/lib/scenarios";
 
 const YEARS = 15;
 const CW = 560;
@@ -39,7 +40,7 @@ export function SavingsPanel({ t, lang, monthlyKwh, tariff, monthlySavings, kwp,
   const payback = total / yearly;
   const paybackText = payback < 1 ? `${Math.max(1, Math.round(payback * 12))} ${s.months}` : `${num.format(payback)} ${s.years}`;
   // Ahorro acumulado menos la inversión, con una pequeña pérdida anual de rendimiento de los paneles.
-  const series = Array.from({ length: YEARS + 1 }, (_, y) => y * yearly * Math.pow(0.995, y / 2) - total);
+  const series = Array.from({ length: YEARS + 1 }, (_, y) => cumulativeSavings(yearly, y) - total);
 
   const min = Math.min(...series, 0);
   const max = Math.max(...series, 1);

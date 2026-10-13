@@ -6,6 +6,8 @@ import { guardApi } from "@/lib/session";
 import { installFee } from "@/lib/install-fee";
 import { createProjectFromQuote } from "@/lib/quote-project";
 import { QUOTE_STATUSES, canMove, needsNote } from "@/lib/quote-flow";
+import { noticeApproved } from "@/lib/client-notices";
+import { followUpSelect, toFollowUpDto } from "@/lib/crm-server";
 
 const num = (d: { toString(): string } | null) => (d == null ? null : Number(d));
 
@@ -13,11 +15,15 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/quotes/[id]"
   const denied = await guardApi(req, { perm: "quotes" });
   if (denied) return denied;
   const { id } = await ctx.params;
-  const q = await prisma.quoteRequest.findUnique({ where: { id }, include: { project: { select: { id: true, installFee: true } }, team: { select: { id: true, name: true, installBase: true, installPerKwp: true } }, items: { orderBy: { kind: "asc" } }, events: { orderBy: { createdAt: "desc" } } } });
+  const q = await prisma.quoteRequest.findUnique({ where: { id }, include: { lead: { select: { id: true, name: true } }, followUps: { orderBy: [{ doneAt: { sort: "asc", nulls: "first" } }, { dueOn: "asc" }], select: followUpSelect }, project: { select: { id: true, installFee: true } }, team: { select: { id: true, name: true, installBase: true, installPerKwp: true } }, items: { orderBy: { kind: "asc" } }, events: { orderBy: { createdAt: "desc" } } } });
   if (!q) return Response.json({ error: "not_found" }, { status: 404 });
   return Response.json({
     id: q.id,
     status: q.status,
+    lang: q.lang,
+    source: q.source,
+    lead: q.lead,
+    followUps: q.followUps.map((f) => toFollowUpDto(f)),
     contactName: q.contactName,
     contactEmail: q.contactEmail,
     contactPhone: q.contactPhone,
@@ -33,6 +39,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/quotes/[id]"
     fulfillment: q.fulfillment,
     installerChoice: q.installerChoice,
     financing: q.financing,
+    share: { expiresAt: q.shareExpiresAt?.toISOString() ?? null, decision: q.clientDecision, decidedAt: q.clientDecidedAt?.toISOString() ?? null, note: q.clientDecisionNote },
     team: q.team && { id: q.team.id, name: q.team.name },
     // Con proyecto, el valor es el congelado al aprobar; antes, la estimación con la tarifa vigente del equipo
     installFee: q.project?.installFee != null ? Number(q.project.installFee) : q.team ? installFee({ installBase: num(q.team.installBase), installPerKwp: num(q.team.installPerKwp) }, (q.sizing as { kwp?: number }).kwp ?? 0) : null,
@@ -76,5 +83,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/quotes/[id
     return true;
   });
   if (!done) return Response.json({ error: "conflict" }, { status: 409 });
+  // Aviso al cliente, ya con el cambio guardado: si el correo falla, la aprobación sigue en pie (queda anotado en el historial).
+  if (to === "approved") await noticeApproved(id, session?.user.name ?? "—").catch((e) => console.error("notice approved", e));
   return Response.json({ id, status: to });
 }

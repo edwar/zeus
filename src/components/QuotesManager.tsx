@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Check, Copy, Download, Mail, MessageCircle } from "lucide-react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { money, num } from "@/lib/format";
 import { formatPhone, whatsappUrl } from "@/lib/phone";
 import { distanceKm } from "@/lib/service-area";
 import { useTeams } from "@/hooks/useTeams";
+import { QuoteCrmPanel } from "@/components/CrmManager";
 import { QuoteSteps } from "@/components/QuoteSteps";
 import { QuoteKitSection } from "@/components/QuoteKitSection";
 import { EmptyState } from "@/components/EmptyState";
@@ -17,10 +19,13 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
 import { DataPagination } from "@/components/DataPagination";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { type QuoteStatus, useQuote, useQuotes, useSetFulfillment, useSetQuoteStatus, useSetQuoteTeam } from "@/hooks/useQuotes";
+import { type QuoteStatus, useQuote, useQuotes, useSetFulfillment, useSetQuoteStatus, useSetQuoteTeam, useShareQuote, useEmailQuoteLink, type NoticeOutcome } from "@/hooks/useQuotes";
 import { QUOTE_STATUSES, TRANSITIONS, kitEditable, needsNote } from "@/lib/quote-flow";
+import { shareMessage, whatsappShareUrl } from "@/lib/quote-share";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 
@@ -34,18 +39,35 @@ function fulfillmentNote(note: string, f: { [k: string]: unknown }) {
   return [first.split("→").map(label).join(" → "), ...rest].join("\n");
 }
 
+/** "accepted\ncomentario" del evento de respuesta del cliente → etiqueta legible + comentario. */
+function decisionNote(note: string, share: Dict["app"]["quotes"]["share"]) {
+  const [d, ...rest] = note.split("\n");
+  return [share.decisions[d as "accepted" | "declined"] ?? d, ...rest].join("\n");
+}
+
+/** "stage_install|sent" del evento de aviso → «Etapa: instalación — enviado por correo». */
+function noticeNote(note: string, share: Dict["app"]["quotes"]["share"]) {
+  const [kind, outcome] = note.split("|");
+  const label = share.notices[kind as keyof typeof share.notices] ?? kind;
+  const result = share.outcomes[outcome as keyof typeof share.outcomes] ?? outcome;
+  return `${label} — ${result}`;
+}
+
 function FlowPanel({ t, lang, id, status, events }: { t: Dict; lang: Locale; id: string; status: QuoteStatus; events: { id: string; kitChange: boolean; subject: string | null; from: QuoteStatus | null; to: QuoteStatus; note: string | null; by: string; at: string }[] }) {
   const q = t.app.quotes;
   const f = q.flow;
   const set = useSetQuoteStatus();
+  const confirm = useConfirm();
   const [note, setNote] = useState("");
   const [discarding, setDiscarding] = useState(false);
   const [error, setError] = useState("");
   const date = new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" });
 
-  function go(to: QuoteStatus) {
+  async function go(to: QuoteStatus) {
     setError("");
     if (needsNote(to) && !note.trim()) { setError(f.errors.note_required); return; }
+    // Aprobar crea el proyecto y no se puede deshacer: se pide confirmar.
+    if (to === "approved" && !(await confirm({ message: f.approveConfirm, confirmLabel: f.actions.approved }))) return;
     set.mutate(
       { id, status: to, note: note.trim() || undefined },
       {
@@ -91,12 +113,90 @@ function FlowPanel({ t, lang, id, status, events }: { t: Dict; lang: Locale; id:
         <ol className="flow__log">
           {events.map((e) => (
             <li key={e.id}>
-              <strong>{e.subject === "fulfillment" ? q.fulfillment.changedTitle : e.subject === "team" ? q.fulfillment.teamChangedTitle : e.kitChange ? q.edit.changed : q.statuses[e.to]}</strong> <span>{date.format(new Date(e.at))} · {f.by} {e.by}</span>
-              {e.note && <p className={e.kitChange || e.subject ? "flow__changes" : undefined}>{e.subject === "fulfillment" ? fulfillmentNote(e.note, q.fulfillment) : e.note}</p>}
+              <strong>{e.subject === "fulfillment" ? q.fulfillment.changedTitle : e.subject === "team" ? q.fulfillment.teamChangedTitle : e.subject === "share" ? q.share.eventShare : e.subject === "notice" ? q.share.eventNotice : e.subject === "portal" ? q.share.eventPortal : e.subject === "note" ? t.app.crm.panel.eventNote : e.subject === "source" ? t.app.crm.panel.eventSource : e.subject === "lead" ? t.app.crm.panel.eventLead : e.subject === "client_decision" ? q.share.eventDecision : e.kitChange ? q.edit.changed : q.statuses[e.to]}</strong> <span>{date.format(new Date(e.at))} · {f.by} {e.by}</span>
+              {e.subject === "notice" && e.note
+                ? <p className="flow__changes">{noticeNote(e.note, q.share)}</p>
+                : e.subject === "client_decision" && e.note
+                ? <p className="flow__changes">{decisionNote(e.note, q.share)}</p>
+                : e.note && e.subject !== "share" && e.subject !== "portal" && e.subject !== "source" && e.subject !== "lead" && <p className={e.kitChange || e.subject ? "flow__changes" : undefined}>{e.subject === "fulfillment" ? fulfillmentNote(e.note, q.fulfillment) : e.note}</p>}
             </li>
           ))}
         </ol>
       )}
+    </section>
+  );
+}
+
+/** Enlace público para el cliente + PDF. El token solo existe en la respuesta de «generar»: se queda en memoria hasta salir de la página. */
+function SharePanel({ t, lang, r }: { t: Dict; lang: Locale; r: { id: string; status: QuoteStatus; lang: "es" | "en"; contactName: string; contactPhone: string; share: { expiresAt: string | null; decision: "accepted" | "declined" | null; decidedAt: string | null; note: string | null } } }) {
+  const q = t.app.quotes;
+  const s = q.share;
+  const create = useShareQuote();
+  const confirm = useConfirm();
+  const mail = useEmailQuoteLink();
+  const [mailResult, setMailResult] = useState<NoticeOutcome | "error" | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+  const date = new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" });
+  const confirmed = r.status === "confirmed";
+  const active = r.share.expiresAt != null && new Date(r.share.expiresAt).getTime() > Date.now();
+
+  async function generate() {
+    // Con un enlace ya generado, uno nuevo invalida el anterior y borra la respuesta del cliente.
+    if ((active || url) && !(await confirm({ message: s.regenerateConfirm, confirmLabel: s.regenerate }))) return;
+    setError("");
+    setCopied(false);
+    setMailResult(null);
+    create.mutate({ id: r.id }, { onSuccess: (d) => setUrl(d.url), onError: () => setError(s.error) });
+  }
+  async function copy() {
+    if (!url) return;
+    await navigator.clipboard.writeText(url).catch(() => {});
+    setCopied(true);
+  }
+  function sendEmail() {
+    if (!url) return;
+    setMailResult(null);
+    mail.mutate({ id: r.id, url }, { onSuccess: (d) => setMailResult(d.outcome ?? "failed"), onError: () => setMailResult("error") });
+  }
+  const wa = url ? whatsappShareUrl(r.contactPhone, shareMessage({ name: r.contactName, url, lang: r.lang })) : null;
+
+  return (
+    <section className="panel" aria-labelledby={`share-${r.id}`}>
+      <h2 id={`share-${r.id}`} className="panel__title">{s.title}</h2>
+      <p className="panel__meta">{s.hint}</p>
+      {r.share.decision && (
+        <p role="status">
+          <Badge variant={r.share.decision === "accepted" ? "default" : "secondary"}>{s.decisions[r.share.decision]}</Badge>{" "}
+          {r.share.decidedAt && <>{s.decisionAt} {date.format(new Date(r.share.decidedAt))}</>}
+          {r.share.note && <span className="tbl__sub">{r.share.note}</span>}
+          {r.share.decision === "accepted" && r.status === "confirmed" && <span className="tbl__sub">{s.acceptedHint}</span>}
+        </p>
+      )}
+      <div className="flow__actions">
+        <Button asChild variant="outline"><a href={`/api/quotes/${r.id}/pdf?lang=${lang}`}><Download aria-hidden="true" />{s.pdf}</a></Button>
+        {confirmed && <Button type="button" disabled={create.isPending} onClick={generate}>{active || url ? s.regenerate : s.generate}</Button>}
+      </div>
+      {!confirmed && <p className="wiz__hint">{s.lockedHint}</p>}
+      {confirmed && (active || url) && !url && <p className="wiz__hint">{s.active} {r.share.expiresAt && date.format(new Date(r.share.expiresAt))}. {s.regenerateHint}</p>}
+      {confirmed && !active && !url && <p className="wiz__hint">{s.none}</p>}
+      {url && (
+        <div className="flow">
+          <div className="field">
+            <label htmlFor={`share-url-${r.id}`}>{s.title}</label>
+            <Input id={`share-url-${r.id}`} readOnly value={url} onFocus={(e) => e.currentTarget.select()} />
+          </div>
+          <div className="flow__actions">
+            <Button type="button" variant="outline" onClick={copy}>{copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}{copied ? s.copied : s.copy}</Button>
+            <Button type="button" variant="outline" disabled={mail.isPending} onClick={sendEmail}><Mail aria-hidden="true" />{mail.isPending ? s.emailSending : s.email}</Button>
+            {wa && <Button asChild variant="outline"><a href={wa} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden="true" />{s.whatsapp}</a></Button>}
+          </div>
+          {mailResult && <p role="status" className={mailResult === "sent" ? "wiz__hint" : "field-error"}>{s.emailResult[mailResult === "error" ? "failed" : mailResult]}</p>}
+          <p className="wiz__hint">{s.onlyOnce}</p>
+        </div>
+      )}
+      {error && <p className="field-error" role="alert">{error}</p>}
     </section>
   );
 }
@@ -277,6 +377,8 @@ export function QuoteDetailView({ t, lang, id }: { t: Dict; lang: Locale; id: st
 
       <QuoteSteps t={t} lang={lang} status={r.status} projectId={r.projectId} fulfillment={r.fulfillment} />
       <FlowPanel t={t} lang={lang} id={r.id} status={r.status} events={r.events} />
+      <SharePanel t={t} lang={lang} r={r} />
+      <QuoteCrmPanel t={t} lang={lang} r={r} />
 
       <div className="two two--wide two--quote">
         <section className="panel">

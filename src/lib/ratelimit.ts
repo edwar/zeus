@@ -40,3 +40,24 @@ export async function checkExtractionLimit(ipHash: string): Promise<LimitResult>
   if (global >= EXTRACT_LIMITS.globalPerDay) return { ok: false, reason: "capacity", retryAfterSec: 3600 };
   return { ok: true };
 }
+
+/**
+ * Límite de ventana fija por clave (IP con hash + acción), sobre la misma tabla que usa Better Auth.
+ * El incremento es atómico (upsert), así que dos peticiones simultáneas no se saltan el tope.
+ * De vez en cuando borra contadores de ventanas ya vencidas para que la tabla no crezca.
+ */
+export async function hitLimit(action: string, ipHash: string, max: number, windowMs: number): Promise<LimitResult> {
+  const now = Date.now();
+  const bucket = Math.floor(now / windowMs);
+  const key = `${action}:${ipHash}:${bucket}`;
+  const row = await prisma.rateLimit.upsert({
+    where: { key },
+    create: { id: key, key, count: 1, lastRequest: BigInt(now) },
+    update: { count: { increment: 1 }, lastRequest: BigInt(now) },
+    select: { count: true },
+  });
+  if (Math.random() < 0.02) {
+    await prisma.rateLimit.deleteMany({ where: { key: { startsWith: `${action}:` }, lastRequest: { lt: BigInt(now - 2 * windowMs) } } }).catch(() => {});
+  }
+  return row.count > max ? { ok: false, reason: "ip", retryAfterSec: Math.ceil(((bucket + 1) * windowMs - now) / 1000) } : { ok: true };
+}

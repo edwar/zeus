@@ -46,6 +46,7 @@ async function Listing({ params, searchParams }: Pick<PageProps<"/[lang]/product
         <div className="wrap">
           <h1>{s.title}</h1>
           <p>{s.sub}</p>
+          <Button asChild variant="ink"><Link href={`/${lang}/simulator?src=catalog`}>{s.simulate}</Link></Button>
         </div>
       </section>
       <div className="on-light">

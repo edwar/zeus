@@ -38,6 +38,7 @@ export function SiteHeader({ lang, t, cta }: { lang: Locale; t: Dict; cta: React
   const [open, setOpen] = useState(false);
   const links = [
     { href: `/${lang}/simulator`, label: t.nav.simulator },
+    { href: `/${lang}#guia`, label: t.nav.how },
     { href: `/${lang}/products`, label: t.nav.products },
   ];
   return (

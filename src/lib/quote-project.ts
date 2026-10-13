@@ -1,5 +1,6 @@
 import { installFee } from "@/lib/install-fee";
 import type { Prisma } from "@/generated/prisma/client";
+import { materialSeed } from "@/lib/stock";
 
 /**
  * Crea el proyecto de una solicitud aprobada: cliente, ciudad, potencia y materiales salen de la solicitud.
@@ -16,6 +17,7 @@ export async function createProjectFromQuote(tx: Prisma.TransactionClient, quote
   const due = new Date();
   due.setDate(due.getDate() + 30);
   const town = q.city || bill.municipality || bill.department || "—";
+  const seeds = await materialSeed(tx, q.items.map((i) => ({ productId: i.productId, qty: i.qty, unitPrice: i.unitPrice })));
   const project = await tx.project.create({
     data: {
       id: `q-${quoteId.slice(-8)}`,
@@ -30,7 +32,7 @@ export async function createProjectFromQuote(tx: Prisma.TransactionClient, quote
       owner,
       due,
       progress: 0,
-      materials: { create: q.items.map((i) => ({ id: `${quoteId.slice(-8)}-${i.id.slice(-8)}`, nameEs: i.nameSnapshot, nameEn: i.nameSnapshot, qty: i.qty })) },
+      materials: { create: q.items.map((i, n) => ({ id: `${quoteId.slice(-8)}-${i.id.slice(-8)}`, nameEs: i.nameSnapshot, nameEn: i.nameSnapshot, qty: i.qty, ...seeds[n] })) },
     },
     select: { id: true },
   });
