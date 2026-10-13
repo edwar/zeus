@@ -49,3 +49,6 @@ next-env.d.ts
 /e2e/.auth
 /test-results
 /playwright-report
+
+# Videos en bruto de las guías (se regeneran con pnpm videos)
+/.videos-raw

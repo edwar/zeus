@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 
-type Action = "cleanup" | "releaseQuoteLimit" | "seedField" | "cleanupField" | "seedStock" | "cleanupStock" | "createUsers" | "createTempUser" | "createResetToken" | "seedBulk" | "cleanupBulk";
+type Action = "cleanup" | "releaseQuoteLimit" | "seedField" | "cleanupField" | "seedStock" | "cleanupStock" | "renameDemoAdmin" | "seedDemo" | "cleanupDemo" | "quoteIdByEmail" | "createUsers" | "createTempUser" | "createResetToken" | "seedBulk" | "cleanupBulk";
 const run = (action: Action) => execFileSync(process.execPath, ["--import", "tsx", "e2e/support/db-cli.ts", action], { stdio: "inherit" });
 const runOut = (action: Action, ...args: string[]) => execFileSync(process.execPath, ["--import", "tsx", "e2e/support/db-cli.ts", action, ...args], { encoding: "utf8" }).trim().split("\n").pop()!;
 
@@ -22,3 +22,7 @@ export const seedField = (tag = "1") => JSON.parse(runOut("seedField", tag)) as 
 export const cleanupField = () => run("cleanupField");
 export const seedStock = () => JSON.parse(runOut("seedStock")) as { own: string; supplier: string; project: string; m1: string; m2: string };
 export const cleanupStock = () => run("cleanupStock");
+export const renameDemoAdmin = () => run("renameDemoAdmin");
+export const cleanupDemo = () => run("cleanupDemo");
+export const quoteIdByEmail = (email: string) => runOut("quoteIdByEmail", email);
+export const seedDemo = () => JSON.parse(runOut("seedDemo")) as { project: string; panel: string };

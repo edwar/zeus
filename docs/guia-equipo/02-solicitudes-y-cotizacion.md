@@ -6,6 +6,8 @@
 
 ## El recorrido de una solicitud
 
+![Video: atender una solicitud y aprobarla (1 minuto)](video:02-aprobar-solicitud)
+
 ```
 Nueva → Contactada → Cálculo confirmado → Aprobada  (crea el proyecto)
    ↘          ↘               ↘

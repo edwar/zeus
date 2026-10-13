@@ -14,6 +14,9 @@
 
 ## Paso a paso
 
+![Video: crear un caso real, registrar la autorización y publicarlo](video:09-caso-real)
+
+
 ### 1 · Crear el borrador
 Menú **Casos → Nuevo caso**. Llena:
 - **La historia:** título y resumen (en español), y si el cliente te dio un **testimonio** textual, cópialo tal cual. El inglés es opcional: si lo dejas vacío, la versión en inglés muestra el texto en español.

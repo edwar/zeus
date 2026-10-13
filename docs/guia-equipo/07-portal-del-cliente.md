@@ -8,6 +8,9 @@
 
 ## Qué ve el cliente
 
+![Video: documentos del proyecto y portal del cliente](video:07-portal-documentos)
+
+
 Es una página de **solo lectura**, en el idioma en que pidió su cotización:
 
 - **Etapa del proyecto** (Visita técnica → Diseño de ingeniería → Instalación → Monitoreo) y qué significa la etapa actual.

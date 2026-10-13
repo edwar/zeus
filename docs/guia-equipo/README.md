@@ -52,4 +52,18 @@ Para escribir una sección nueva usa la [plantilla](PLANTILLA.md).
 
 > **Guía del comprador:** la que lee el cliente está en la landing del sitio (sección «Qué te toca hacer en cada paso», ancla `#guia`). Si cambias algo que el cliente ve o hace, actualiza también esa guía (`guide` en `src/i18n/es.ts` y `en.ts`).
 
+### Videos de apoyo
+
+Algunas secciones traen un **video corto** (sin sonido, con subtítulos) que muestra el paso a paso. Se graban solos con Playwright, con datos de demostración (nunca de clientes reales), y se comprimen (WebM y MP4 de entre 250 KB y 1,5 MB cada uno, más un póster). Para regenerarlos después de cambiar una pantalla:
+
+```
+pnpm videos          # graba todos y los comprime
+pnpm videos:encode   # solo vuelve a comprimir lo ya grabado (y completa los MP4 que falten)
+```
+
+- Los guiones están en `e2e/videos/`: uno por video, con los subtítulos escritos en el propio guion.
+- Guía del equipo: `docs/guia-equipo/videos/` (solo se ven con sesión). Se insertan en el texto con `![Video: título](video:nombre)`.
+- Guía del comprador: `public/guia/`, en español e inglés.
+- Si cambias una pantalla que sale en un video, vuelve a grabarlo: un video desactualizado confunde más que ayuda.
+
 > Esta guía describe cómo funciona la plataforma hoy. Los datos comerciales de ejemplo (productos, precios, clientes) pueden ser de demostración.

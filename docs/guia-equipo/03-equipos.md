@@ -8,6 +8,9 @@
 
 ## Crear un equipo
 
+![Video: crear un equipo de instalación](video:03-crear-equipo)
+
+
 Botón **Nuevo equipo**.
 
 1. **Nombre del equipo** y **Responsable** (ej. «Equipo Girardot A»).

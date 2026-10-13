@@ -3306,3 +3306,30 @@ main .case.pdetail {
   flex-wrap: wrap;
   gap: var(--s3);
 }
+
+/* Video corto de apoyo en las guías */
+.gvideo {
+  display: grid;
+  gap: var(--s2);
+  margin: var(--s4) 0;
+  max-width: 44rem;
+}
+.gvideo video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 2px solid var(--ink);
+  border-radius: var(--r-lg);
+  background: var(--ink);
+  box-shadow: var(--shadow-hard-sm);
+}
+.gvideo figcaption {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.gvideo--portrait {
+  max-width: 19rem;
+}
+.gvideo--portrait video {
+  aspect-ratio: 390 / 760;
+}
