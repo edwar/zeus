@@ -3,6 +3,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "./prisma";
 import { cleanDescription } from "./text";
 import { safeHttpUrl } from "./url";
+import { effectiveInStock } from "./stock-core";
 import type { Spec } from "./scraper/autosolar";
 
 export const CATALOG_TAG = "catalog";
@@ -31,7 +32,7 @@ export type CatalogDetail = CatalogItem & {
 
 export type Facets = { categories: { name: string; count: number }[]; manufacturers: { name: string; slug: string; count: number }[] };
 
-type Row = Prisma.ProductGetPayload<{ include: { manufacturer: { select: { name: true } } } }>;
+type Row = Prisma.ProductGetPayload<{ include: { manufacturer: { select: { name: true } }; stock: { select: { onHand: true } } } }>;
 
 const imagesOf = (p: Row) => ((p.images as { url: string }[] | null) ?? []).map((i) => i.url).filter(Boolean);
 
@@ -42,7 +43,7 @@ const toItem = (p: Row): CatalogItem => ({
   manufacturer: p.manufacturer.name,
   price: Number(p.price),
   currency: p.currency,
-  inStock: p.inStock,
+  inStock: effectiveInStock(p, p.stock?.onHand ?? null),
   image: imagesOf(p)[0] ?? null,
 });
 
@@ -69,7 +70,7 @@ export async function getCatalogPage(f: { q: string; category: string; manufactu
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
-      include: { manufacturer: { select: { name: true } } },
+      include: { manufacturer: { select: { name: true } }, stock: { select: { onHand: true } } },
       orderBy: [{ inStock: "desc" }, { name: "asc" }, { id: "asc" }],
       skip: (f.page - 1) * size,
       take: size,
@@ -102,7 +103,7 @@ export async function getCatalogProduct(slug: string): Promise<CatalogDetail | n
   cacheLife("minutes");
   cacheTag(CATALOG_TAG);
 
-  const p = await prisma.product.findFirst({ where: { slug, active: true }, include: { manufacturer: { select: { name: true } } } });
+  const p = await prisma.product.findFirst({ where: { slug, active: true }, include: { manufacturer: { select: { name: true } }, stock: { select: { onHand: true } } } });
   if (!p) return null;
   return {
     ...toItem(p),

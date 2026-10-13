@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { releaseQuoteLimit } from "./db";
 
 type Client = { name: string; email: string; phone: string };
 
@@ -25,11 +26,13 @@ export async function buildKit(page: Page) {
 
 /** Llena y envía la solicitud. `installer` solo aplica si la zona está cubierta por un equipo. */
 export async function sendQuote(page: Page, c: Client, installer?: "zeus" | "own") {
+  releaseQuoteLimit(); // una corrida completa pide más de 5 cotizaciones desde la misma conexión
   await page.locator("input[name=name]").fill(c.name);
   await page.locator("input[name=email]").fill(c.email);
   await page.locator("input[name=phone], input[type=tel]").first().fill(c.phone);
   if (installer) await page.locator(`input[name=installer][value=${installer}]`).check();
-  await page.locator(".wiz__consent input[type=checkbox]").check();
+  // El formulario de la solicitud (hay otro, el de «Guarda tu cálculo», con su propia autorización).
+  await page.locator("form", { has: page.locator("input[name=name]") }).locator(".wiz__consent input[type=checkbox]").check();
   await page.getByRole("button", { name: /solicitar/i }).click();
   const done = page.locator(".wiz__done");
   await expect(done).toBeVisible({ timeout: 60_000 });

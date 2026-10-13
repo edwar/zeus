@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authorize, projectVisible } from "@/lib/session";
+import { syncProjectStock } from "@/lib/stock";
 
 /** Marca todos los materiales del proyecto como listos (o no). */
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -12,5 +13,6 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const parsed = z.object({ ready: z.boolean() }).safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "invalid_body" }, { status: 400 });
   const r = await prisma.material.updateMany({ where: { projectId: id }, data: { ready: parsed.data.ready } });
+  await syncProjectStock(id, a.name).catch((e) => console.error("stock sync", e));
   return Response.json({ updated: r.count });
 }

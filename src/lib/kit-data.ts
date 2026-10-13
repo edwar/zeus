@@ -13,7 +13,11 @@ export async function loadKitCatalog(): Promise<KitProduct[]> {
   cacheTag(CATALOG_TAG);
 
   const rows = await prisma.product.findMany({
-    where: { active: true, inStock: true, price: { gt: 0 }, kind: { in: KINDS } },
+    // Disponible = el proveedor lo tiene, o hay unidades en el inventario propio (y un producto manual con inventario se agota en 0)
+    where: {
+      active: true, price: { gt: 0 }, kind: { in: KINDS },
+      OR: [{ inStock: true, stock: null }, { inStock: true, source: "autosolar" }, { stock: { is: { onHand: { gt: 0 } } } }],
+    },
     include: { manufacturer: { select: { name: true } } },
   });
   return rows.map((p) => ({

@@ -48,12 +48,16 @@ test.describe("políticas de privacidad y seguridad", () => {
     await expect(page.locator(".wiz__privacy")).toContainText("servicio de lectura con IA");
 
     await buildKit(page);
-    const consent = page.locator(".wiz__consent a");
-    await expect(consent).toHaveAttribute("href", "/es/privacy");
-    await expect(consent).toHaveAttribute("target", "_blank");
-    await expect(consent).toHaveAttribute("rel", /noopener/);
-    // La casilla sigue siendo obligatoria.
-    await expect(page.locator(".wiz__consent input")).toHaveAttribute("required", "");
+    // Dos autorizaciones en el kit: la de la solicitud y la de «Guarda tu cálculo». Ambas enlazan a la política y son obligatorias.
+    const consents = page.locator(".wiz__consent");
+    await expect(consents).toHaveCount(2);
+    for (let i = 0; i < 2; i++) {
+      const consent = consents.nth(i).locator("a");
+      await expect(consent).toHaveAttribute("href", "/es/privacy");
+      await expect(consent).toHaveAttribute("target", "_blank");
+      await expect(consent).toHaveAttribute("rel", /noopener/);
+      await expect(consents.nth(i).locator("input")).toHaveAttribute("required", "");
+    }
   });
 
   test("security.txt: se publica solo con un correo real y cumple RFC 9116", async ({ request }) => {

@@ -39,33 +39,41 @@ enum Severity {
 }
 
 model Project {
-  id          String        @id // p. ej. "z-101"
-  name        String
-  client      String
-  town        String
-  kwp         Float
-  stage       Stage
-  owner       String
-  due         DateTime      @db.Date
-  blocked     Boolean       @default(false)
-  progress    Int // 0-100 dentro de la etapa
+  id            String        @id // p. ej. "z-101"
+  name          String
+  client        String
+  town          String
+  kwp           Float
+  stage         Stage
+  owner         String
+  due           DateTime      @db.Date
+  blocked       Boolean       @default(false)
+  progress      Int // 0-100 dentro de la etapa
   // Solicitud aprobada de la que nació el proyecto (única: no se crea dos veces)
-  quoteId     String?       @unique
-  quote       QuoteRequest? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  quoteId       String?       @unique
+  quote         QuoteRequest? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
   // Equipo operativo asignado (visita técnica e instalación)
-  teamId      String?
-  team        Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  teamId        String?
+  team          Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
   // Lo que cobra el equipo por esta instalación, congelado al aprobar (si cambia la tarifa, no cambia este proyecto)
-  installFee  Decimal?      @db.Decimal(14, 2)
+  installFee    Decimal?      @db.Decimal(14, 2)
   // Enlace a la app/nube del inversor (Growatt, Deye, Fronius…) y una nota con el usuario o id de la planta
-  monitorUrl  String?
-  monitorNote String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  monitorUrl    String?
+  monitorNote   String?
+  // Avisar por correo al cliente cuando el proyecto pasa a una etapa nueva (solo proyectos que nacen de una cotización)
+  notifyClient  Boolean       @default(true)
+  // Versión del enlace del portal del cliente: subirla invalida el enlace anterior (el enlace se firma, no se guarda)
+  portalVersion Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   milestones Milestone[]
   materials  Material[]
   alerts     Alert[]
+  checks     InstallCheck[]
+  photos     ProjectPhoto[]
+  documents  ProjectDocument[]
+  handover   Handover?
 
   @@index([stage])
   @@index([teamId])
@@ -99,13 +107,22 @@ model Milestone {
 }
 
 model Material {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   nameEs    String
   nameEn    String
   qty       Int
-  ready     Boolean @default(false)
+  ready     Boolean  @default(false)
+  // Producto de origen y precio de venta unitario al aprobar (para el margen). Sin relación: el producto puede borrarse.
+  productId String?
+  unitPrice Decimal? @db.Decimal(14, 2)
+  // De dónde sale: supplier = se pide al proveedor (p. ej. Autosolar) · stock = del inventario propio (se descuenta al quedar listo)
+  source    String   @default("supplier")
+  // Costo unitario: del proveedor al aprobar, o el costo promedio del inventario al descontarlo
+  unitCost  Decimal? @db.Decimal(14, 2)
+  // Unidades que hoy están descontadas del inventario por este material (0 si no se ha descontado)
+  stockQty  Int      @default(0)
 
   @@index([projectId])
 }
@@ -281,6 +298,8 @@ model Product {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   quoteItems     QuoteItem[]
+  stock          StockItem?
+  stockMoves     StockMove[]
 
   @@index([manufacturerId])
   @@index([category])
@@ -331,38 +350,52 @@ enum QuoteStatus {
 
 // Solicitud de cotización creada desde el simulador. No guarda la factura ni nombre/dirección/cuenta de ella.
 model QuoteRequest {
-  id              String       @id @default(cuid())
-  status          QuoteStatus  @default(new)
-  contactName     String
-  contactEmail    String
-  contactPhone    String
-  city            String?
-  systemType      String // ongrid | hybrid | offgrid
+  id                  String       @id @default(cuid())
+  status              QuoteStatus  @default(new)
+  contactName         String
+  contactEmail        String
+  contactPhone        String
+  // Idioma en que pidió la cotización: los correos que reciba salen en él
+  lang                String       @default("es")
+  city                String?
+  systemType          String // ongrid | hybrid | offgrid
   // Cifras confirmadas por el usuario (consumo, tarifa, fases…) y resultado del dimensionamiento
-  bill            Json
-  sizing          Json
-  total           Decimal      @db.Decimal(14, 2)
-  currency        String       @default("COP")
-  consentAt       DateTime
-  ipHash          String
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  discardReason   String?
+  bill                Json
+  sizing              Json
+  total               Decimal      @db.Decimal(14, 2)
+  currency            String       @default("COP")
+  consentAt           DateTime
+  ipHash              String
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  discardReason       String?
   // Kit tal como lo pidió el cliente; se guarda la primera vez que el asesor lo modifica
-  originalItems   Json?
-  originalTotal   Decimal?     @db.Decimal(14, 2)
+  originalItems       Json?
+  originalTotal       Decimal?     @db.Decimal(14, 2)
   // install = dentro de la zona de instalación; kit_only = solo se vende el kit; unknown = sin ubicación para decidir
-  fulfillment     String       @default("unknown")
-  distanceKm      Float?
+  fulfillment         String       @default("unknown")
+  distanceKm          Float?
   // Preferencia del cliente cuando hay equipo en su zona: zeus = que Zeus asigne uno; own = trae su propio instalador
-  installerChoice String?
+  installerChoice     String?
   // Si el cliente simuló financiar el kit: parámetros y resultado recalculado en el servidor (referencial, no es un crédito aprobado)
-  financing       Json?
-  teamId          String?
-  team            Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  items           QuoteItem[]
-  events          QuoteEvent[]
-  project         Project?
+  financing           Json?
+  teamId              String?
+  team                Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  // Enlace público para que el cliente vea la cotización y diga si la acepta. Solo se guarda el hash del token.
+  shareTokenHash      String?      @unique
+  shareExpiresAt      DateTime?
+  // Respuesta del cliente en el enlace (accepted | declined). Aceptar NO aprueba: el asesor aprueba tras asignar equipo.
+  clientDecision      String?
+  clientDecidedAt     DateTime?
+  clientDecisionNote  String?
+  clientDecisionTotal Decimal?     @db.Decimal(14, 2) // total que el cliente tenía a la vista al decidir
+  // De dónde llegó: simulator | catalog | referral | social | event | phone | other (ver src/lib/crm.ts)
+  source              String       @default("simulator")
+  items               QuoteItem[]
+  followUps           FollowUp[]
+  lead                Lead?
+  events              QuoteEvent[]
+  project             Project?
 
   @@index([status, createdAt])
   @@index([ipHash, createdAt])
@@ -449,4 +482,232 @@ model TeamMember {
 
   @@id([teamId, userId])
   @@index([userId])
+}
+
+// Contacto que todavía no ha pedido cotización (un referido, una llamada, una feria…). Cuando pide su cotización con el
+// mismo teléfono o correo, se enlaza solo con la solicitud y conserva su origen.
+model Lead {
+  id         String        @id @default(cuid())
+  name       String
+  phone      String? // E.164
+  email      String?
+  city       String?
+  // De dónde llegó: referral | social | event | phone | other (ver src/lib/crm.ts)
+  source     String
+  // open = en seguimiento · converted = ya pidió su cotización · lost = no avanzó (con motivo)
+  status     String        @default("open")
+  lostReason String?
+  // La persona autorizó que se guarden sus datos para contactarla (de palabra o por escrito)
+  consentAt  DateTime
+  createdBy  String // copia del nombre de quien lo registró
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  quoteId    String?       @unique
+  quote      QuoteRequest? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  notes      LeadNote[]
+  followUps  FollowUp[]
+
+  @@index([status, createdAt])
+  @@index([phone])
+  @@index([email])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  body      String
+  userName  String
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+// Recordatorio de seguimiento: «llamar el jueves». Pertenece a una solicitud o a un contacto (exactamente uno de los dos).
+model FollowUp {
+  id           String        @id @default(cuid())
+  quoteId      String?
+  quote        QuoteRequest? @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  leadId       String?
+  lead         Lead?         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  dueOn        DateTime      @db.Date
+  note         String
+  assigneeId   String?
+  assigneeName String?
+  doneAt       DateTime?
+  doneBy       String?
+  createdBy    String
+  createdAt    DateTime      @default(now())
+
+  @@index([dueOn, doneAt])
+  @@index([quoteId])
+  @@index([leadId])
+}
+
+// Cálculo guardado del simulador (consumo y tarifa confirmados, kit elegido y financiación simulada). Se retoma con un enlace
+// o por correo. Solo se guarda el hash del token; vence a los 60 días. Sin identidad, salvo el correo si lo dejan con autorización.
+model Simulation {
+  id             String    @id @default(cuid())
+  tokenHash      String    @unique
+  lang           String    @default("es")
+  source         String    @default("simulator")
+  state          Json
+  summary        Json
+  email          String?
+  emailConsentAt DateTime?
+  createdAt      DateTime  @default(now())
+  expiresAt      DateTime
+
+  @@index([expiresAt])
+}
+
+// Caso real de un cliente (testimonio + resultado verificado) para la landing. Nada se publica sin la autorización del cliente
+// y sin cómo se verificó el ahorro: ver `missingForPublish` en src/lib/cases.ts.
+model CaseStudy {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  // draft | published
+  status      String    @default("draft")
+  // home | business | community
+  audience    String    @default("home")
+  titleEs     String
+  titleEn     String    @default("")
+  summaryEs   String    @default("")
+  summaryEn   String    @default("")
+  // Testimonio textual del cliente (opcional)
+  quoteEs     String?
+  quoteEn     String?
+  // Cómo aparece su nombre, p. ej. «Familia Pérez» o «Panadería La Esperanza» (decide el cliente)
+  displayName String    @default("")
+  town        String    @default("")
+  department  String?
+  kwp         Float     @default(0)
+  // ongrid | hybrid | offgrid
+  systemType  String    @default("ongrid")
+  installedOn DateTime? @db.Date
+  // Factura mensual de energía antes y después (COP), tal como se verificó
+  billBefore  Int       @default(0)
+  billAfter   Int       @default(0)
+  currency    String    @default("COP")
+  // Cómo se verificó el ahorro (qué facturas, de qué meses) y cuándo
+  evidence    String    @default("")
+  verifiedOn  DateTime? @db.Date
+  verifiedBy  String?
+  // Autorización del cliente para publicar su caso: quién la registró y cómo la dio (por escrito, por WhatsApp…)
+  consentAt   DateTime?
+  consentBy   String?
+  consentNote String?
+  // [{ url, alt }] en el almacenamiento público
+  photos      Json      @default("[]")
+  createdBy   String
+  publishedBy String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+// Paso del checklist de instalación de un proyecto. La clave viene de la plantilla (src/lib/field-checklist.ts) y no cambia.
+model InstallCheck {
+  id        String    @id @default(cuid())
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  key       String
+  labelEs   String
+  labelEn   String
+  order     Int
+  done      Boolean   @default(false)
+  // Cuándo y quién lo marcó (la hora es la del teléfono, acotada). Con ella gana la última escritura al sincronizar.
+  doneAt    DateTime?
+  doneBy    String?
+  note      String?
+  clientAt  DateTime?
+
+  @@unique([projectId, key])
+  @@index([projectId])
+}
+
+// Foto de obra. El id lo genera el teléfono (así reenviarla no la duplica). Se guarda en el almacenamiento privado si está
+// configurado; si no, en la propia base (solo mientras se configura el almacenamiento). Nunca se sirve por URL pública.
+model ProjectPhoto {
+  id          String   @id
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  checkKey    String?
+  contentType String
+  size        Int
+  storageKey  String?
+  data        Bytes?
+  takenAt     DateTime
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
+// Acta de entrega y conformidad: la firma del cliente al terminar la instalación (una por proyecto).
+model Handover {
+  projectId   String   @id
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  signerName  String
+  // PNG pequeño (data URL) dibujado en el teléfono
+  signature   String
+  notes       String?
+  signedAt    DateTime
+  collectedBy String
+  createdAt   DateTime @default(now())
+}
+
+// Documentos del proyecto (planos, permisos, certificados…). Privados: solo se entregan desde el servidor, tras comprobar el permiso.
+// `visibleToClient` los muestra en el portal del cliente; por defecto no.
+model ProjectDocument {
+  id              String   @id
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  kind            String
+  title           String
+  fileName        String
+  contentType     String
+  size            Int
+  storageKey      String?
+  data            Bytes?
+  visibleToClient Boolean  @default(false)
+  uploadedBy      String
+  createdAt       DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
+// Inventario propio de un producto (solo los que se compran para tener en bodega; los demás se piden al proveedor al aprobar).
+// Vive aparte de Product: la sincronización con Autosolar reescribe el producto y no debe tocar las existencias.
+model StockItem {
+  productId String   @id
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  onHand    Int      @default(0)
+  minQty    Int      @default(0)
+  // Costo promedio ponderado de lo que hay en bodega (nulo si todavía no se sabe)
+  avgCost   Decimal? @db.Decimal(14, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Movimientos del inventario: nunca se editan ni se borran (es el rastro para cuadrar diferencias).
+// kind: purchase (entrada) · adjust (conteo físico) · project (salida a un proyecto) · return (vuelve de un proyecto)
+model StockMove {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  kind       String
+  qty        Int // con signo: + entra, − sale
+  unitCost   Decimal? @db.Decimal(14, 2)
+  balance    Int // existencias después del movimiento
+  projectId  String?
+  materialId String?
+  note       String?
+  userName   String
+  createdAt  DateTime @default(now())
+
+  @@index([productId, createdAt])
+  @@index([projectId])
 }

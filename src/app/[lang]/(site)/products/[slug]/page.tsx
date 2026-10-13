@@ -84,6 +84,7 @@ async function Detail({ params }: Pick<PageProps<"/[lang]/products/[slug]">, "pa
             </div>
             <p className="pdetail__note">{s.priceNote}</p>
             <div className="pdetail__cta">
+              <Button asChild><Link href={`/${lang}/simulator?src=catalog`}>{s.simulate}</Link></Button>
               {p.datasheetUrl && <Button asChild variant="outline"><a href={p.datasheetUrl} target="_blank" rel="noopener noreferrer">{s.datasheet}</a></Button>}
             </div>
             {p.sku && <p className="pdetail__sku">{s.sku}: {p.sku}</p>}

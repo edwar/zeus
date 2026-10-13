@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { E164 } from "@/lib/phone";
+import { PUBLIC_SOURCES } from "@/lib/crm";
 
 const text = (max: number) => z.string().trim().max(max);
 
@@ -41,6 +42,10 @@ export const createQuoteSchema = z.object({
   financing: z
     .object({ downPct: z.number().int().min(0).max(90), termMonths: z.number().int().min(6).max(120), rateEA: z.number().min(0).max(100), entity: text(80).nullable().optional() })
     .optional(),
+  // Idioma de la página desde la que se pidió: los correos al cliente salen en él
+  lang: z.enum(["es", "en"]).default("es"),
+  // Por dónde llegó al simulador (?src=…). Solo estadística: el visitante no puede inventar orígenes fuera de la lista.
+  source: z.enum(PUBLIC_SOURCES).default("simulator"),
   consent: z.literal(true), // autorización para tratar los datos de contacto (Ley 1581 de 2012)
   systemType: z.enum(["ongrid", "hybrid", "offgrid"]),
   bill: quoteBillSchema,

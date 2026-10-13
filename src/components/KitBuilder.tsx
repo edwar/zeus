@@ -7,7 +7,7 @@ import type { Candidate, KitInput, Selection, Slot, Tier } from "@/lib/kit";
 import type { ExtraKey } from "@/lib/install-kit";
 import type { Sizing } from "@/lib/sizing";
 import { hasBattery, paybackYears } from "@/lib/sizing";
-import { phasesOf, type ReviewValues } from "@/lib/wizard";
+import { kitBaseOf, type ReviewValues } from "@/lib/wizard";
 import { fill, money, num } from "@/lib/format";
 import { useKit } from "@/hooks/useKit";
 import { useKitOptions } from "@/hooks/useKitOptions";
@@ -17,33 +17,32 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SavingsPanel } from "./SavingsPanel";
 import { QuoteRequestForm, type QuoteLine } from "./QuoteRequestForm";
+import { SaveCalculation } from "./SaveCalculation";
+import { ScenarioComparator } from "./ScenarioComparator";
+import type { SimulationState } from "@/lib/simulation";
 import { FinancingPanel, type FinState, initialFinancing, effectiveRate } from "./FinancingPanel";
 import { useFinanceRates } from "@/hooks/useFinanceRates";
 
 type SlotKey = "panels" | "inverter" | "batteries" | "structure";
 type Sel = Selection & { panelQty?: number };
 
-type Props = { t: Dict; lang: Locale; values: ReviewValues; sizing: Sizing; onBack: () => void; onSent: (id: string, total: number, fulfillment: string) => void };
+/** Lo que se guarda y se retoma de la configuración del kit (ver «Guarda tu cálculo»). */
+export type KitInitial = SimulationState["kit"] & { fin: SimulationState["fin"] };
+type Props = { t: Dict; lang: Locale; values: ReviewValues; sizing: Sizing; initial?: KitInitial; restoredAt?: string; onCoverage?: (pct: number) => void; onBack: () => void; onSent: (id: string, total: number, fulfillment: string) => void };
 
-export function KitBuilder({ t, lang, values, sizing, onBack, onSent }: Props) {
+export function KitBuilder({ t, lang, values, sizing, initial, restoredAt, onCoverage, onBack, onSent }: Props) {
   const k = t.wiz.kit;
   // La opción elegida define la selección; al tocar un componente pasa a "custom" y la selección es la propia.
-  const [tier, setTier] = useState<Tier | "custom">("balanced");
-  const [custom, setCustom] = useState<Sel>({});
+  const [tier, setTier] = useState<Tier | "custom">(initial?.tier ?? "balanced");
+  const [custom, setCustom] = useState<Sel>((initial?.custom as Sel | undefined) ?? {});
   // Cantidades editadas a mano (no-paneles): se descartan solas si cambia lo que las originó.
-  const [qtyEdits, setQtyEdits] = useState<Record<string, number>>({});
+  const [qtyEdits, setQtyEdits] = useState<Record<string, number>>(initial?.qtyEdits ?? {});
   // Complementos que el cliente decidió no incluir (p. ej. ya tiene gabinete).
-  const [fin, setFin] = useState<FinState>(initialFinancing);
+  const [fin, setFin] = useState<FinState>(initial?.fin ?? initialFinancing);
   const finRates = useFinanceRates(fin.termMonths, fin.on); // misma consulta que usa el panel: React Query la comparte
-  const [skipped, setSkipped] = useState<Partial<Record<ExtraKey, boolean>>>({});
+  const [skipped, setSkipped] = useState<Partial<Record<ExtraKey, boolean>>>((initial?.skipped as Partial<Record<ExtraKey, boolean>> | undefined) ?? {});
 
-  const base: Omit<KitInput, "selection"> = {
-    systemType: values.systemType,
-    phases: phasesOf(values.connection),
-    targetKwp: sizing.kwp,
-    backupKw: hasBattery(values.systemType) ? Number(values.backupKw.replace(",", ".")) : undefined,
-    backupNominalKwh: sizing.batteryNominalKwh,
-  };
+  const base: Omit<KitInput, "selection"> = kitBaseOf(values, sizing);
   const { data: options } = useKitOptions(base);
   const sel: Sel = tier === "custom" ? custom : options?.find((o) => o.tier === tier)?.selection ?? {};
   const input: KitInput = { ...base, selection: sel };
@@ -118,6 +117,7 @@ export function KitBuilder({ t, lang, values, sizing, onBack, onSent }: Props) {
 
   return (
     <div className="wiz__kit">
+      {restoredAt && <p className="wiz__hint" role="status">{fill(t.wiz.save.restored, { date: new Intl.DateTimeFormat(lang, { dateStyle: "long" }).format(new Date(restoredAt)) })}</p>}
       <section className="wiz__sizing" aria-label={k.sizing}>
         <h3>{k.sizing}</h3>
         <dl className="wiz__facts">
@@ -253,7 +253,34 @@ export function KitBuilder({ t, lang, values, sizing, onBack, onSent }: Props) {
           </section>
           <SavingsPanel t={t} lang={lang} monthlyKwh={Number(values.monthlyKwh.replace(",", "."))} tariff={Number(values.tariff.replace(",", ".")) || null} monthlySavings={sizing.monthlySavings} kwp={kit.arrayKwp || sizing.kwp} total={total} />
           <FinancingPanel t={t} lang={lang} total={total} monthlySavings={sizing.monthlySavings} value={fin} onChange={setFin} />
+          <ScenarioComparator
+            t={t}
+            lang={lang}
+            values={values}
+            tier={tier}
+            fin={fin}
+            onFin={(patch) => setFin((f) => ({ ...f, ...patch }))}
+            onPick={(pct) => {
+              // Otro tamaño cambia los componentes compatibles: se vuelve al kit equilibrado y se descartan las ediciones a mano.
+              setTier("balanced");
+              setCustom({});
+              setQtyEdits({});
+              onCoverage?.(pct);
+            }}
+          />
           <p className="wiz__privacy">{k.note}</p>
+
+          <SaveCalculation
+            t={t}
+            lang={lang}
+            total={total}
+            paybackYears={payback}
+            state={{
+              values: values as SimulationState["values"],
+              kit: { tier, custom: tier === "custom" ? (custom as SimulationState["kit"]["custom"]) : {}, qtyEdits, skipped: Object.fromEntries(Object.entries(skipped).filter(([, v]) => v)) },
+              fin: { on: fin.on, downPct: fin.downPct, termMonths: fin.termMonths, rate: fin.rate, entity: fin.entity },
+            }}
+          />
 
           <QuoteRequestForm
             t={t}

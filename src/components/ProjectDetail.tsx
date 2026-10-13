@@ -4,14 +4,15 @@ import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
-import { money, num } from "@/lib/format";
+import { fill, money, num } from "@/lib/format";
 import { formatPhone, whatsappUrl } from "@/lib/phone";
 import { kitMonthlyKwh, stages } from "@/data/types";
+import { milestoneEnd, milestoneState, overallProgress, todayIso, type MsState } from "@/lib/project-progress";
 import {
   type ProjectDetail as Detail,
-  useAddAlert, useAddMilestone, useDeleteAlert, useDeleteMilestone, useGenerateSchedule, useResolveAlert, useSaveMonitoring, useProject, useSetAllMaterials, useSetMaterial, useUpdateMilestone, type MilestonePatch,
+  useAddAlert, useAddMilestone, useDeleteAlert, useDeleteMilestone, useGenerateSchedule, useResolveAlert, useSaveMonitoring, useFieldProject, useVoidHandover, useDeleteSitePhoto, useSetNotifyClient, useRotatePortal, useEmailPortal, useProject, useSetAllMaterials, useSetMaterial, useSetMaterialSource, useUpdateMilestone, type MilestonePatch,
 } from "@/hooks/useProject";
-import { Activity, Boxes, CalendarDays } from "lucide-react";
+import { Activity, Boxes, CalendarDays, Check, Copy, ExternalLink, Mail, MessageCircle } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { useCan } from "@/components/RoleContext";
 import { Badge } from "@/components/ui/badge";
@@ -21,13 +22,13 @@ import { DatePicker } from "@/components/DatePicker";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useConfirm } from "@/components/ConfirmProvider";
+import { ProjectDocuments } from "@/components/ProjectDocuments";
+import { useProjectMargin } from "@/hooks/useStock";
 
 const tabClass = "px-4 text-[0.9rem] font-bold text-(--ink-soft) hover:text-(--ink) data-[state=active]:bg-white data-[state=active]:text-(--ink) data-[state=active]:shadow-sm";
 const DAY = 86_400_000;
 const utc = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
-const todayIso = () => new Date().toLocaleDateString("sv-SE");
-
-type MsState = "done" | "doing" | "late" | "todo";
 
 /** Avance del proyecto: porcentaje general, próximo hito, estado de cada hito y materiales. */
 function ProgressPanel({ t, lang, p, onGoto }: { t: Dict; lang: Locale; p: Detail; onGoto: (tab: string) => void }) {
@@ -35,13 +36,11 @@ function ProgressPanel({ t, lang, p, onGoto }: { t: Dict; lang: Locale; p: Detai
   const today = todayIso();
   const fmt = new Intl.DateTimeFormat(lang, { day: "numeric", month: "short", timeZone: "UTC" });
   const day = (iso: string) => fmt.format(new Date(utc(iso)));
-  const endOf = (m: Detail["milestones"][number]) => new Date(utc(m.startDate) + (m.len - 1) * DAY).toISOString().slice(0, 10);
+  const endOf = milestoneEnd;
 
   const ms = [...p.milestones].sort((a, b) => a.startDate.localeCompare(b.startDate));
-  const state = (m: Detail["milestones"][number]): MsState =>
-    m.done >= 100 ? "done" : endOf(m) < today ? "late" : m.startDate <= today || m.done > 0 ? "doing" : "todo";
-  const days = ms.reduce((n, m) => n + m.len, 0);
-  const overall = days ? Math.round(ms.reduce((n, m) => n + m.done * m.len, 0) / days) : 0; // pondera por duración
+  const state = (m: Detail["milestones"][number]): MsState => milestoneState(m, today);
+  const overall = overallProgress(ms); // pondera por duración
   const doneCount = ms.filter((m) => m.done >= 100).length;
   const lateCount = ms.filter((m) => state(m) === "late").length;
   const lastEnd = ms.map(endOf).sort().at(-1) ?? today; // el hito que termina más tarde, no necesariamente el último en empezar
@@ -107,6 +106,124 @@ function Bar({ label, pct }: { label: string; pct: number }) {
   );
 }
 
+/** Portal del cliente: el enlace se reconstruye siempre, así que se puede copiar, mandar y renovar cuando haga falta. */
+function PortalPanel({ t, p, portal }: { t: Dict; p: Detail; portal: { url: string; whatsapp: string } }) {
+  const d = t.app.detail.portal;
+  const share = t.app.quotes.share;
+  const rotate = useRotatePortal(p.id);
+  const confirm = useConfirm();
+  const mail = useEmailPortal(p.id);
+  const [link, setLink] = useState(portal);
+  const [copied, setCopied] = useState(false);
+  const [result, setResult] = useState<"sent" | "failed" | "skipped" | "error" | null>(null);
+  const [error, setError] = useState("");
+  return (
+    <div className="flow">
+      <h3 className="flow__h">{d.title}</h3>
+      <p className="wiz__hint">{d.hint}</p>
+      <Input readOnly aria-label={d.title} value={link.url} onFocus={(e) => e.currentTarget.select()} />
+      <div className="flow__actions">
+        <Button asChild variant="outline" size="sm"><a href={link.url} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden="true" />{d.open}</a></Button>
+        <Button type="button" variant="outline" size="sm" onClick={async () => { await navigator.clipboard.writeText(link.url).catch(() => {}); setCopied(true); }}>{copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}{copied ? d.copied : d.copy}</Button>
+        <Button type="button" variant="outline" size="sm" disabled={mail.isPending} onClick={() => { setResult(null); mail.mutate(undefined, { onSuccess: (r) => setResult(r.outcome ?? "failed"), onError: () => setResult("error") }); }}><Mail aria-hidden="true" />{mail.isPending ? share.emailSending : d.email}</Button>
+        <Button asChild variant="outline" size="sm"><a href={link.whatsapp} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden="true" />{d.whatsapp}</a></Button>
+      </div>
+      {result && <p role="status" className={result === "sent" ? "wiz__hint" : "field-error"}>{share.emailResult[result === "error" ? "failed" : result]}</p>}
+      <div className="flow__actions">
+        <Button type="button" variant="outline" size="sm" disabled={rotate.isPending} onClick={async () => {
+          if (!(await confirm({ message: d.confirmRotate, confirmLabel: d.rotate }))) return;
+          setError("");
+          setCopied(false);
+          rotate.mutate(undefined, { onSuccess: (r) => setLink(r), onError: () => setError(d.error) });
+        }}>{d.rotate}</Button>
+      </div>
+      <p className="wiz__hint">{d.rotateHint}</p>
+      {error && <p className="field-error" role="alert">{error}</p>}
+    </div>
+  );
+}
+
+/** Instalación vista desde la oficina: lo que el equipo marcó y fotografió en obra, y el acta de entrega. */
+function Install({ t, lang, p }: { t: Dict; lang: Locale; p: Detail }) {
+  const d = t.app.detail.install;
+  const manage = useCan("projects.manage");
+  const { data, isPending, isError } = useFieldProject(p.id, lang);
+  const voidIt = useVoidHandover(p.id);
+  const confirm = useConfirm();
+  const delPhoto = useDeleteSitePhoto(p.id);
+  const dt = new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" });
+  if (isPending) return <Loading label={d.title} variant="detail" />;
+  if (isError || !data) return <p role="alert">{d.loadError}</p>;
+  return (
+    <div className="pb">
+      <section className="panel" aria-labelledby={`ins-${p.id}`}>
+        <div className="prog__top">
+          <h2 id={`ins-${p.id}`} className="panel__title">{d.title}</h2>
+          <Button asChild variant="outline" size="sm"><Link href={`/${lang}/app/field?p=${p.id}`}>{d.openField}</Link></Button>
+        </div>
+        {data.checks.length === 0 ? <p className="panel__meta">{d.empty}</p> : (
+          <ul className="field__checks">
+            {data.checks.map((c) => (
+              <li key={c.key} className={`field__check${c.done ? " is-done" : ""}`}>
+                <strong>{c.done ? "✓ " : "○ "}{lang === "en" ? c.labelEn : c.labelEs}</strong>
+                <small>{c.done && c.doneAt ? fill(d.done, { when: dt.format(new Date(c.doneAt)), who: c.doneBy ?? "—" }) : d.pending}</small>
+                {c.note && <small className="field__saved">{c.note}</small>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="panel" aria-labelledby={`insp-${p.id}`}>
+        <h2 id={`insp-${p.id}`} className="panel__title">{d.photos}</h2>
+        <p className="wiz__hint">{d.photosHint}</p>
+        {data.photos.length === 0 ? <p className="panel__meta">{d.photosEmpty}</p> : (
+          <ul className="field__photos">
+            {data.photos.map((x) => {
+              const step = data.checks.find((c) => c.key === x.checkKey);
+              return (
+                <li key={x.id}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <a href={`/api/field/photos/${x.id}`} target="_blank" rel="noopener noreferrer"><img src={`/api/field/photos/${x.id}`} alt={step ? fill(d.step, { label: lang === "en" ? step.labelEn : step.labelEs }) : d.photos} loading="lazy" /></a>
+                  <small>{dt.format(new Date(x.takenAt))}{x.by ? ` · ${x.by}` : ""}</small>
+                  {manage && <Button type="button" variant="outline" size="sm" disabled={delPhoto.isPending} onClick={async () => { if (await confirm({ message: d.confirmPhoto, confirmLabel: d.removePhoto })) delPhoto.mutate(x.id); }}>{d.removePhoto}</Button>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="panel" aria-labelledby={`insh-${p.id}`}>
+        <h2 id={`insh-${p.id}`} className="panel__title">{d.handover}</h2>
+        {data.handover ? (
+          <>
+            <p><strong>{fill(d.signedOn, { date: dt.format(new Date(data.handover.signedAt)), name: data.handover.signerName })}</strong></p>
+            <div className="flow__actions">
+              <Button asChild variant="outline"><a href={`/api/projects/${p.id}/acta?lang=${lang}`}>{d.pdf}</a></Button>
+              {manage && <Button type="button" variant="outline" disabled={voidIt.isPending} onClick={async () => { if (await confirm({ message: d.confirmVoid, subject: data.handover?.signerName, confirmLabel: d.voidHandover })) voidIt.mutate(); }}>{d.voidHandover}</Button>}
+            </div>
+          </>
+        ) : <p className="panel__meta">{d.notDelivered}</p>}
+      </section>
+    </div>
+  );
+}
+
+/** Interruptor: ¿se le avisa por correo al cliente cuando el proyecto avanza de etapa? */
+function NotifyToggle({ t, p }: { t: Dict; p: Detail }) {
+  const d = t.app.detail;
+  const set = useSetNotifyClient(p.id);
+  // Cambia al instante y vuelve atrás si el servidor no lo aceptó.
+  const [on, setOn] = useState(p.notifyClient ?? false);
+  return (
+    <div>
+      <label className="wiz__consent"><input type="checkbox" checked={on} onChange={(e) => { const v = e.target.checked; setOn(v); set.mutate(v, { onError: () => setOn(!v) }); }} /> <span>{d.notify}</span></label>
+      <p className="wiz__hint">{d.notifyHint}</p>
+    </div>
+  );
+}
+
 function Summary({ t, lang, p, onGoto }: { t: Dict; lang: Locale; p: Detail; onGoto: (tab: string) => void }) {
   const d = t.app.detail;
   const cur = stages.indexOf(p.stage);
@@ -132,9 +249,31 @@ function Summary({ t, lang, p, onGoto }: { t: Dict; lang: Locale; p: Detail; onG
             <div><dt>{d.team}</dt><dd>{p.teamDetail ? <><Link href={`/${lang}/app/teams/${p.teamDetail.id}`}>{p.teamDetail.name}</Link>{whatsappUrl(p.teamDetail.phone) && <> · <a href={whatsappUrl(p.teamDetail.phone)!} target="_blank" rel="noopener noreferrer">{formatPhone(p.teamDetail.phone)}</a></>}</> : d.noTeam}</dd></div>
           </dl>
           {p.quoteId && <p><Link href={`/${lang}/app/quotes/${p.quoteId}`}>{d.fromQuote} →</Link></p>}
+          {p.notifyClient != null && <NotifyToggle t={t} p={p} />}
+          {p.portal && <PortalPanel t={t} p={p} portal={p.portal} />}
+          {p.materials.length > 0 && <MarginPanel t={t} lang={lang} p={p} />}
         </section>
         <ProgressPanel t={t} lang={lang} p={p} onGoto={onGoto} />
       </div>
+    </div>
+  );
+}
+
+/** Margen del kit (venta menos costo). Solo lo ve quien maneja el inventario; el equipo de instalación no. */
+function MarginPanel({ t, lang, p }: { t: Dict; lang: Locale; p: Detail }) {
+  const d = t.app.detail.margin;
+  const can = useCan("stock");
+  const { data } = useProjectMargin(p.id, can);
+  if (!can || !data) return null;
+  return (
+    <div className="margin" aria-label={d.title}>
+      <h3 className="panel__title">{d.title}</h3>
+      <dl className="kv">
+        <div><dt>{d.revenue}</dt><dd>{money(lang, data.revenue, "COP")}</dd></div>
+        <div><dt>{d.cost}</dt><dd>{money(lang, data.cost, "COP")}</dd></div>
+        <div><dt>{d.margin}</dt><dd><strong>{money(lang, data.margin, "COP")}{data.pct != null ? ` (${num(lang, data.pct)} %)` : ""}</strong></dd></div>
+      </dl>
+      <p className="wiz__hint">{d.hint}{data.estimated ? ` ${d.estimated}` : ""}{data.incomplete ? ` ${d.incomplete}` : ""}</p>
     </div>
   );
 }
@@ -263,6 +402,7 @@ function Schedule({ t, lang, p }: { t: Dict; lang: Locale; p: Detail }) {
   const add = useAddMilestone(p.id);
   const upd = useUpdateMilestone(p.id);
   const del = useDeleteMilestone(p.id);
+  const confirm = useConfirm();
   const gen = useGenerateSchedule(p.id, lang);
   const [label, setLabel] = useState("");
   const [start, setStart] = useState(todayIso);
@@ -312,7 +452,7 @@ function Schedule({ t, lang, p }: { t: Dict; lang: Locale; p: Detail }) {
                     m={m}
                     busy={upd.isPending || del.isPending}
                     onPatch={(patch, cb) => upd.mutate({ mid: m.id, ...patch }, { onSuccess: () => cb?.ok(), onError: () => cb?.fail() })}
-                    onRemove={() => del.mutate(m.id)}
+                    onRemove={async () => { if (await confirm({ message: d.confirmDeleteMilestone, subject: m.label, confirmLabel: d.remove })) del.mutate(m.id); }}
                   />
                 ))}
               </tbody>
@@ -346,6 +486,8 @@ function Materials({ t, p }: { t: Dict; p: Detail }) {
   const d = t.app.detail;
   const set = useSetMaterial(p.id);
   const all = useSetAllMaterials(p.id);
+  const setSource = useSetMaterialSource(p.id);
+  const [srcError, setSrcError] = useState("");
   if (p.materials.length === 0) return <EmptyState icon={Boxes} title={t.app.empty.materials.title} description={t.app.empty.materials.desc} />;
   const ready = p.materials.filter((m) => m.ready).length;
   return (
@@ -361,9 +503,24 @@ function Materials({ t, p }: { t: Dict; p: Detail }) {
               <span className="check__text">{m.name}</span>
               <span className="check__qty">×{m.qty}</span>
             </label>
+            {m.source && (
+              <div className="mat__src">
+                {m.onHand != null ? (
+                  <Select value={m.source} onValueChange={(v) => { setSrcError(""); setSource.mutate({ mid: m.id, source: v as "stock" | "supplier" }, { onError: () => setSrcError(d.mat.error) }); }}>
+                    <SelectTrigger size="sm" aria-label={fill(d.mat.sourceFor, { name: m.name })}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="stock">{d.mat.stock}</SelectItem>
+                      <SelectItem value="supplier">{d.mat.supplier}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : <Badge>{d.mat.supplier}</Badge>}
+                {m.source === "stock" && m.onHand != null && (m.ready ? <small>{d.mat.deducted}</small> : <small className={m.onHand < m.qty ? "field-error" : undefined}>{fill(m.onHand < m.qty ? d.mat.short : d.mat.have, { n: m.onHand })}</small>)}
+              </div>
+            )}
           </li>
         ))}
       </ul>
+      {srcError && <p className="field-error" role="alert">{srcError}</p>}
       <Button type="button" variant="outline" size="sm" disabled={all.isPending || ready === p.materials.length} onClick={() => all.mutate(true)}>{d.markAll}</Button>
     </section>
   );
@@ -421,6 +578,7 @@ function Monitoring({ t, lang, p }: { t: Dict; lang: Locale; p: Detail }) {
   const add = useAddAlert(p.id);
   const resolve = useResolveAlert(p.id);
   const del = useDeleteAlert(p.id);
+  const confirm = useConfirm();
   const [severity, setSeverity] = useState<"high" | "mid" | "low">("mid");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -447,7 +605,7 @@ function Monitoring({ t, lang, p }: { t: Dict; lang: Locale; p: Detail }) {
       </div>
       <div className="alert__actions">
         <Button type="button" variant="outline" size="sm" disabled={resolve.isPending} onClick={() => resolve.mutate({ aid: a.id, resolved: !a.resolvedAt })}>{a.resolvedAt ? d.reopen : d.resolve}</Button>
-        {manage && <Button type="button" variant="outline" size="sm" disabled={del.isPending} onClick={() => { if (window.confirm(d.confirmDeleteAlert)) del.mutate(a.id); }}>{d.remove}</Button>}
+        {manage && <Button type="button" variant="outline" size="sm" disabled={del.isPending} onClick={async () => { if (await confirm({ message: d.confirmDeleteAlert, subject: a.message, confirmLabel: d.remove })) del.mutate(a.id); }}>{d.remove}</Button>}
       </div>
     </li>
   );
@@ -507,11 +665,13 @@ export function ProjectDetail({ t, lang, id }: { t: Dict; lang: Locale; id: stri
         </div>
       </header>
       <TabsList aria-label={p.name} className="bg-(--mist) p-1 group-data-[orientation=horizontal]/tabs:h-11 self-start max-w-full justify-start overflow-x-auto">
-        {(["summary", "schedule", "materials", "monitoring"] as const).map((k) => <TabsTrigger key={k} value={k} className={tabClass}>{d.tabs[k]}</TabsTrigger>)}
+        {(["summary", "schedule", "materials", "install", "documents", "monitoring"] as const).map((k) => <TabsTrigger key={k} value={k} className={tabClass}>{d.tabs[k]}</TabsTrigger>)}
       </TabsList>
       <TabsContent value="summary"><Summary t={t} lang={lang} p={p} onGoto={setTab} /></TabsContent>
       <TabsContent value="schedule"><Schedule t={t} lang={lang} p={p} /></TabsContent>
       <TabsContent value="materials"><Materials t={t} p={p} /></TabsContent>
+      <TabsContent value="install"><Install t={t} lang={lang} p={p} /></TabsContent>
+      <TabsContent value="documents"><ProjectDocuments t={t} lang={lang} projectId={p.id} hasPortal={Boolean(p.portal)} /></TabsContent>
       <TabsContent value="monitoring"><Monitoring t={t} lang={lang} p={p} /></TabsContent>
     </Tabs>
   );

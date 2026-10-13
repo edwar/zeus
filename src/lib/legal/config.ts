@@ -11,7 +11,7 @@ const todo = (what: string) => `${PENDING}: ${what}]`;
 
 export const LEGAL = {
   /** Versión del documento y fecha de la última actualización (YYYY-MM-DD). Súbela cuando cambie el contenido. */
-  version: "1.0",
+  version: "1.5",
   updated: "2026-10-12",
 
   controller: {

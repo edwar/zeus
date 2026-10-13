@@ -27,5 +27,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const path = `/products/${p.slug}`;
     for (const l of locales) entries.push({ url: urlFor(l, path), lastModified: p.updatedAt, changeFrequency: "weekly", priority: 0.6, alternates: languages(path) });
   }
+  // Cada caso real publicado (solo los que el cliente autorizó y tienen el ahorro verificado).
+  const cases = await prisma.caseStudy.findMany({ where: { status: "published" }, select: { slug: true, updatedAt: true }, take: 500 }).catch(() => []);
+  if (cases.length > 0) for (const l of locales) entries.push({ url: urlFor(l, "/cases"), changeFrequency: "weekly", priority: 0.6, alternates: languages("/cases") });
+  for (const c of cases) {
+    const path = `/cases/${c.slug}`;
+    for (const l of locales) entries.push({ url: urlFor(l, path), lastModified: c.updatedAt, changeFrequency: "monthly", priority: 0.5, alternates: languages(path) });
+  }
   return entries;
 }

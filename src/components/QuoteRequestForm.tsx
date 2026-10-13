@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCoverage } from "@/hooks/useCoverage";
 import { ServiceAreaNotice } from "@/components/ServiceAreaNotice";
+import { readSource } from "@/components/SourceCapture";
 import { PhoneField } from "@/components/PhoneField";
 
 export type QuoteLine = { productId: string; qty: number; name: string; unitPrice: number };
@@ -47,6 +48,8 @@ export function QuoteRequestForm({ t, lang, lines, values: v, sizing, financing,
         body: JSON.stringify({
           contact,
           consent: true,
+          lang,
+          source: readSource(),
           installerChoice: coverage.data?.covered ? choice : undefined,
           financing: financing && { ...financing, rateEA: Math.round(financing.rateEA * 100) / 100 },
           systemType: v.systemType,

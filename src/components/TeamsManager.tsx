@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 export function TeamsList({ t, lang }: { t: Dict; lang: Locale }) {
   const m = t.app.teams;
@@ -84,6 +85,7 @@ export function TeamForm({ t, lang, id }: { t: Dict; lang: Locale; id?: string }
   const existing = useTeam(id ?? "");
   const save = useSaveTeam(id);
   const del = useDeleteTeam();
+  const confirm = useConfirm();
   const [error, setError] = useState("");
   const [loc, setLoc] = useState<{ lat: number; lon: number } | null | undefined>(undefined);
   const [place, setPlace] = useState<{ city?: string; department?: string }>({});
@@ -124,8 +126,8 @@ export function TeamForm({ t, lang, id }: { t: Dict; lang: Locale; id?: string }
     );
   }
 
-  function onDelete() {
-    if (!id || !window.confirm(m.confirmDelete)) return;
+  async function onDelete() {
+    if (!id || !(await confirm({ message: m.confirmDelete, confirmLabel: m.delete }))) return;
     del.mutate(id, {
       onSuccess: () => router.push(`/${lang}/app/teams`),
       onError: (err) => setError((err as Error & { code?: string }).code === "in_use" ? m.errors.in_use : m.errors.generic),

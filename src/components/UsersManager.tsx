@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: string }) {
   const u = t.app.users;
@@ -107,12 +107,12 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
             </Select>
           </div>
           <p className="field-error" role="alert" hidden={!formError}>{formError}</p>
-          <div className="uform__actions">
-            <Button type="submit" size="sm" disabled={create.isPending}>
+          <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>{u.cancel}</Button>
+              <Button type="submit" disabled={create.isPending}>
               {create.isPending ? u.creating : u.create}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{u.cancel}</Button>
-          </div>
+            </DialogFooter>
         </form>
         </DialogContent>
       </Dialog>
@@ -130,10 +130,10 @@ export function UsersManager({ t, currentUserId }: { t: Dict; currentUserId: str
               <span id={`${uid}rh`} className="uform__hint">{u.passwordHint}</span>
             </div>
             <p className="field-error" role="alert" hidden={!resetError}>{resetError}</p>
-            <div className="uform__actions">
-              <Button type="submit" size="sm" disabled={resetPw.isPending}>{resetPw.isPending ? u.resetting : u.resetSubmit}</Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => setResetFor(null)}>{u.cancel}</Button>
-            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setResetFor(null)}>{u.cancel}</Button>
+              <Button type="submit" disabled={resetPw.isPending}>{resetPw.isPending ? u.resetting : u.resetSubmit}</Button>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

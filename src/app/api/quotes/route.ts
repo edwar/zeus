@@ -7,6 +7,7 @@ import { findCoverage } from "@/lib/teams";
 import { currentUsury } from "@/lib/finance/rates";
 import { simulateLoan } from "@/lib/finance/loan";
 import { z } from "zod";
+import { normEmail } from "@/lib/crm";
 import { KIT_KINDS, QUOTE_STATUSES } from "@/lib/quote-flow";
 
 const MAX_PER_HOUR = 5;
@@ -54,26 +55,44 @@ export async function POST(req: Request) {
     const loan = simulateLoan({ price: total, downPct: q.financing.downPct, termMonths: q.financing.termMonths, rateEA });
     financing = { ...q.financing, rateEA, entity: q.financing.entity ?? null, usuryEA: usury?.usuryEA ?? null, ...loan };
   }
-  const created = await prisma.quoteRequest.create({
-    data: {
-      fulfillment,
-      distanceKm: cov.distanceKm,
-      installerChoice: cov.status === "install" ? (q.installerChoice ?? "zeus") : null,
-      teamId: fulfillment === "install" ? cov.teamId : null,
-      ...(financing && { financing }),
-      contactName: q.contact.name,
-      contactEmail: q.contact.email,
-      contactPhone: q.contact.phone,
-      city: q.contact.city || null,
-      systemType: q.systemType,
-      bill: q.bill,
-      sizing: q.sizing,
-      total,
-      consentAt: new Date(),
-      ipHash,
-      items: { create: items },
-    },
-    select: { id: true, total: true },
+  // Si ya había un contacto abierto con este teléfono o correo (un referido, una llamada…), la solicitud se enlaza con él y
+  // hereda su origen: así se sabe de dónde vino realmente el cliente. Todo en una transacción.
+  const email = normEmail(q.contact.email)!;
+  const created = await prisma.$transaction(async (tx) => {
+    const lead = await tx.lead.findFirst({
+      where: { status: "open", OR: [{ phone: q.contact.phone }, { email: { equals: email, mode: "insensitive" } }] },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, source: true },
+    });
+    const c = await tx.quoteRequest.create({
+      data: {
+        fulfillment,
+        distanceKm: cov.distanceKm,
+        installerChoice: cov.status === "install" ? (q.installerChoice ?? "zeus") : null,
+        teamId: fulfillment === "install" ? cov.teamId : null,
+        ...(financing && { financing }),
+        contactName: q.contact.name,
+        contactEmail: q.contact.email,
+        contactPhone: q.contact.phone,
+        lang: q.lang,
+        source: lead?.source ?? q.source,
+        city: q.contact.city || null,
+        systemType: q.systemType,
+        bill: q.bill,
+        sizing: q.sizing,
+        total,
+        consentAt: new Date(),
+        ipHash,
+        items: { create: items },
+      },
+      select: { id: true, total: true },
+    });
+    if (lead) {
+      await tx.lead.update({ where: { id: lead.id }, data: { status: "converted", quoteId: c.id } });
+      await tx.followUp.updateMany({ where: { leadId: lead.id, doneAt: null }, data: { doneAt: new Date(), doneBy: "Sistema" } });
+      await tx.quoteEvent.create({ data: { quoteId: c.id, toStatus: "new", subject: "lead", note: lead.id, userName: "Sistema" } });
+    }
+    return c;
   });
   return Response.json({ id: created.id, total: Number(created.total), fulfillment, covered: cov.status === "install" }, { status: 201 });
 }

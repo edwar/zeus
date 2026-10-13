@@ -7,8 +7,9 @@ import { Factory } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCreateManufacturer, useDeleteManufacturer, useManufacturers } from "@/hooks/useManufacturers";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 export function ManufacturersManager({ t, isAdmin }: { t: Dict; isAdmin: boolean }) {
   const m = t.app.makers;
@@ -16,6 +17,7 @@ export function ManufacturersManager({ t, isAdmin }: { t: Dict; isAdmin: boolean
   const { data, isPending, isError, refetch } = useManufacturers();
   const create = useCreateManufacturer();
   const remove = useDeleteManufacturer();
+  const confirm = useConfirm();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
@@ -34,8 +36,8 @@ export function ManufacturersManager({ t, isAdmin }: { t: Dict; isAdmin: boolean
     );
   }
 
-  function onDelete(id: string, name: string) {
-    if (!window.confirm(`${m.confirmDelete} ${name}`)) return;
+  async function onDelete(id: string, name: string) {
+    if (!(await confirm({ message: m.confirmDelete, subject: name, confirmLabel: m.delete }))) return;
     setMsg("");
     remove.mutate(id, { onError: (err) => setMsg((err as { status?: number }).status === 409 ? m.blocked : m.actionError) });
   }
@@ -68,10 +70,10 @@ export function ManufacturersManager({ t, isAdmin }: { t: Dict; isAdmin: boolean
               <Input id={`${uid}w`} name="website" type="url" placeholder="https://" autoComplete="off" />
             </div>
             <p className="field-error" role="alert" hidden={!error}>{error}</p>
-            <div className="uform__actions">
-              <Button type="submit" size="sm" disabled={create.isPending}>{create.isPending ? m.creating : m.create}</Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{m.cancel}</Button>
-            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>{m.cancel}</Button>
+              <Button type="submit" disabled={create.isPending}>{create.isPending ? m.creating : m.create}</Button>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

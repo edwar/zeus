@@ -9,3 +9,10 @@ export async function as(browser: Browser, role: RoleKey, options: BrowserContex
   page.close = async () => { await close(); await ctx.close(); };
   return page;
 }
+
+/** Confirma el diálogo de confirmación de la plataforma (el botón de acción es el último; el foco inicial está en Cancelar). */
+export async function confirmDialog(page: Page): Promise<void> {
+  const dialog = page.getByRole("alertdialog");
+  await dialog.getByRole("button").last().click();
+  await dialog.waitFor({ state: "hidden" });
+}
