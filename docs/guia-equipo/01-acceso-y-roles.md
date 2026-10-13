@@ -32,6 +32,9 @@ Tu rol lo define quien administra la plataforma. Cada rol ve un menú distinto.
 
 ## Entrar por primera vez
 
+![Video: entrar por primera vez y crear tu contraseña](video:01-primer-ingreso)
+
+
 1. El administrador te crea la cuenta y te comparte una **contraseña temporal** por un canal seguro.
 2. Entra con tu correo y esa contraseña.
 3. La plataforma te obliga a **elegir una contraseña propia** antes de continuar. Mientras no lo hagas no puedes usar nada más.

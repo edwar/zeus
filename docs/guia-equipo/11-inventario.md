@@ -17,6 +17,9 @@ Un mismo producto de Autosolar puede ser las dos cosas: compras un lote para ten
 
 ## Empezar a llevar inventario de un producto
 
+![Video: empezar a llevar inventario y registrar una compra](video:11-inventario)
+
+
 1. **Inventario → Llevar inventario de un producto.**
 2. Busca el producto por nombre, referencia o fabricante y elígelo.
 3. Escribe cuántas **unidades tienes hoy** y el **costo por unidad** (lo que te costó a ti, sin tu ganancia), y desde cuántas unidades quieres que avise **«Stock bajo»**.

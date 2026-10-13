@@ -23,6 +23,9 @@ La pantalla ofrece dos vistas: **Tablero** (columnas por etapa) y **Lista**.
 
 ## El expediente del proyecto
 
+![Video: avance del cronograma y materiales](video:04-avance-materiales)
+
+
 Abre un proyecto con **Abrir expediente**. Tiene cinco pestañas (la de **Instalación** se explica en la [sección 10](10-modo-campo.md)).
 
 ### Resumen
@@ -44,6 +47,9 @@ Si llevas inventario propio ([sección 11](11-inventario.md)), cada material mue
 Lo que el equipo hizo en obra: **checklist** (quién y cuándo), **fotos** y el **acta de entrega** firmada. Es el mismo trabajo que se hace desde el celular en modo campo ([sección 10](10-modo-campo.md)).
 
 ### Documentos
+
+![Video: subir un documento, compartirlo y ver el portal del cliente](video:07-portal-documentos)
+
 Planos, permisos, certificados y contratos del proyecto. **Gestión** los sube (PDF o imagen JPG, PNG o WebP, de hasta **4 MB**; hasta 40 por proyecto); el equipo de instalación puede verlos y descargarlos, pero no subir, cambiar ni borrar.
 
 - **Subir un documento:** elige el archivo, el **tipo** y un nombre claro (si lo dejas vacío usa el nombre del archivo). El tipo real se comprueba por el contenido: un archivo que no sea PDF ni imagen se rechaza aunque se llame `.pdf`.

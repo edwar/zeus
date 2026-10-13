@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   // La guía del equipo se lee de archivos Markdown en tiempo de ejecución: hay que incluirlos en el despliegue.
-  outputFileTracingIncludes: { "/[lang]/app/guide": ["./docs/guia-equipo/**/*.md"], "/[lang]/app/guide/[slug]": ["./docs/guia-equipo/**/*.md"] },
+  outputFileTracingIncludes: { "/[lang]/app/guide": ["./docs/guia-equipo/**/*.md"], "/[lang]/app/guide/[slug]": ["./docs/guia-equipo/**/*.md"], "/api/guide/video/[file]": ["./docs/guia-equipo/videos/*"] },
   async redirects() {
     return [
       { source: "/:lang/catalog", destination: "/:lang/simulator", permanent: true },
@@ -68,6 +68,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
+      // Videos públicos de la guía del comprador: se guardan un día y se revalidan en segundo plano (el nombre no lleva versión).
+      { source: "/guia/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] },
       // El service worker se revisa en cada visita: una versión nueva no se queda atrás por el caché del navegador.
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
     ];

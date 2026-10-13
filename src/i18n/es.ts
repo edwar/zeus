@@ -151,6 +151,7 @@ export const es = {
         get: "Tu sistema produciendo y a quién escribirle si algo falla.",
       },
     ],
+    videos: { kit: "Video corto: cómo armar tu kit en el simulador (sin sonido, con subtítulos)", request: "Video corto: cómo pedir tu cotización (sin sonido, con subtítulos)", accept: "Video corto: cómo revisar y aceptar tu cotización (sin sonido, con subtítulos)", follow: "Video corto: cómo seguir tu proyecto en tu página privada (sin sonido, con subtítulos)" },
     faqTitle: "Preguntas frecuentes",
     faq: [
       { q: "¿Pedir la cotización me obliga a comprar?", a: "No. Es una solicitud. Solo avanzas si tú aceptas tu cotización." },

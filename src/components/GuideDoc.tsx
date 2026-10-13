@@ -1,9 +1,10 @@
 import Link from "next/link";
-import Markdown, { type Components } from "react-markdown";
+import Markdown, { defaultUrlTransform, type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Dict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { INDEX_SLUG, classifyGuideLink, type GuideEntry } from "@/lib/guide";
+import { GuideVideo } from "@/components/GuideVideo";
 
 /** Los encabezados del Markdown bajan un nivel: el título de la página ya es el h1. */
 const heading = (Tag: "h2" | "h3" | "h4") => function Heading({ children }: { children?: React.ReactNode }) { return <Tag>{children}</Tag>; };
@@ -29,6 +30,16 @@ export function GuideDoc({ t, lang, doc, list }: { t: Dict; lang: Locale; doc: {
       if (l.kind === "external") return <a href={l.href} target="_blank" rel="noopener noreferrer">{children}</a>;
       return <>{children}</>;
     },
+    // Video de apoyo: `![Video: título](video:nombre)`. Un párrafo que solo trae el video no lleva <p> (no se puede meter una figura en uno).
+    img({ src, alt }) {
+      const m = typeof src === "string" ? /^video:([a-z0-9-]+)$/.exec(src) : null;
+      return m ? <GuideVideo base={`/api/guide/video/${m[1]}`} title={alt ?? ""} portrait={m[1].endsWith("-movil")} /> : null;
+    },
+    p({ node, children }) {
+      const only = node?.children.length === 1 ? node.children[0] : null;
+      const isVideo = only?.type === "element" && only.tagName === "img" && String(only.properties?.src ?? "").startsWith("video:");
+      return isVideo ? <>{children}</> : <p>{children}</p>;
+    },
     table: ({ children }) => <div className="guidedoc__scroll"><table>{children}</table></div>,
   };
 
@@ -50,7 +61,7 @@ export function GuideDoc({ t, lang, doc, list }: { t: Dict; lang: Locale; doc: {
           </ul>
         </nav>
         <article className="panel guidedoc__body">
-          <Markdown remarkPlugins={[remarkGfm]} components={components}>{doc.body}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm]} components={components} urlTransform={(u) => (u.startsWith("video:") ? u : defaultUrlTransform(u))}>{doc.body}</Markdown>
           <nav className="guidedoc__pager" aria-label={g.pager}>
             {prev ? <Link href={prev.href}>← {prev.label}</Link> : <span />}
             {nextEntry && <Link href={href(nextEntry.slug)}>{g.next}: {nextEntry.title} →</Link>}

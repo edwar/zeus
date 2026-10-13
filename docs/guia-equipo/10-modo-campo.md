@@ -15,6 +15,9 @@
 
 ## Un día en obra
 
+![Video: el modo campo en el celular, con y sin señal](video:10-modo-campo-movil)
+
+
 ### 1 · Abrir tu proyecto
 Entra a **Campo**: ves los proyectos de tu equipo con su **checklist** (`Checklist 3 de 11`). Toca **Abrir**.
 Arriba hay una barra de estado:

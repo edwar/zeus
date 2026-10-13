@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { absoluteUrl, jsonLd } from "@/lib/site";
 import { getPublishedCases } from "@/lib/cases-data";
 import { CasesSection } from "@/components/CasesSection";
+import { GuideVideo } from "@/components/GuideVideo";
+import { STEP_VIDEOS } from "@/lib/guide-video";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
@@ -84,6 +86,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                     <ul>{s.we.map((x) => <li key={x}>{x}</li>)}</ul>
                   </div>
                 </div>
+                {STEP_VIDEOS[i] && <GuideVideo base={`/guia/${STEP_VIDEOS[i].file}.${lang}`} title={t.guide.videos[STEP_VIDEOS[i].key]} />}
                 <p className="guide__get"><strong>{t.guide.get}:</strong> {s.get}</p>
               </li>
             ))}

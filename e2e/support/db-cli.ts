@@ -22,6 +22,7 @@ async function cleanup() {
   // Casos reales de prueba (titulados «E2E …»).
   await prisma.caseStudy.deleteMany({ where: { titleEs: { startsWith: "E2E " } } });
   await cleanupStock();
+  await cleanupDemo();
   await prisma.team.deleteMany({ where: { name: { startsWith: "E2E " } } });
   await prisma.verification.deleteMany({ where: { identifier: { startsWith: "reset-password:e2e-reset-" } } });
   // Los límites de intentos de cambio/restablecimiento se guardan en la base: se reinician para que la serie se pueda repetir.
@@ -91,6 +92,78 @@ async function seedStock() {
     },
   });
   console.log(JSON.stringify({ own: own.id, supplier: supplier.id, project: "e2e-campo-stock", m1: "e2e-stock-m1", m2: "e2e-stock-m2" }));
+}
+
+/** Nombre de demostración para el administrador de prueba (sale en el menú y en los historiales de los videos de las guías). */
+async function renameDemoAdmin() {
+  await prisma.user.update({ where: { email: USERS.admin.email }, data: { name: "Laura Pérez" } });
+}
+
+/**
+ * Datos de demostración con nombres de verdad (los videos de las guías se ven en pantalla): un fabricante y dos productos,
+ * una cuadrilla en Girardot (inactiva, lejos de donde simulan las pruebas) y un proyecto en obra con cronograma y materiales.
+ */
+/** Borra los datos de demostración de los videos (llevan nombres reales, por eso se borran por identificador). */
+async function cleanupDemo() {
+  await prisma.project.deleteMany({ where: { id: "e2e-campo-demo" } });
+  await prisma.quoteRequest.deleteMany({ where: { contactEmail: "e2e-video-carlos@example.com" } });
+  await prisma.team.deleteMany({ where: { name: { in: ["Cuadrilla Girardot", "Cuadrilla Bucaramanga"] } } });
+  await prisma.product.deleteMany({ where: { slug: { startsWith: "e2e-demo-" } } });
+  await prisma.manufacturer.deleteMany({ where: { slug: { startsWith: "e2e-demo-" } } });
+  await prisma.lead.deleteMany({ where: { name: { in: ["Marta Jiménez"] } } });
+  await prisma.caseStudy.deleteMany({ where: { titleEs: "Panadería La Esperanza bajó su factura de energía" } });
+}
+
+async function seedDemo() {
+  await cleanupDemo(); // se puede sembrar más de una vez en la misma corrida
+  const maker = await prisma.manufacturer.upsert({ where: { slug: "e2e-demo-solarix" }, update: {}, create: { name: "Solarix", slug: "e2e-demo-solarix" } });
+  const base = { manufacturerId: maker.id, active: true, currency: "COP", inStock: true };
+  const panel = await prisma.product.create({ data: { ...base, name: "Panel solar Solarix 550 W", slug: "e2e-demo-panel-550", sku: "SLX-550", category: "Paneles solares", kind: "panel", powerW: 550, price: 680_000 } });
+  await prisma.product.create({ data: { ...base, name: "Inversor Solarix 5 kW", slug: "e2e-demo-inversor-5kw", sku: "SLX-INV5", category: "Inversores", kind: "inverter_ongrid", powerW: 5000, price: 4_200_000 } });
+  const equipo = await prisma.user.findUniqueOrThrow({ where: { email: USERS.equipo.email } });
+  const team = await prisma.team.create({
+    data: { name: "Cuadrilla Girardot", contactName: "Julián Torres", phone: "+573115550101", city: "Girardot", department: "Cundinamarca", lat: 4.3, lon: -74.8, active: false, members: { create: { userId: equipo.id } } },
+  });
+  const day = (n: number) => new Date(Date.now() + n * 86_400_000);
+  // La solicitud aprobada de la que «nació» el proyecto: con ella el proyecto tiene portal del cliente.
+  const items = [
+    { productId: panel.id, kind: "panel" as const, nameSnapshot: "Panel solar Solarix 550 W", unitPrice: 680_000, qty: 8 },
+    { kind: "inverter_ongrid" as const, nameSnapshot: "Inversor Solarix 5 kW", unitPrice: 4_200_000, qty: 1 },
+    { kind: "structure" as const, nameSnapshot: "Estructura de aluminio", unitPrice: 900_000, qty: 1 },
+    { kind: "electrical_kit" as const, nameSnapshot: "Cable solar y protecciones", unitPrice: 650_000, qty: 1 },
+  ];
+  const quote = await prisma.quoteRequest.create({
+    data: {
+      status: "approved", contactName: "Carlos Rodríguez", contactEmail: "e2e-video-carlos@example.com", contactPhone: "+573105550177", lang: "es", city: "Girardot",
+      systemType: "ongrid", bill: { municipality: "Girardot", department: "Cundinamarca" }, sizing: { kwp: 4, monthlySolarKwh: 520, monthlySavings: 410_000 },
+      total: 11_190_000, consentAt: new Date(), ipHash: "e2e-released", fulfillment: "install", teamId: team.id,
+      items: { create: items }, events: { create: [{ fromStatus: "confirmed", toStatus: "approved", userName: "Laura Pérez" }] },
+    },
+  });
+  await prisma.project.create({
+    data: {
+      id: "e2e-campo-demo", quoteId: quote.id, name: "Sistema 4 kWp · Girardot", client: "Carlos Rodríguez", town: "Girardot", kwp: 4, stage: "install", owner: "Laura Pérez", due: day(25), progress: 0, teamId: team.id,
+      milestones: { create: [
+        { labelEs: "Visita técnica", labelEn: "Technical visit", startDate: day(-9), len: 1, crew: "E", done: 100 },
+        { labelEs: "Estructura y paneles", labelEn: "Structure and panels", startDate: day(-4), len: 3, crew: "A", done: 60 },
+        { labelEs: "Cableado e inversor", labelEn: "Wiring and inverter", startDate: day(0), len: 2, crew: "B", done: 0 },
+        { labelEs: "Puesta en marcha", labelEn: "Commissioning", startDate: day(3), len: 1, crew: "B", done: 0 },
+      ] },
+      materials: { create: [
+        { nameEs: "Panel solar Solarix 550 W", nameEn: "Solarix 550 W solar panel", qty: 8, productId: panel.id, unitPrice: 680_000, ready: true },
+        { nameEs: "Inversor Solarix 5 kW", nameEn: "Solarix 5 kW inverter", qty: 1, unitPrice: 4_200_000 },
+        { nameEs: "Estructura de aluminio", nameEn: "Aluminium structure", qty: 1, unitPrice: 900_000 },
+        { nameEs: "Cable solar y protecciones", nameEn: "Solar cable and protections", qty: 1, unitPrice: 650_000 },
+      ] },
+    },
+  });
+  console.log(JSON.stringify({ project: "e2e-campo-demo", panel: panel.id }));
+}
+
+/** Imprime el id de la solicitud más reciente de un correo (para llegar a ella por la API sin recorrer la pantalla). */
+async function quoteIdByEmail() {
+  const q = await prisma.quoteRequest.findFirstOrThrow({ where: { contactEmail: process.argv[3] }, orderBy: { createdAt: "desc" }, select: { id: true } });
+  console.log(q.id);
 }
 
 async function cleanupStock() {
@@ -180,7 +253,7 @@ async function cleanupBulk() {
   await prisma.quoteRequest.deleteMany({ where: { id: { startsWith: "e2e-bulkq-" } } });
 }
 
-const actions = { cleanup, releaseQuoteLimit, seedField, cleanupField, seedStock, cleanupStock, createUsers, createTempUser, createResetToken, seedBulk, cleanupBulk } as const;
+const actions = { cleanup, releaseQuoteLimit, seedField, cleanupField, seedStock, cleanupStock, seedDemo, cleanupDemo, quoteIdByEmail, renameDemoAdmin, createUsers, createTempUser, createResetToken, seedBulk, cleanupBulk } as const;
 const action = process.argv[2] as keyof typeof actions;
 if (!actions[action]) {
   console.error(`Acción desconocida: ${action}`);

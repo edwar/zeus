@@ -41,6 +41,9 @@ Escribe lo que ayude a la siguiente persona que abra el caso: qué le interesa, 
 
 ## 3 · Registrar un contacto
 
+![Video: registrar un contacto y agendar el seguimiento](video:08-registrar-contacto)
+
+
 Úsalo cuando alguien te contacta **por fuera del simulador** y quieres darle seguimiento.
 
 1. Seguimiento → **Contactos** → **Nuevo contacto**.

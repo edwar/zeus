@@ -153,6 +153,7 @@ export const en: Dict = {
         get: "Your system producing, and who to write to if something fails.",
       },
     ],
+    videos: { kit: "Short video: how to build your kit in the simulator (no sound, with captions)", request: "Short video: how to request your quote (no sound, with captions)", accept: "Short video: how to review and accept your quote (no sound, with captions)", follow: "Short video: how to follow your project on your private page (no sound, with captions)" },
     faqTitle: "Frequently asked questions",
     faq: [
       { q: "Does requesting a quote oblige me to buy?", a: "No. It is a request. You only move forward if you accept your quote." },
