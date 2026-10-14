@@ -1213,6 +1213,19 @@ main>.pagehead+* {
   text-underline-offset: 3px;
 }
 
+/* El «Cerrar sesión» de la pantalla de contraseña temporal es un <button>: se ve igual que los enlaces de al lado. */
+button.auth__back {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .auth__forgot {
   justify-self: start;
   margin-top: calc(var(--s2) * -1);
