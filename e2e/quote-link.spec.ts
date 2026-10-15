@@ -60,6 +60,9 @@ test("el cliente ve su cotización sin iniciar sesión, descarga el PDF y no ve 
   await expect(page.locator("main")).not.toContainText(CLIENTS.link.email);
   await expect(page.locator("main")).not.toContainText(CLIENTS.link.phone);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  // Antes de aceptar se ven los términos (en otra pestaña) y que aceptar no es aprobar.
+  await expect(page.locator(".qlink__answer").getByRole("link", { name: "Términos y condiciones" })).toHaveAttribute("href", "/es/terms");
+  await expect(page.locator(".qlink__answer")).toContainText("Aceptar no es aprobar");
 
   const token = link.split("/").pop();
   const pdf = await page.request.get(`/api/q/${token}/pdf?lang=es`);

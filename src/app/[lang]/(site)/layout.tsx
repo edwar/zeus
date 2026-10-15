@@ -35,6 +35,7 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
           <nav className="sitefoot__links" aria-label={t.footer.legal}>
             <Link href={`/${lang}/privacy`}>{t.footer.privacy}</Link>
             <Link href={`/${lang}/security`}>{t.footer.security}</Link>
+            <Link href={`/${lang}/terms`}>{t.footer.terms}</Link>
           </nav>
         </div>
       </footer>

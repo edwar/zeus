@@ -201,6 +201,7 @@ export const en: Dict = {
     legal: "Legal information",
     privacy: "Privacy and personal data",
     security: "Security",
+    terms: "Terms and conditions",
   },
   // Not found (404): the component has no locale, so each variant carries both languages
   notFound: {
@@ -236,7 +237,8 @@ export const en: Dict = {
     accept: "Accept quote",
     decline: "Not right now",
     reasonLabel: "Want to tell us why? (optional)",
-    acceptHint: "When you accept, we notify your advisor, who will contact you to confirm the next steps.",
+    acceptHint: "When you accept, we notify your advisor, who will contact you to confirm the next steps. Accepting is not approving: the contract is formed when Zeus approves your request.",
+    termsLink: "Terms and conditions",
     sending: "Sending…",
     accepted: { title: "We recorded that you accept the quote", text: "Your advisor will contact you to confirm the next steps." },
     declined: { title: "Thanks for answering", text: "We recorded your answer. If you change your mind, write to your advisor." },
