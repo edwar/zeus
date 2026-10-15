@@ -62,7 +62,7 @@ export const useDeleteAlert = (id: string) => useProjectMutation(id, (aid: strin
 export const useSaveMonitoring = (id: string) => useProjectMutation(id, (v: { url: string | null; note: string | null }) => send(`/api/projects/${id}/monitoring`, "PUT", v));
 export const useSetNotifyClient = (id: string) => useProjectMutation(id, (notifyClient: boolean) => send(`/api/projects/${id}`, "PATCH", { notifyClient }));
 export const useRotatePortal = (id: string) => useProjectMutation(id, () => send(`/api/projects/${id}/portal`, "POST") as Promise<{ url: string; whatsapp: string }>);
-export const useEmailPortal = (id: string) => useProjectMutation(id, () => send(`/api/projects/${id}/portal/email`, "POST") as Promise<{ outcome: "sent" | "failed" | "skipped" | null }>);
+export const useEmailPortal = (id: string) => useProjectMutation(id, () => send(`/api/projects/${id}/portal/email`, "POST") as Promise<{ outcome: "sent" | "failed" | "skipped" | "suppressed" | null }>);
 
 /** Instalación del proyecto vista desde la oficina: checklist, fotos de obra y acta de entrega (los mismos datos del modo campo). */
 export type FieldView = import("@/lib/field-sync").FieldProject;

@@ -95,3 +95,6 @@ export function summarizeBySource(quotes: { source: string; status: string; n: n
     };
   });
 }
+
+/** Pedido de privacidad sobre una persona, partiendo de su solicitud o de su contacto (exactamente uno de los dos). */
+export const privacyBody = z.union([z.object({ quoteId: z.string().min(1).max(40) }), z.object({ leadId: z.string().min(1).max(40) })]);

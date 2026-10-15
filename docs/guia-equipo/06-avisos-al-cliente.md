@@ -16,6 +16,8 @@
 
 Los correos de aprobación y de cambio de etapa llevan además el botón **Ver mi proyecto**, que abre su [portal](07-portal-del-cliente.md).
 
+**Todo correo al cliente trae un pie** con el responsable de sus datos (nombre, documento, domicilio y correo de privacidad) y un **enlace para dejar de recibir correos**. No lo quites ni lo cambies: lo agrega la plataforma sola.
+
 Reglas de los avisos automáticos:
 - **Solo avanzando.** Mover un proyecto hacia atrás no envía nada.
 - **Una vez por etapa.** Si ya se envió bien el aviso de esa etapa, no se repite.
@@ -40,7 +42,15 @@ Abre la solicitud y mira el **Historial**. Cada intento aparece como **«Aviso a
 |-----------|-----------|-----------|
 | *enviado por correo* | Resend lo aceptó para entregarlo. | Nada. |
 | *no se pudo enviar* | Falló el envío (servicio caído, dirección rechazada…). | Si era el enlace, reintenta con **Enviar por correo** o usa WhatsApp. Si era un aviso de etapa o de aprobación, **contacta al cliente por teléfono o WhatsApp**: no se reenvía solo. |
+| *la persona pidió no recibir correos (no se envió)* | Se dio de baja con el enlace del correo, o se lo registraste tú, o se eliminaron sus datos. | **No insistas por correo.** Si necesita algo urgente de su proyecto, escríbele solo si ella te lo autorizó (por ejemplo, por WhatsApp porque te lo pidió). |
 | *correo sin configurar (no se envió)* | El envío de correos no está activo en este entorno. | Avisar a quien administra la plataforma; mientras tanto, contacta al cliente por WhatsApp. |
+
+## Cuando alguien pide no recibir correos
+
+- **Lo hace sola:** usa el enlace del pie del correo. Queda registrado al instante y no hay que hacer nada.
+- **Te lo pide a ti** (respondió al correo, te llamó, te escribió por WhatsApp): abre su solicitud o su contacto y, en el panel **Privacidad de esta persona**, pulsa **No enviar más correos**. No borra ningún dato.
+- **Te pide que borres sus datos:** mira la sección [8 · Seguimiento](08-seguimiento.md#privacidad-de-una-persona).
+- Un correo del equipo (restablecer contraseña, aviso de aceptación) no es de este tipo y sigue funcionando.
 
 ## Si te equivocaste
 

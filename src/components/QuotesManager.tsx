@@ -26,6 +26,7 @@ import { type QuoteStatus, useQuote, useQuotes, useSetFulfillment, useSetQuoteSt
 import { QUOTE_STATUSES, TRANSITIONS, kitEditable, needsNote } from "@/lib/quote-flow";
 import { shareMessage, whatsappShareUrl } from "@/lib/quote-share";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { PrivacyPanel } from "@/components/PrivacyPanel";
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 
@@ -379,6 +380,7 @@ export function QuoteDetailView({ t, lang, id }: { t: Dict; lang: Locale; id: st
       <FlowPanel t={t} lang={lang} id={r.id} status={r.status} events={r.events} />
       <SharePanel t={t} lang={lang} r={r} />
       <QuoteCrmPanel t={t} lang={lang} r={r} />
+      <PrivacyPanel t={t} lang={lang} target={{ kind: "quote", id: r.id, name: r.contactName, hasEmail: true }} />
 
       <div className="two two--wide two--quote">
         <section className="panel">

@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { portalLinkEmail, projectStageEmail, quoteApprovedEmail, quoteLinkEmail, type MailLang, type NoticeStage } from "@/lib/mail";
 import { portalUrl } from "@/lib/portal-link";
-import { deliver, type NoticeKind, type NoticeOutcome } from "@/lib/notice-core";
+import type { NoticeKind, NoticeOutcome } from "@/lib/notice-core";
+import { deliverToClient } from "@/lib/client-mail";
 import { quoteRef } from "@/lib/quote-doc";
 
 export type { NoticeKind, NoticeOutcome } from "@/lib/notice-core";
@@ -26,7 +27,7 @@ export async function noticeClient(opts: { quoteId: string; kind: NoticeKind; by
     if (already) return null;
   }
   const mailLang: MailLang = q.lang === "en" ? "en" : "es";
-  const outcome = await deliver(q.contactEmail, opts.build({ ...q, ref: quoteRef(q.id), mailLang }));
+  const outcome = await deliverToClient(q.contactEmail, mailLang, opts.build({ ...q, ref: quoteRef(q.id), mailLang }));
   // El estado del evento es el de la solicitud en ese momento; el aviso no lo cambia.
   const current = await prisma.quoteRequest.findUnique({ where: { id: q.id }, select: { status: true } });
   await prisma.quoteEvent.create({ data: { quoteId: q.id, toStatus: current?.status ?? "new", subject: "notice", note: `${opts.kind}|${outcome}`, userName: opts.by } });

@@ -4,7 +4,7 @@
  */
 export const mailConfigured = () => Boolean(process.env.RESEND_API_KEY && process.env.MAIL_FROM);
 
-export async function sendMail(msg: { to: string; subject: string; html: string; text: string }) {
+export async function sendMail(msg: { to: string; subject: string; html: string; text: string; headers?: Record<string, string> }) {
   if (!mailConfigured()) return false;
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -17,7 +17,7 @@ export async function sendMail(msg: { to: string; subject: string; html: string;
   return true;
 }
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 /** Correo de restablecimiento en el idioma de la página desde la que se pidió (es por defecto). */
 export function resetPasswordEmail(opts: { name: string; url: string; lang: "es" | "en"; minutes: number }) {

@@ -711,3 +711,25 @@ model StockMove {
   @@index([productId, createdAt])
   @@index([projectId])
 }
+
+// Correos a los que ya no se escribe (se dieron de baja, o se eliminaron sus datos). Solo se guarda el hash del correo
+// normalizado: así se respeta la baja sin conservar el dato que se pidió suprimir.
+model Suppression {
+  emailHash String   @id
+  // unsubscribe = lo pidió la persona con el enlace · staff = lo registró el equipo a su pedido · erased = se eliminaron sus datos
+  reason    String
+  createdBy String // «cliente» o el nombre de quien lo registró
+  createdAt DateTime @default(now())
+}
+
+// Constancia de cada solicitud de eliminación atendida. Sin datos personales: solo quién, cuándo y cuántos registros.
+model ErasureLog {
+  id            String   @id @default(cuid())
+  at            DateTime @default(now())
+  by            String
+  quotes        Int
+  leads         Int
+  simulations   Int
+  projectsKept  Int // proyectos que se conservan (garantía) con el nombre del cliente anonimizado
+  emailsBlocked Int
+}

@@ -138,6 +138,8 @@ const es: LegalDoc = {
           list: [
             "Consultas: las respondemos en máximo 10 días hábiles. Si no es posible, te avisaremos el motivo y la nueva fecha, que no superará 5 días hábiles adicionales.",
             "Reclamos (corrección, actualización o supresión): los atendemos en máximo 15 días hábiles. Si no es posible, te avisaremos el motivo y la nueva fecha, que no superará 8 días hábiles adicionales.",
+            "Dejar de recibir correos: cada correo que te enviamos trae un enlace para hacerlo en un clic (también puedes responderle al correo). Para respetar tu decisión guardamos solo una huella cifrada de tu correo, no el correo.",
+            "Cuando suprimimos tus datos borramos o anonimizamos tus solicitudes, contactos, notas, recordatorios y cálculos guardados, y dejamos de escribirte. Si ya hay un proyecto en marcha, conservamos lo necesario para la garantía y las obligaciones contractuales (fotos, documentos y acta), con tu nombre anonimizado y tu página privada desactivada.",
           ],
         },
         "Si no estás conforme con la respuesta, puedes acudir a la Superintendencia de Industria y Comercio (www.sic.gov.co) una vez agotado este trámite.",
@@ -303,6 +305,8 @@ const en: LegalDoc = {
           list: [
             "Queries: answered within 10 business days at most. If that is not possible, we will tell you why and the new date, which will not exceed 5 additional business days.",
             "Complaints (correction, update or deletion): handled within 15 business days at most. If that is not possible, we will tell you why and the new date, which will not exceed 8 additional business days.",
+            "Stop receiving emails: every email we send includes a one-click link to do it (you can also reply to the email). To respect your choice we keep only an encrypted fingerprint of your email address, not the address itself.",
+            "When we delete your data we erase or anonymize your requests, contacts, notes, reminders and saved calculations, and stop emailing you. If a project is already underway, we keep what is needed for the warranty and contractual obligations (photos, documents and certificate), with your name anonymized and your private page disabled.",
           ],
         },
         "If you are not satisfied with the answer, you may go to the Superintendence of Industry and Commerce (www.sic.gov.co) once this process has been exhausted.",

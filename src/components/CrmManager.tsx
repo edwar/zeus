@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { PrivacyPanel } from "@/components/PrivacyPanel";
 
 const tabClass = "px-3 py-2 text-[0.88rem] font-bold text-(--ink-soft) hover:text-(--ink) data-[state=active]:bg-white data-[state=active]:text-(--ink) data-[state=active]:shadow-sm";
 const dayFmt = (lang: Locale) => new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeZone: "UTC" });
@@ -427,6 +428,7 @@ export function LeadDetailView({ t, lang, id }: { t: Dict; lang: Locale; id: str
         {r.status === "open" ? <FollowUpsBlock t={t} lang={lang} target={{ kind: "lead", id: r.id }} items={r.followUps} />
           : <ul className="crm__list">{r.followUps.map((f) => <FollowUpItem key={f.id} t={t} lang={lang} f={f} showTarget={false} />)}</ul>}
       </section>
+      <PrivacyPanel t={t} lang={lang} target={{ kind: "lead", id: r.id, name: r.name, hasEmail: Boolean(r.email) }} />
     </div>
   );
 }

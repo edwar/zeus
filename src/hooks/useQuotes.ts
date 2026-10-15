@@ -99,7 +99,7 @@ export function useShareQuote() {
   });
 }
 
-export type NoticeOutcome = "sent" | "failed" | "skipped";
+export type NoticeOutcome = "sent" | "failed" | "skipped" | "suppressed";
 /** Manda por correo el enlace recién generado (el servidor comprueba que sea el vigente de esa solicitud). */
 export function useEmailQuoteLink() {
   const qc = useQueryClient();

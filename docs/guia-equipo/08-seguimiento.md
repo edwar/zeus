@@ -118,6 +118,21 @@ Seguimiento → pestaña **Orígenes**. Elige el **Periodo** (30 días, 90 días
 - Con **pocas solicitudes** (menos de 30) la conversión engaña: 1 de 2 es 50 %. Úsala como pista, no como conclusión.
 - Compara canales por **calidad** (conversión), no solo por cantidad.
 
+## Privacidad de una persona
+
+En la ficha de una solicitud o de un contacto, el panel **Privacidad de esta persona** atiende lo que la persona te pida sobre sus datos. La política promete responder los reclamos en **15 días hábiles**.
+
+- **No enviar más correos:** deja de escribirle por correo (avisos y enlaces). No borra nada.
+- **Eliminar datos de esta persona:** pide confirmación y no se puede deshacer. Busca todo lo que tenga el mismo correo o teléfono y:
+  - **borra** sus contactos con las notas y recordatorios, y sus cálculos guardados del simulador;
+  - **anonimiza** sus solicitudes (nombre, correo, teléfono, ciudad y comentarios) y anula el enlace de su cotización;
+  - **no vuelve a escribirle** por correo.
+  - Si ya hay un **proyecto**, se **conserva** con el nombre anonimizado y su portal desactivado: las fotos, los documentos y el acta firmada respaldan la garantía.
+- Un **caso real publicado** no se toca desde aquí: se retira en [Casos reales](09-casos-reales.md).
+- Queda una constancia de quién lo hizo y cuántos registros afectó, sin datos personales.
+
+> 🔒 Antes de eliminar, confirma que quien lo pide es el titular (que escriba desde el correo o el teléfono que dejó). Si dudas, pídele un dato que solo él tendría.
+
 ## Errores y dudas frecuentes
 
 | Si ves… | Significa… | Qué hacer |

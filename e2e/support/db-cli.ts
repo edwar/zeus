@@ -29,6 +29,11 @@ async function cleanup() {
   await prisma.rateLimit.deleteMany({ where: { OR: ["/change-password", "/request-password-reset", "/reset-password"].map((path) => ({ key: { endsWith: path } })) } });
   await prisma.user.deleteMany({ where: { email: E2E_EMAIL } });
   await prisma.simulation.deleteMany({ where: { email: E2E_EMAIL } });
+  // Privacidad: las solicitudes eliminadas quedan con un correo de relleno y las bajas guardan solo un hash, así que se
+  // reconocen por el motivo y por quién las registró (el cliente desde el enlace o un usuario de prueba).
+  await prisma.quoteRequest.deleteMany({ where: { contactEmail: "eliminado@invalid.invalid", contactName: "Datos eliminados" } });
+  await prisma.suppression.deleteMany({ where: { createdBy: { in: ["cliente", ...Object.values(USERS).map((u) => u.name)] } } });
+  await prisma.erasureLog.deleteMany({ where: { by: { in: Object.values(USERS).map((u) => u.name) } } });
   await prisma.rateLimit.deleteMany({ where: { key: { startsWith: "simulation-" } } });
 }
 

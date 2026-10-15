@@ -115,7 +115,7 @@ function PortalPanel({ t, p, portal }: { t: Dict; p: Detail; portal: { url: stri
   const mail = useEmailPortal(p.id);
   const [link, setLink] = useState(portal);
   const [copied, setCopied] = useState(false);
-  const [result, setResult] = useState<"sent" | "failed" | "skipped" | "error" | null>(null);
+  const [result, setResult] = useState<"sent" | "failed" | "skipped" | "suppressed" | "error" | null>(null);
   const [error, setError] = useState("");
   return (
     <div className="flow">

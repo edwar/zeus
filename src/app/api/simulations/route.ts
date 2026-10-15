@@ -6,7 +6,8 @@ import { hashShareToken, newShareToken } from "@/lib/quote-share";
 import { createSimulationBody, leadNote, simulationExpiry, summaryOf } from "@/lib/simulation";
 import { normEmail, todayBogota } from "@/lib/crm";
 import { simulationEmail } from "@/lib/mail";
-import { deliver } from "@/lib/notice-core";
+import { deliverToClient } from "@/lib/client-mail";
+import type { NoticeOutcome } from "@/lib/notice-core";
 import { absoluteUrl } from "@/lib/site";
 import { toDate } from "@/lib/crm-server";
 
@@ -45,10 +46,11 @@ export async function POST(req: Request) {
   if (Math.random() < 0.05) await prisma.simulation.deleteMany({ where: { expiresAt: { lt: new Date(now.getTime() - 7 * 86_400_000) } } }).catch(() => {});
 
   const url = absoluteUrl(`/${b.lang}/simulator?s=${token}`);
-  let emailed: "sent" | "failed" | "skipped" | null = null;
+  let emailed: NoticeOutcome | null = null;
   if (email) {
-    emailed = await deliver(email, simulationEmail({ lang: b.lang, url, validUntil: expiresAt, kwp: summary.kwp, monthlySavings: summary.monthlySavings, total: summary.total }));
-    await captureLead({ email, source: b.source, note: leadNote(summary), simulationId: sim.id }).catch((e) => console.error("simulation lead", e));
+    emailed = await deliverToClient(email, b.lang, simulationEmail({ lang: b.lang, url, validUntil: expiresAt, kwp: summary.kwp, monthlySavings: summary.monthlySavings, total: summary.total }));
+    // Quien se dio de baja no vuelve a la lista de seguimiento por guardar otro cálculo.
+    if (emailed !== "suppressed") await captureLead({ email, source: b.source, note: leadNote(summary), simulationId: sim.id }).catch((e) => console.error("simulation lead", e));
   }
   return Response.json({ url, expiresAt: expiresAt.toISOString(), emailed }, { status: 201, headers: { "Cache-Control": "no-store" } });
 }
