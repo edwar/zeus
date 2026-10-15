@@ -81,11 +81,11 @@ Los montos y leyes del video (COPPA, fallo de Múnich, CIPA de California, CAN-S
 ## Definición de terminado
 Una función del roadmap no está terminada hasta que, en el mismo cambio:
 1. Funciona en español e inglés y tiene pruebas (unitarias y, si es un flujo, E2E).
-2. La **guía del equipo** (`docs/guia-equipo/`, que la plataforma muestra en el menú → icono del libro) tiene su sección nueva o actualizada: quién puede hacerlo, paso a paso con los nombres exactos de los botones, qué pasa después y qué ve el cliente.
+2. La **guía del equipo** (`docs/guia-equipo/`, que la plataforma muestra en el menú → icono del libro; las secciones nuevas parten de `PLANTILLA.md`) tiene su sección nueva o actualizada: quién puede hacerlo, paso a paso con los nombres exactos de los botones, qué pasa después y qué ve el cliente.
 3. Si cambia algo de lo que el **comprador** hace o recibe, la **guía del comprador** (landing, sección `#guia`; textos en `guide` de `src/i18n/es.ts` y `en.ts`) se actualiza en el mismo cambio, en los dos idiomas. Una prueba (`tests/guide.test.ts`) impide que un idioma quede a medias o que la guía prometa algo que la plataforma aún no hace.
 4. Si trata datos personales, la política de privacidad refleja el nuevo uso (`src/lib/legal/`).
 5. Las capturas de pantalla de las guías se generan al final con las pruebas E2E, no a mano.
-6. Los **videos de apoyo** de las guías (cortos, sin sonido, con subtítulos, entre 250 KB y 1,5 MB cada uno, en WebM y MP4) se graban con Playwright (`pnpm videos`; guiones en `e2e/videos/`) y se regeneran cuando cambia la pantalla que muestran; nunca llevan datos de clientes reales.
+6. Los **videos de apoyo** de las guías (cortos, sin sonido, con subtítulos, entre 250 KB y 1,5 MB cada uno, en WebM y MP4) se graban con Playwright (`pnpm videos`; guiones en `e2e/videos/`) y se regeneran cuando cambia la pantalla que muestran (`pnpm videos` graba y comprime todo; `pnpm videos:encode` solo recomprime); nunca llevan datos de clientes reales. Los de la guía del equipo van en `docs/guia-equipo/videos/` y se insertan con `![Video: título](video:nombre)`; los del comprador, en `public/guia/` (es/en). Esto es de mantenimiento: la guía no lo explica.
 
 ## Accessibility & Inclusion
 Contraste alto apto para uso bajo luz solar, objetivos táctiles amplios, soporte multi-idioma, accesibilidad por teclado y lector de pantalla (objetivo WCAG AA).
