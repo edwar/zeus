@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 
-type Action = "cleanup" | "releaseQuoteLimit" | "seedField" | "cleanupField" | "seedStock" | "cleanupStock" | "renameDemoAdmin" | "seedDemo" | "cleanupDemo" | "quoteIdByEmail" | "createUsers" | "createTempUser" | "createResetToken" | "seedBulk" | "cleanupBulk";
+type Action = "cleanup" | "releaseQuoteLimit" | "seedField" | "cleanupField" | "seedStock" | "cleanupStock" | "renameDemoAdmin" | "seedDemo" | "cleanupDemo" | "quoteIdByEmail" | "createUsers" | "createTempUser" | "createResetToken" | "seedRetention" | "retentionState" | "cleanupRetention" | "seedBulk" | "cleanupBulk";
 const run = (action: Action) => execFileSync(process.execPath, ["--import", "tsx", "e2e/support/db-cli.ts", action], { stdio: "inherit" });
 const runOut = (action: Action, ...args: string[]) => execFileSync(process.execPath, ["--import", "tsx", "e2e/support/db-cli.ts", action, ...args], { encoding: "utf8" }).trim().split("\n").pop()!;
 
@@ -26,3 +26,7 @@ export const renameDemoAdmin = () => run("renameDemoAdmin");
 export const cleanupDemo = () => run("cleanupDemo");
 export const quoteIdByEmail = (email: string) => runOut("quoteIdByEmail", email);
 export const seedDemo = () => JSON.parse(runOut("seedDemo")) as { project: string; panel: string };
+/** Datos con fechas viejas para probar la limpieza por retención; `retentionState` dice qué sobrevivió. */
+export const seedRetention = () => run("seedRetention");
+export const cleanupRetention = () => run("cleanupRetention");
+export const retentionState = () => JSON.parse(runOut("retentionState")) as { quotes: Record<string, { anonymized: boolean; eventNotes: (string | null)[] }>; leads: string[]; simulations: string[]; users: string[]; sessions: number };

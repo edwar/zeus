@@ -131,6 +131,15 @@ En la ficha de una solicitud o de un contacto, el panel **Privacidad de esta per
 - Un **caso real publicado** no se toca desde aquí: se retira en [Casos reales](09-casos-reales.md).
 - Queda una constancia de quién lo hizo y cuántos registros afectó, sin datos personales.
 
+### Limpieza automática
+
+La plataforma también limpia sola, cada día, lo que pasó de plazo según la política de privacidad:
+- **Solicitudes** sin actividad en **24 meses** (sin proyecto y sin venta aprobada): se anonimizan. **Contactos** inactivos 24 meses: se borran.
+- **Cálculos del simulador** al vencer (60 días) y **cuentas del equipo desactivadas** hace más de 12 meses.
+- **Nunca** toca proyectos, ventas aprobadas ni casos publicados.
+
+Por eso conviene dejar **un recordatorio pendiente** en lo que sigue vivo: una solicitud con recordatorio pendiente o con actividad reciente no se limpia.
+
 > 🔒 Antes de eliminar, confirma que quien lo pide es el titular (que escriba desde el correo o el teléfono que dejó). Si dudas, pídele un dato que solo él tendría.
 
 ## Errores y dudas frecuentes
@@ -147,4 +156,4 @@ En la ficha de una solicitud o de un contacto, el panel **Privacidad de esta per
 - **Sin autorización de la persona, no se registra el contacto.**
 - Cada caso abierto debe tener **un recordatorio pendiente**: revisa **Vencidos** al empezar el día.
 - Anota el origen real; un origen falso daña las decisiones de marketing.
-- Si alguien pide que borres sus datos, avisa a quien administra la plataforma (la política de privacidad fija cómo se atiende).
+- Si alguien pide que borres sus datos, usa el panel **Privacidad de esta persona** ([ver arriba](#privacidad-de-una-persona)).

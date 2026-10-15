@@ -7,5 +7,9 @@ export const config: VercelConfig = {
   buildCommand: 'if [ "$VERCEL_ENV" = "production" ]; then npx prisma migrate deploy; fi && next build',
   // 05:00 UTC = 00:00 en Colombia (UTC-5, sin horario de verano). En el plan Hobby Vercel lo ejecuta en cualquier
   // momento de esa hora (entre 00:00 y 00:59). El endpoint se encadena solo hasta terminar el catálogo.
-  crons: [{ path: "/api/cron/sync", schedule: "0 5 * * *" }],
+  // La limpieza de datos (plazos de la política de privacidad) corre una hora después, para no coincidir con la sincronización.
+  crons: [
+    { path: "/api/cron/sync", schedule: "0 5 * * *" },
+    { path: "/api/cron/retention", schedule: "0 6 * * *" },
+  ],
 };
