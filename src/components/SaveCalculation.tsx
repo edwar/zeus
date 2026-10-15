@@ -12,7 +12,7 @@ import { readSource } from "@/components/SourceCapture";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-type Saved = { url: string; emailed: "sent" | "failed" | "skipped" | null };
+type Saved = { url: string; emailed: "sent" | "failed" | "skipped" | "suppressed" | null };
 
 /**
  * «Guarda tu cálculo»: retomar con un enlace (anónimo) o recibirlo por correo (con autorización, y un asesor puede escribir).

@@ -1232,6 +1232,18 @@ button.auth__back {
   font-weight: 600;
 }
 
+/* Baja de correos: una página corta, con aire bajo el encabezado fijo */
+.unsub {
+  display: grid;
+  gap: var(--s4);
+  max-width: 36rem;
+  padding-block: calc(var(--s8) * 2) var(--s8);
+}
+
+.unsub .auth__form {
+  justify-items: start;
+}
+
 /* Catálogo de productos */
 .shopfilters {
   display: grid;

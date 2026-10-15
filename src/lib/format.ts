@@ -12,3 +12,9 @@ export const num = (lang: string, n: number, options: Intl.NumberFormatOptions =
 /** Reemplaza {clave} en una cadena i18n. */
 export const fill = (s: string, vars: Record<string, string | number>) =>
   s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+
+/** «ana.perez@gmail.com» → «a***@gmail.com»: se reconoce el correo sin dejarlo completo a la vista. */
+export const maskEmail = (email: string) => {
+  const i = email.indexOf("@");
+  return i < 1 ? "***" : `${email[0]}***${email.slice(i)}`;
+};

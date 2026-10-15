@@ -2,12 +2,13 @@ import { mailConfigured, sendMail, NOTICE_STAGES, type NoticeStage } from "@/lib
 
 /** Parte de los avisos al cliente que no toca la base de datos (se prueba por separado). */
 export type NoticeKind = "link" | "portal" | "approved" | `stage_${NoticeStage}`;
-export type NoticeOutcome = "sent" | "failed" | "skipped";
+// suppressed = la persona se dio de baja (o se eliminaron sus datos): no se le escribe.
+export type NoticeOutcome = "sent" | "failed" | "skipped" | "suppressed";
 
 export const NOTICE_KINDS: readonly NoticeKind[] = ["link", "portal", "approved", ...NOTICE_STAGES.map((s) => `stage_${s}` as const)];
 
 /** Envía y devuelve qué pasó, sin lanzar nunca: un correo caído no debe romper el cambio que lo originó. */
-export async function deliver(to: string, msg: { subject: string; html: string; text: string }): Promise<NoticeOutcome> {
+export async function deliver(to: string, msg: { subject: string; html: string; text: string; headers?: Record<string, string> }): Promise<NoticeOutcome> {
   if (!mailConfigured()) return "skipped";
   try {
     return (await sendMail({ to, ...msg })) ? "sent" : "skipped";

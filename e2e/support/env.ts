@@ -30,6 +30,7 @@ export const CLIENTS = {
   crm: { name: "E2E Seguimiento", email: "e2e-seguimiento@example.com", phone: "3007778899" },
   saved: { name: "E2E Guardado", email: "e2e-guardado@example.com", phone: "3001234567" },
   plain: { name: "E2E Directo", email: "e2e-directo@example.com", phone: "3002223344" },
+  privacy: { name: "E2E Privacidad", email: "e2e-privacidad@example.com", phone: "3005550101" },
   referral: { name: "E2E Referido", email: "e2e-referido@example.com", phone: "3006665544" },
 } as const;
 
