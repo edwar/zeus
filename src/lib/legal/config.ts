@@ -11,7 +11,7 @@ const todo = (what: string) => `${PENDING}: ${what}]`;
 
 export const LEGAL = {
   /** Versión del documento y fecha de la última actualización (YYYY-MM-DD). Súbela cuando cambie el contenido. */
-  version: "1.6",
+  version: "1.7",
   updated: "2026-10-15",
 
   controller: {
@@ -40,6 +40,12 @@ export const LEGAL = {
     quotes: { es: "durante 24 meses desde la última interacción", en: "for 24 months from the last interaction" },
     accounts: { es: "durante 12 meses después de la baja de la cuenta", en: "for 12 months after the account is closed" },
   },
+
+  /**
+   * Los mismos plazos de `retention`, en números, para que la limpieza automática (`src/lib/retention.ts`) los aplique.
+   * Si cambias uno, cambia también su texto de arriba: `tests/retention.test.ts` falla si no coinciden.
+   */
+  retentionPolicy: { quotesMonths: 24, accountsMonths: 12, simulationDays: 60 },
 
   site: "https://zeus.cognilab.dev",
 } as const;

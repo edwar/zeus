@@ -150,7 +150,8 @@ const es: LegalDoc = {
       title: "9. Cuánto tiempo conservamos tus datos",
       body: [
         "Las solicitudes, las cotizaciones y los contactos en seguimiento se conservan {retentionQuotes}. Las fotos de obra, los documentos del proyecto y el acta firmada se conservan mientras dure la relación y los plazos de garantía aplicables, y solo las ve el equipo de Zeus (el acta, y los documentos que el equipo decida compartir contigo, también tú, en tu página privada). Los casos publicados se conservan mientras el cliente no retire su autorización. Los cálculos guardados en el simulador se eliminan a los 60 días (si dejaste tu correo, queda como contacto en seguimiento y se conserva igual que una solicitud). Si la cotización se convierte en un proyecto, conservamos lo necesario mientras dure la relación y los plazos legales o de garantía aplicables. Las cuentas del equipo se conservan {retentionAccounts}.",
-        "Pasado ese tiempo, suprimimos los datos o los anonimizamos de forma que ya no te identifiquen.",
+        "Pasado ese tiempo, suprimimos los datos o los anonimizamos de forma que ya no te identifiquen. Lo hacemos de forma automática cada día. Las solicitudes que se convirtieron en una venta se conservan mientras dure la relación y los plazos legales aplicables.",
+        "Datos técnicos: las sesiones vencidas (con la dirección IP y el navegador) se borran a los 30 días de vencer, y los registros de límites de uso y de lectura de facturas (solo huellas de conexión, no la IP) a los 30 días.",
       ],
     },
     {
@@ -317,7 +318,8 @@ const en: LegalDoc = {
       title: "9. How long we keep your data",
       body: [
         "Requests, quotes and contacts in follow-up are kept {retentionQuotes}. Site photos and the signed certificate are kept for the duration of the relationship and the applicable warranty periods, and only the Zeus team sees them (the certificate also you, on your private page). Published cases are kept as long as the customer does not withdraw their authorization. Calculations saved in the simulator are deleted after 60 days (if you left your email, it stays as a contact in follow-up and is kept like a request). If a quote becomes a project, we keep what is needed for the duration of the relationship and the applicable legal or warranty periods. Staff accounts are kept {retentionAccounts}.",
-        "After that, we delete the data or anonymize it so that it no longer identifies you.",
+        "After that, we delete the data or anonymize it so that it no longer identifies you. This happens automatically every day. Requests that became a sale are kept for the duration of the relationship and the applicable legal periods.",
+        "Technical data: expired sessions (with the IP address and browser) are deleted 30 days after they expire, and usage-limit and invoice-reading logs (connection fingerprints only, not the IP) after 30 days.",
       ],
     },
     {

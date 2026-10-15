@@ -23,6 +23,7 @@ async function cleanup() {
   await prisma.caseStudy.deleteMany({ where: { titleEs: { startsWith: "E2E " } } });
   await cleanupStock();
   await cleanupDemo();
+  await cleanupRetention();
   await prisma.team.deleteMany({ where: { name: { startsWith: "E2E " } } });
   await prisma.verification.deleteMany({ where: { identifier: { startsWith: "reset-password:e2e-reset-" } } });
   // Los límites de intentos de cambio/restablecimiento se guardan en la base: se reinician para que la serie se pueda repetir.
@@ -258,7 +259,54 @@ async function cleanupBulk() {
   await prisma.quoteRequest.deleteMany({ where: { id: { startsWith: "e2e-bulkq-" } } });
 }
 
-const actions = { cleanup, releaseQuoteLimit, seedField, cleanupField, seedStock, cleanupStock, seedDemo, cleanupDemo, quoteIdByEmail, renameDemoAdmin, createUsers, createTempUser, createResetToken, seedBulk, cleanupBulk } as const;
+/**
+ * Datos de la prueba de retención, con fechas viejas puestas a propósito (Prisma respeta un `updatedAt` explícito al crear).
+ * Todo lleva el prefijo «e2e-ret-» para que `cleanup` lo borre aunque la limpieza ya haya anonimizado el correo.
+ */
+async function seedRetention() {
+  const months = (n: number) => { const d = new Date(); d.setUTCMonth(d.getUTCMonth() - n); return d; };
+  const days = (n: number) => new Date(Date.now() + n * 86_400_000);
+  const base = { systemType: "ongrid", bill: { monthlyKwh: 300 }, sizing: { kwp: 3 }, total: 1_000_000, consentAt: months(26), ipHash: "e2e-released", contactPhone: "3001110000" };
+  const old = { createdAt: months(26), updatedAt: months(25) };
+  const quote = (id: string, extra: object) => prisma.quoteRequest.create({ data: { id: `e2e-ret-${id}`, contactName: `E2E Retención ${id}`, contactEmail: `e2e-ret-${id}@example.com`, ...base, ...old, ...extra } });
+  const oldEvent = { events: { create: [{ toStatus: "new" as const, userName: "E2E Admin", note: "Pidió cotización", createdAt: months(25) }] } };
+  await quote("vieja", { status: "new", ...oldEvent });
+  await quote("evento-reciente", { status: "contacted", events: { create: [{ toStatus: "contacted" as const, userName: "E2E Admin", createdAt: months(1) }] } });
+  await quote("aprobada", { status: "approved", ...oldEvent });
+  await quote("recordatorio", { status: "new", ...oldEvent, followUps: { create: [{ dueOn: days(5), note: "Llamar", createdBy: "E2E Admin" }] } });
+  await prisma.lead.create({ data: { id: "e2e-ret-lead-viejo", name: "E2E Retención contacto viejo", source: "referral", consentAt: months(26), createdBy: "E2E Admin", createdAt: months(26), updatedAt: months(25), notes: { create: [{ body: "Nota vieja", userName: "E2E Admin", createdAt: months(25) }] } } });
+  await prisma.lead.create({ data: { id: "e2e-ret-lead-reciente", name: "E2E Retención contacto reciente", source: "referral", consentAt: months(26), createdBy: "E2E Admin", createdAt: months(26), updatedAt: months(25), notes: { create: [{ body: "Nota reciente", userName: "E2E Admin", createdAt: months(1) }] } } });
+  const sim = { tokenHash: "", lang: "es", state: {}, summary: {}, createdAt: months(3) };
+  await prisma.simulation.create({ data: { ...sim, id: "e2e-ret-sim-vencida", tokenHash: "e2e-ret-sim-vencida", email: "e2e-ret-sim@example.com", expiresAt: days(-1) } });
+  await prisma.simulation.create({ data: { ...sim, id: "e2e-ret-sim-vigente", tokenHash: "e2e-ret-sim-vigente", email: "e2e-ret-sim2@example.com", expiresAt: days(30) } });
+  const user = { emailVerified: true, role: "equipo" };
+  await prisma.user.create({ data: { ...user, id: "e2e-ret-user-baja", name: "E2E Retención baja", email: "e2e-ret-baja@example.com", banned: true, createdAt: months(30), updatedAt: months(13) } });
+  await prisma.user.create({ data: { ...user, id: "e2e-ret-user-reciente", name: "E2E Retención reciente", email: "e2e-ret-reciente@example.com", banned: true, createdAt: months(30), updatedAt: months(2) } });
+  await prisma.session.create({ data: { id: "e2e-ret-session-vieja", token: "e2e-ret-session-vieja", userId: "e2e-ret-user-reciente", expiresAt: days(-60), ipAddress: "203.0.113.9", userAgent: "e2e" } });
+}
+
+/** Qué sobrevivió de lo sembrado por seedRetention, en una línea de JSON. */
+async function retentionState() {
+  const quotes = await prisma.quoteRequest.findMany({ where: { id: { startsWith: "e2e-ret-" } }, select: { id: true, contactName: true, contactEmail: true, events: { select: { note: true } } } });
+  const state = {
+    quotes: Object.fromEntries(quotes.map((q) => [q.id.replace("e2e-ret-", ""), { anonymized: q.contactName === "Datos eliminados", eventNotes: q.events.map((e) => e.note) }])),
+    leads: (await prisma.lead.findMany({ where: { id: { startsWith: "e2e-ret-" } }, select: { id: true } })).map((l) => l.id.replace("e2e-ret-", "")),
+    simulations: (await prisma.simulation.findMany({ where: { id: { startsWith: "e2e-ret-" } }, select: { id: true } })).map((s) => s.id.replace("e2e-ret-", "")),
+    users: (await prisma.user.findMany({ where: { id: { startsWith: "e2e-ret-" } }, select: { id: true } })).map((u) => u.id.replace("e2e-ret-", "")),
+    sessions: await prisma.session.count({ where: { id: "e2e-ret-session-vieja" } }),
+  };
+  console.log(JSON.stringify(state));
+}
+
+async function cleanupRetention() {
+  await prisma.quoteRequest.deleteMany({ where: { id: { startsWith: "e2e-ret-" } } });
+  await prisma.lead.deleteMany({ where: { id: { startsWith: "e2e-ret-" } } });
+  await prisma.simulation.deleteMany({ where: { id: { startsWith: "e2e-ret-" } } });
+  await prisma.user.deleteMany({ where: { id: { startsWith: "e2e-ret-" } } });
+  await prisma.erasureLog.deleteMany({ where: { by: "retención automática" } });
+}
+
+const actions = { seedRetention, retentionState, cleanupRetention, cleanup, releaseQuoteLimit, seedField, cleanupField, seedStock, cleanupStock, seedDemo, cleanupDemo, quoteIdByEmail, renameDemoAdmin, createUsers, createTempUser, createResetToken, seedBulk, cleanupBulk } as const;
 const action = process.argv[2] as keyof typeof actions;
 if (!actions[action]) {
   console.error(`Acción desconocida: ${action}`);

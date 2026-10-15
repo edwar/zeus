@@ -15,6 +15,19 @@ export const ERASED_EMAIL = "eliminado@invalid.invalid";
 
 export type ErasureResult = { quotes: number; leads: number; simulations: number; projectsKept: number; emailsBlocked: number };
 
+/** Quita de unas solicitudes todo lo que identifica a la persona y deja el cálculo (para las estadísticas). Lo usan la eliminación a pedido y la retención automática. */
+export async function anonymizeQuotes(tx: Prisma.TransactionClient, quoteIds: string[]) {
+  if (!quoteIds.length) return;
+  await tx.followUp.deleteMany({ where: { quoteId: { in: quoteIds } } });
+  // Las notas libres del historial pueden nombrar a la persona; los cambios de estado y los avisos enviados se conservan.
+  await tx.quoteEvent.updateMany({ where: { quoteId: { in: quoteIds }, OR: [{ subject: null }, { subject: { not: "notice" } }] }, data: { note: null } });
+  // `bill`, `sizing`, `items` y el total son del cálculo, no de la persona: se conservan para las estadísticas.
+  await tx.quoteRequest.updateMany({
+    where: { id: { in: quoteIds } },
+    data: { contactName: ERASED_NAME, contactEmail: ERASED_EMAIL, contactPhone: "eliminado", city: null, ipHash: "eliminado", shareTokenHash: null, shareExpiresAt: null, clientDecisionNote: null, discardReason: null },
+  });
+}
+
 type Who = { quoteId: string; leadId?: undefined } | { leadId: string; quoteId?: undefined };
 
 /** Correos y teléfonos con los que se reconoce a la persona; null si el registro no existe. */
@@ -54,16 +67,7 @@ export async function eraseSubject(who: Who, by: string): Promise<ErasureResult 
     // Cálculos guardados del simulador con ese correo.
     const simulations = id.emails.length ? await tx.simulation.deleteMany({ where: { OR: emailMatch.map((email) => ({ email })) } }) : { count: 0 };
 
-    if (quoteIds.length) {
-      await tx.followUp.deleteMany({ where: { quoteId: { in: quoteIds } } });
-      // Las notas libres del historial pueden nombrar a la persona; los cambios de estado y los avisos enviados se conservan.
-      await tx.quoteEvent.updateMany({ where: { quoteId: { in: quoteIds }, OR: [{ subject: null }, { subject: { not: "notice" } }] }, data: { note: null } });
-      // `bill`, `sizing`, `items` y el total son del cálculo, no de la persona: se conservan para las estadísticas.
-      await tx.quoteRequest.updateMany({
-        where: { id: { in: quoteIds } },
-        data: { contactName: ERASED_NAME, contactEmail: ERASED_EMAIL, contactPhone: "eliminado", city: null, ipHash: "eliminado", shareTokenHash: null, shareExpiresAt: null, clientDecisionNote: null, discardReason: null },
-      });
-    }
+    await anonymizeQuotes(tx, quoteIds);
     if (projectIds.length) {
       // Invalidar el enlace del portal (subir la versión) y no volver a avisarle por correo.
       await tx.project.updateMany({ where: { id: { in: projectIds } }, data: { client: ERASED_NAME, notifyClient: false, portalVersion: { increment: 1 } } });
