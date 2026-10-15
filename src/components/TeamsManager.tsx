@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -160,8 +161,8 @@ export function TeamForm({ t, lang, id }: { t: Dict; lang: Locale; id?: string }
         <fieldset className="kform__sub">
           <legend>{m.installTitle}</legend>
           <div className="kform__grid kform__grid--team">
-            <div className="field"><label htmlFor={`${uid}fb`}>{m.installBase}</label><Input id={`${uid}fb`} type="number" min={0} step={1000} inputMode="numeric" value={base} onChange={(ev) => setRates({ base: ev.target.value, perKwp })} /><span className="wiz__hint">{m.installBaseHint}</span></div>
-            <div className="field"><label htmlFor={`${uid}fk`}>{m.installPerKwp}</label><Input id={`${uid}fk`} type="number" min={0} step={1000} inputMode="numeric" value={perKwp} onChange={(ev) => setRates({ base, perKwp: ev.target.value })} /><span className="wiz__hint">{m.installPerKwpHint}</span></div>
+            <div className="field"><label htmlFor={`${uid}fb`}>{m.installBase}</label><MoneyInput id={`${uid}fb`} value={base} onValueChange={(v) => setRates({ base: v, perKwp })} /><span className="wiz__hint">{m.installBaseHint}</span></div>
+            <div className="field"><label htmlFor={`${uid}fk`}>{m.installPerKwp}</label><MoneyInput id={`${uid}fk`} value={perKwp} onValueChange={(v) => setRates({ base, perKwp: v })} /><span className="wiz__hint">{m.installPerKwpHint}</span></div>
           </div>
           <p className="wiz__hint" aria-live="polite">{example == null ? m.noFee : m.feeExample.replace("{fee}", money(lang, example, "COP"))}</p>
         </fieldset>
