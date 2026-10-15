@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/Loading";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useManufacturers } from "@/hooks/useManufacturers";
@@ -104,7 +105,7 @@ export function ManualForm({ t, lang, isAdmin, product, embedded, onCreated }: P
         </div>
         <div className="field">
           <label htmlFor={`${uid}p`}>{p.price}</label>
-          <Input id={`${uid}p`} name="price" type="number" inputMode="decimal" min={0} step="1" defaultValue={product?.price} required />
+          <MoneyInput id={`${uid}p`} name="price" defaultValue={product?.price} required />
         </div>
         <div className="field">
           <label htmlFor={`${uid}c`}>{p.category}</label>

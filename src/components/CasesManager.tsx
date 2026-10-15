@@ -19,6 +19,7 @@ import { Loading } from "@/components/Loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useConfirm } from "@/components/ConfirmProvider";
@@ -172,8 +173,8 @@ function CaseForm({ t, lang, c }: { t: Dict; lang: Locale; c?: CaseAdmin }) {
       <section className="panel">
         <h2 className="panel__title">{m.results}</h2>
         <p className="wiz__hint">{m.resultsHint}</p>
-        <div className="field"><label htmlFor={`${uid}bb`}>{m.billBefore}</label><Input id={`${uid}bb`} type="number" inputMode="numeric" min={0} step={1} value={before} onChange={(e) => setBefore(e.target.value)} /></div>
-        <div className="field"><label htmlFor={`${uid}ba`}>{m.billAfter}</label><Input id={`${uid}ba`} type="number" inputMode="numeric" min={0} step={1} value={after} onChange={(e) => setAfter(e.target.value)} /></div>
+        <div className="field"><label htmlFor={`${uid}bb`}>{m.billBefore}</label><MoneyInput id={`${uid}bb`} value={before} onValueChange={setBefore} /></div>
+        <div className="field"><label htmlFor={`${uid}ba`}>{m.billAfter}</label><MoneyInput id={`${uid}ba`} value={after} onValueChange={setAfter} /></div>
         {sv.amount > 0 && <p role="status" className="case__saving"><strong>{fill(m.savings, { amount: money(lang, sv.amount, "COP"), pct: sv.pct })}</strong></p>}
         {area("evidence", m.evidence, c?.evidence, 3, 500, m.evidencePh)}
         {field("verifiedOn", m.verifiedOn, { type: "date", max: todayBogota(), defaultValue: c?.verifiedOn ?? "" })}

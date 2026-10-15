@@ -46,11 +46,11 @@ export function AppShell({ lang, t, user, children }: { lang: Locale; t: Dict; u
   // Cada entrada se muestra solo si el rol tiene el permiso (el servidor lo vuelve a exigir en cada ruta).
   const all: { key: string; seg: string; label: string; perm: Perm }[] = [
     { key: "quotes", seg: "quotes", label: t.app.nav.quotes, perm: "quotes" },
+    { key: "projects", seg: "projects", label: t.app.nav.projects, perm: "projects.view" },
     { key: "leads", seg: "leads", label: t.app.nav.leads, perm: "quotes" },
     { key: "cases", seg: "cases", label: t.app.nav.cases, perm: "cases" },
     // Modo campo en el menú solo para quien trabaja en obra (el rol equipo); gestión y administración lo abren desde cada proyecto.
     ...(can(user.role, "projects.progress") && !can(user.role, "quotes") ? [{ key: "field", seg: "field", label: t.app.nav.field, perm: "projects.progress" as Perm }] : []),
-    { key: "projects", seg: "projects", label: t.app.nav.projects, perm: "projects.view" },
     { key: "teams", seg: "teams", label: t.app.nav.teams, perm: "teams.view" },
     { key: "stock", seg: "stock", label: t.app.nav.stock, perm: "stock" },
     { key: "products", seg: "products", label: t.app.nav.products, perm: "catalog" },
@@ -70,7 +70,7 @@ export function AppShell({ lang, t, user, children }: { lang: Locale; t: Dict; u
   );
   // Barra inferior (móvil): máximo 5 lugares. Si hay más secciones, las 4 más importantes quedan a la vista y el último lugar es «Más».
   const MAX_TABS = 5;
-  const PRIORITY = ["quotes", "projects", "leads", "field", "teams", "cases", "stock", "products", "makers", "users"];
+  const PRIORITY = ["quotes", "projects", "leads", "cases", "field", "teams", "stock", "products", "makers", "users"];
   const rank = (k: string) => (PRIORITY.indexOf(k) < 0 ? 99 : PRIORITY.indexOf(k));
   const keep = items.length > MAX_TABS ? new Set([...items].sort((a, b) => rank(a.key) - rank(b.key)).slice(0, MAX_TABS - 1).map((i) => i.key)) : null;
   const shown = keep ? items.filter((i) => keep.has(i.key)) : items;

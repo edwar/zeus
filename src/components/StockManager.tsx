@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 
 type Texts = Dict["app"]["stock"];
 const errText = (m: Texts, e: unknown) => m.errors[(e as { code?: string }).code as keyof Texts["errors"]] ?? m.errors.generic;
@@ -152,7 +153,7 @@ function AddDialog({ open, onClose, t, lang }: { open: boolean; onClose: () => v
               <ul className="stockpick" aria-live="polite">
                 {found.data?.map((c) => (
                   <li key={c.id}>
-                    <button type="button" onClick={() => { setPicked(c); if (c.supplierPrice != null) setCost(String(c.supplierPrice)); }}>
+                    <button type="button" onClick={() => { setPicked(c); if (c.supplierPrice != null) setCost(String(Math.round(c.supplierPrice))); }}>
                       <strong>{c.name}</strong><small>{c.manufacturer}{c.sku ? ` · ${c.sku}` : ""} · {c.source === "autosolar" ? m.sourceAutosolar : m.sourceManual}</small>
                     </button>
                   </li>
@@ -164,7 +165,7 @@ function AddDialog({ open, onClose, t, lang }: { open: boolean; onClose: () => v
             <>
               <p><strong>{picked.name}</strong> <Button type="button" variant="outline" size="sm" onClick={() => setPicked(null)}>{m.change}</Button></p>
               <div className="field"><label htmlFor={`${uid}n`}>{m.onHand}</label><Input id={`${uid}n`} type="number" inputMode="numeric" min={0} step={1} value={onHand} onChange={(e) => setOnHand(e.target.value)} /></div>
-              <div className="field"><label htmlFor={`${uid}c`}>{m.unitCost}</label><Input id={`${uid}c`} type="number" inputMode="decimal" min={0} step="any" value={cost} onChange={(e) => setCost(e.target.value)} /><span className="uform__hint">{m.unitCostHint}</span></div>
+              <div className="field"><label htmlFor={`${uid}c`}>{m.unitCost}</label><MoneyInput id={`${uid}c`} value={cost} onValueChange={setCost} /><span className="uform__hint">{m.unitCostHint}</span></div>
               <div className="field"><label htmlFor={`${uid}m`}>{m.minQty}</label><Input id={`${uid}m`} type="number" inputMode="numeric" min={0} step={1} value={min} onChange={(e) => setMin(e.target.value)} /><span className="uform__hint">{m.minHint}</span></div>
             </>
           )}
@@ -206,7 +207,7 @@ function ReceiveDialog({ row, onClose, t, lang }: { row: StockRow | null; onClos
         </DialogHeader>
         <form className="uform uform--modal" onSubmit={submit}>
           <div className="field"><label htmlFor={`${uid}q`}>{m.qty}</label><Input id={`${uid}q`} type="number" inputMode="numeric" min={1} step={1} value={qty} onChange={(e) => setQty(e.target.value)} required /></div>
-          <div className="field"><label htmlFor={`${uid}c`}>{m.unitCost}</label><Input id={`${uid}c`} type="number" inputMode="decimal" min={0} step="any" value={cost} onChange={(e) => setCost(e.target.value)} required /><span className="uform__hint">{m.unitCostHint}</span></div>
+          <div className="field"><label htmlFor={`${uid}c`}>{m.unitCost}</label><MoneyInput id={`${uid}c`} value={cost} onValueChange={setCost} required /><span className="uform__hint">{m.unitCostHint}</span></div>
           <div className="field"><label htmlFor={`${uid}n`}>{m.receiveNote}</label><Input id={`${uid}n`} value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder={m.receiveNotePh} autoComplete="off" /></div>
           {preview != null && row && <p role="status" className="case__saving">{fill(m.preview, { onHand: num(lang, row.onHand + q), cost: money(lang, preview, "COP") })}</p>}
           <p className="field-error" role="alert" hidden={!error}>{error}</p>
