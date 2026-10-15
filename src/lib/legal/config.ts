@@ -11,8 +11,8 @@ const todo = (what: string) => `${PENDING}: ${what}]`;
 
 export const LEGAL = {
   /** Versión del documento y fecha de la última actualización (YYYY-MM-DD). Súbela cuando cambie el contenido. */
-  version: "1.7",
-  updated: "2026-10-15",
+  version: "1.8",
+  updated: "2026-10-16",
 
   controller: {
     /** Persona natural o jurídica responsable de las bases de datos. */

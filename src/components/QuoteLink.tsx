@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { CheckCircle2, Download, Hourglass, XCircle } from "lucide-react";
 import type { Dict } from "@/i18n";
@@ -117,7 +118,7 @@ export function QuoteLink({ t, lang, token, state, decision: initial, expiresAt,
           <Result icon={<XCircle aria-hidden="true" />} title={c.declined.title} text={c.declined.text} />
         ) : (
           <>
-            <p className="wiz__hint">{c.acceptHint}</p>
+            <p className="wiz__hint">{c.acceptHint} <Link href={`/${lang}/terms`} target="_blank" rel="noopener">{c.termsLink}</Link>.</p>
             {declining && (
               <div className="field">
                 <label htmlFor="ql-note">{c.reasonLabel}</label>

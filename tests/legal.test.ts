@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import { LEGAL, PENDING, legalVars, pendingFields } from "../src/lib/legal/config";
 import { privacy } from "../src/lib/legal/privacy";
 import { security } from "../src/lib/legal/security";
+import { terms } from "../src/lib/legal/terms";
 import { securityTxt } from "../src/app/.well-known/security.txt/route";
 import type { Block } from "../src/lib/legal/types";
 
-const docs = { privacidad: privacy, seguridad: security };
+const docs = { privacidad: privacy, seguridad: security, términos: terms };
 const textOf = (b: Block): string[] => (typeof b === "string" ? [b] : "list" in b ? b.list : "note" in b ? [b.note] : [...b.table.head, ...b.table.rows.flat()]);
 
 for (const [name, d] of Object.entries(docs)) {
@@ -35,7 +36,7 @@ for (const [name, d] of Object.entries(docs)) {
   });
 
   test(`${name}: los enlaces internos apuntan a páginas que existen`, () => {
-    const known = new Set(["/privacy", "/security", "/privacy#terceros", "/.well-known/security.txt"]);
+    const known = new Set(["/privacy", "/security", "/terms", "/privacy#terceros", "/.well-known/security.txt"]);
     for (const doc of [d.es, d.en]) {
       for (const s of doc.sections) for (const text of s.body.flatMap(textOf)) {
         for (const [, href] of text.matchAll(/\]\(([^)]+)\)/g)) assert.ok(known.has(href), `enlace desconocido: ${href}`);
@@ -74,4 +75,16 @@ test("security.txt cumple RFC 9116: Contact, Expires futuro (≤ 1 año) y Canon
   const expires = new Date(txt.match(/^Expires: (.+)$/m)![1]);
   const days = (expires.getTime() - now.getTime()) / 86_400_000;
   assert.ok(days > 0 && days <= 365, `Expires a ${days} días`);
+});
+
+test("los términos cubren lo que necesita una venta a distancia y no inventan cifras comerciales", () => {
+  const ids = terms.es.sections.map((s) => s.id);
+  for (const id of ["quienes", "cotizacion", "aceptar", "visita", "pagos", "garantias", "retracto", "ley"]) assert.ok(ids.includes(id), `falta la sección ${id}`);
+  const text = JSON.stringify(terms.es);
+  for (const must of ["Ley 1480", "5 días hábiles", "30 días calendario", "Superintendencia de Industria y Comercio", "no recibe pagos", "Aceptar no es lo mismo que aprobar"]) {
+    assert.ok(text.includes(must), `no menciona: ${must}`);
+  }
+  // No promete garantías ni plazos de entrega propios: remite a la cotización, el contrato o el acta.
+  assert.ok(!/\b\d+\s*(meses|años)\b/i.test(text), "no debe fijar términos de garantía en meses o años");
+  assert.ok(text.includes("conste en tu cotización"));
 });

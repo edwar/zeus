@@ -199,6 +199,7 @@ export const es = {
     legal: "Información legal",
     privacy: "Privacidad y datos personales",
     security: "Seguridad",
+    terms: "Términos y condiciones",
   },
   // Página no encontrada (404): sin idioma en el componente, así que cada variante lleva ambos textos
   notFound: {
@@ -234,7 +235,8 @@ export const es = {
     accept: "Aceptar cotización",
     decline: "No por ahora",
     reasonLabel: "¿Quieres contarnos por qué? (opcional)",
-    acceptHint: "Al aceptar avisamos a tu asesor, que se comunicará contigo para confirmar los siguientes pasos.",
+    acceptHint: "Al aceptar avisamos a tu asesor, que se comunicará contigo para confirmar los siguientes pasos. Aceptar no es aprobar: el contrato se forma cuando Zeus aprueba tu solicitud.",
+    termsLink: "Términos y condiciones",
     sending: "Enviando…",
     accepted: { title: "Registramos que aceptas la cotización", text: "Tu asesor se comunicará contigo para confirmar los siguientes pasos." },
     declined: { title: "Gracias por responder", text: "Registramos tu respuesta. Si cambias de opinión, escríbele a tu asesor." },
