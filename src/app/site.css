@@ -1626,7 +1626,7 @@ button.auth__back {
 
 .appl__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
   gap: var(--s3);
   margin: 0;
   padding: 0;
@@ -1635,7 +1635,9 @@ button.auth__back {
 
 .appl__card {
   display: grid;
-  align-content: start;
+  align-content: center;
+  gap: var(--s2);
+  padding-block: var(--s3);
   border: 1.5px solid var(--line);
   border-radius: var(--r-md);
   background: var(--paper, #fff);
@@ -1651,8 +1653,10 @@ button.auth__back {
   appearance: none;
   display: grid;
   justify-items: center;
+  align-content: center;
   gap: var(--s2);
-  padding: var(--s4) var(--s3);
+  min-height: 5.5rem;
+  padding: var(--s2) var(--s3);
   border: 0;
   background: none;
   font: 600 0.95rem var(--font-ui);
@@ -1672,9 +1676,26 @@ button.auth__back {
 
 .appl__ctl {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 4.25rem;
+  grid-template-columns: minmax(0, 1fr) 4.5rem;
   gap: var(--s2);
-  padding: 0 var(--s3) var(--s3);
+  padding: 0 var(--s3);
+}
+
+/* Tarjeta cuadrada en pantallas anchas; en móvil la altura la da el contenido. */
+@media (min-width: 721px) {
+  .appl__card {
+    aspect-ratio: 1 / 0.92;
+  }
+}
+
+@media (max-width: 480px) {
+  .appl__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .appl__ctl {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .appl__ctl--solo {
@@ -1683,7 +1704,7 @@ button.auth__back {
 
 .appl__qty {
   display: grid;
-  grid-template-columns: 2.25rem minmax(1.25rem, 1fr) 2.25rem;
+  grid-template-columns: 1.9rem minmax(1rem, 1fr) 1.9rem;
   align-items: center;
   text-align: center;
   min-height: 2.75rem;

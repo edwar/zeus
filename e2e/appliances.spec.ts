@@ -10,9 +10,11 @@ test("el consumo se calcula marcando electrodomésticos, su cantidad y su clase,
   await expect(total).toContainText("0 kWh/mes");
   await expect(page.getByRole("button", { name: "Usar este consumo" })).toBeDisabled();
 
+  await expect(page.getByRole("button", { name: "Más: Nevera" })).toBeDisabled(); // sin marcar, las acciones están a la vista pero deshabilitadas
   const fridge = page.getByRole("button", { name: "Nevera", exact: true });
   await fridge.click();
   await expect(fridge).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Más: Nevera" })).toBeEnabled();
   await expect(total).toContainText("45 kWh/mes"); // una nevera clase D
 
   await page.getByRole("button", { name: "Más: Nevera" }).click();

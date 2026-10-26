@@ -50,23 +50,21 @@ export function ApplianceEstimator({ t, rows, onChange, onBack, onUse }: Props) 
                 <span>{name}</span>
               </button>
 
-              {r && (
-                <div className={`appl__ctl ${x.labeled ? "" : "appl__ctl--solo"}`}>
-                  <div className="appl__qty" role="group" aria-label={`${a.qty}: ${name}`}>
-                    <button type="button" aria-label={`${a.less}: ${name}`} onClick={() => step(r, -1)}><Minus aria-hidden="true" /></button>
-                    <output aria-live="polite">{rowQty(r) || r.qty}</output>
-                    <button type="button" aria-label={`${a.more}: ${name}`} onClick={() => step(r, 1)} disabled={rowQty(r) >= MAX_QTY}><Plus aria-hidden="true" /></button>
-                  </div>
-                  {x.labeled && (
-                    <Select value={r.cls} onValueChange={(v) => patch(x.id, { cls: v as ApplianceRow["cls"] })}>
-                      <SelectTrigger aria-label={`${a.class}: ${name}`}><SelectValue>{r.cls}</SelectValue></SelectTrigger>
-                      <SelectContent>
-                        {CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  )}
+              <div className={`appl__ctl ${x.labeled ? "" : "appl__ctl--solo"}`}>
+                <div className="appl__qty" role="group" aria-label={`${a.qty}: ${name}`}>
+                  <button type="button" aria-label={`${a.less}: ${name}`} disabled={!r} onClick={() => r && step(r, -1)}><Minus aria-hidden="true" /></button>
+                  <output aria-live="polite">{r ? rowQty(r) || r.qty : 0}</output>
+                  <button type="button" aria-label={`${a.more}: ${name}`} disabled={!r || rowQty(r) >= MAX_QTY} onClick={() => r && step(r, 1)}><Plus aria-hidden="true" /></button>
                 </div>
-              )}
+                {x.labeled && (
+                  <Select value={r?.cls ?? "D"} disabled={!r} onValueChange={(v) => patch(x.id, { cls: v as ApplianceRow["cls"] })}>
+                    <SelectTrigger aria-label={`${a.class}: ${name}`}><SelectValue>{r?.cls ?? "D"}</SelectValue></SelectTrigger>
+                    <SelectContent>
+                      {CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </li>
           );
         })}
