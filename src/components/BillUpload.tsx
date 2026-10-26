@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/button";
 
 const ACCEPT = "application/pdf,image/jpeg,image/png,image/webp";
 
-type Props = { t: Dict; lang: Locale; onExtracted: (bill: BillData) => void; onManual: () => void };
+type Props = { t: Dict; lang: Locale; onExtracted: (bill: BillData) => void; onManual: () => void; onAppliances: () => void };
 
-export function BillUpload({ t, lang, onExtracted, onManual }: Props) {
+export function BillUpload({ t, lang, onExtracted, onManual, onAppliances }: Props) {
   const u = t.wiz.upload;
   const e = t.wiz.errors;
   const uid = useId().replace(/:/g, "");
@@ -81,6 +81,7 @@ export function BillUpload({ t, lang, onExtracted, onManual }: Props) {
       <div className="wiz__actions">
         <Button type="button" onClick={analyze} disabled={busy || files.length === 0}>{busy ? u.reading : u.analyze}</Button>
         <button type="button" className="wiz__link" onClick={onManual} disabled={busy}>{u.manual}</button>
+        <button type="button" className="wiz__link" onClick={onAppliances} disabled={busy}>{u.appliances}</button>
       </div>
       <p className="wiz__privacy">{u.privacy} <Link href={`/${lang}/privacy`} target="_blank" rel="noopener">{u.privacyLink}</Link>.</p>
     </div>

@@ -1624,6 +1624,51 @@ button.auth__back {
   overflow-wrap: anywhere;
 }
 
+.appl__list {
+  display: grid;
+  gap: var(--s3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.appl__row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(5rem, 0.7fr) minmax(6rem, 0.8fr) minmax(0, 1fr) auto;
+  gap: var(--s3);
+  align-items: end;
+  padding: var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.appl__sum {
+  display: grid;
+  gap: var(--s1);
+  justify-items: end;
+  white-space: nowrap;
+}
+
+.appl__err {
+  grid-column: 1 / -1;
+}
+
+.appl__total {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 720px) {
+  .appl__row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .appl__row > .field:first-child,
+  .appl__sum {
+    grid-column: 1 / -1;
+    justify-items: start;
+  }
+}
+
 .wiz__link {
   appearance: none;
   background: none;

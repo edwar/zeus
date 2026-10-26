@@ -9,18 +9,25 @@ import { money } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { BillUpload } from "./BillUpload";
 import { BillReview } from "./BillReview";
+import { ApplianceEstimator } from "./ApplianceEstimator";
+import { newRow, type ApplianceRow } from "@/lib/appliances";
 import { KitBuilder, type KitInitial } from "./KitBuilder";
 import { Loading } from "@/components/Loading";
 import { TOKEN_RE } from "@/lib/quote-share";
 
-type Step = "upload" | "review" | "kit" | "sent";
+type Step = "upload" | "appliances" | "review" | "kit" | "sent";
 const ORDER = ["upload", "review", "kit"] as const;
+// El cálculo por electrodomésticos reemplaza al paso de la factura: ocupa su lugar en la barra de pasos.
+const slot = (s: Step): Step => (s === "appliances" ? "upload" : s);
 
 export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
   const w = t.wiz;
   const [step, setStep] = useState<Step>("upload");
   const [values, setValues] = useState<ReviewValues>(emptyValues);
   const [sources, setSources] = useState<Sources>({});
+  const [byAppliances, setByAppliances] = useState(false); // de dónde viene el consumo: define a qué paso vuelve «Atrás»
+  const [rows, setRows] = useState<ApplianceRow[]>(() => [newRow("a0")]);
+  const rowSeq = useRef(1);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [sent, setSent] = useState<{ id: string; total: number; fulfillment: string } | null>(null);
   // Cálculo guardado: si la URL trae ?s=<token> se recupera y se salta directo al kit.
@@ -62,11 +69,23 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
     const r = valuesFromBill(bill);
     setValues(r.values);
     setSources(r.sources);
+    setByAppliances(false);
     setWarnings(bill.warnings);
     setStep("review");
   }
 
+  function onAppliances(kwh: number) {
+    setValues({ ...emptyValues(), monthlyKwh: String(Math.round(kwh * 10) / 10) });
+    setSources({ monthlyKwh: "estimated" });
+    setByAppliances(true);
+    setWarnings([]);
+    setStep("review");
+  }
+
   function restart() {
+    setRows([newRow("a0")]);
+    rowSeq.current = 1;
+    setByAppliances(false);
     setValues(emptyValues());
     setSources({});
     setWarnings([]);
@@ -75,7 +94,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
     setStep("upload");
   }
 
-  const titles: Record<Step, string> = { upload: w.upload.label, review: w.review.title, kit: w.kit.title, sent: w.send.doneTitle };
+  const titles: Record<Step, string> = { upload: w.upload.label, appliances: w.appliances.title, review: w.review.title, kit: w.kit.title, sent: w.send.doneTitle };
 
   return (
     <section className="wrap wiz" aria-labelledby="wiz-title">
@@ -87,7 +106,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
       {step !== "sent" && (
         <ol className="wiz__steps" aria-label={w.title}>
           {ORDER.map((s, i) => (
-            <li key={s} aria-current={s === step ? "step" : undefined} className={(ORDER as readonly Step[]).indexOf(step) > i ? "is-done" : s === step ? "is-cur" : ""}>
+            <li key={s} aria-current={s === slot(step) ? "step" : undefined} className={(ORDER as readonly Step[]).indexOf(slot(step)) > i ? "is-done" : s === slot(step) ? "is-cur" : ""}>
               <span>{i + 1}</span> {w.steps[s]}
             </li>
           ))}
@@ -98,7 +117,8 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
         <h3 ref={heading} tabIndex={-1} className="wiz__title">{titles[step]}</h3>
         {restore === "loading" && <Loading label={w.save.restoring} rows={4} />}
         {restore === "error" && <p className="wiz__hint" role="alert">{w.save.restoreError}</p>}
-        {step === "upload" && restore !== "loading" && <BillUpload t={t} lang={lang} onExtracted={onExtracted} onManual={() => setStep("review")} />}
+        {step === "upload" && restore !== "loading" && <BillUpload t={t} lang={lang} onExtracted={onExtracted} onManual={() => setStep("review")} onAppliances={() => setStep("appliances")} />}
+        {step === "appliances" && <ApplianceEstimator t={t} rows={rows} onChange={setRows} nextId={() => `a${rowSeq.current++}`} onBack={() => setStep("upload")} onUse={onAppliances} />}
         {step === "review" && (
           <BillReview
             t={t}
@@ -106,7 +126,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
             sources={sources}
             warnings={warnings}
             onChange={setValues}
-            onBack={() => setStep("upload")}
+            onBack={() => setStep(byAppliances ? "appliances" : "upload")}
             onNext={() => setStep("kit")}
           />
         )}
