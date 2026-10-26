@@ -64,7 +64,7 @@ export function BillReview({ t, values: v, sources, warnings, onChange, onBack, 
   }
 
   const badge = (s?: FieldSource) =>
-    !s ? null : s === "bill" ? <Badge>{r.fromBill}</Badge> : s === "missing" ? <Badge variant="warning">{r.missing}</Badge> : s === "derived" ? <Badge variant="secondary">{r.derived}</Badge> : <Badge variant="warning">{r.check}</Badge>;
+    !s ? null : s === "bill" ? <Badge>{r.fromBill}</Badge> : s === "missing" ? <Badge variant="warning">{r.missing}</Badge> : s === "derived" ? <Badge variant="secondary">{r.derived}</Badge> : s === "estimated" ? <Badge variant="secondary">{r.estimated}</Badge> : <Badge variant="warning">{r.check}</Badge>;
 
   const err = (k: keyof ReviewErrors) => (errors[k] ? { "aria-invalid": true as const, "aria-describedby": `${uid}${k}e` } : {});
   const Err = ({ k }: { k: keyof ReviewErrors }) => (errors[k] ? <span id={`${uid}${k}e`} className="field-error">{r.invalid}</span> : null);

@@ -22,7 +22,7 @@ export type ReviewValues = {
   autonomyHours: string;
 };
 
-export type FieldSource = "bill" | "check" | "missing" | "derived";
+export type FieldSource = "bill" | "check" | "missing" | "derived" | "estimated";
 export type Sources = Partial<Record<"monthlyKwh" | "tariff" | "connection" | "location", FieldSource>>;
 
 export const DEFAULTS = { coveragePct: "100", peakSunHours: "4.5" };
