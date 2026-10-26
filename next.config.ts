@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 const dev = process.env.NODE_ENV !== "production";
 
@@ -77,4 +78,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry: los eventos del navegador pasan por /api/monitoring (mismo origen), así que la CSP no necesita abrir connect-src
+// y los bloqueadores de anuncios no los frenan. Los mapas de código se suben en el build si hay SENTRY_AUTH_TOKEN.
+export default withSentryConfig(nextConfig, {
+  org: "cognilab-px",
+  project: "zeus",
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: true,
+  tunnelRoute: "/api/monitoring",
+  silent: !process.env.CI,
+});
