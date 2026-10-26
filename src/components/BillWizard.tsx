@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { BillUpload } from "./BillUpload";
 import { BillReview } from "./BillReview";
 import { ApplianceEstimator } from "./ApplianceEstimator";
-import { newRow, type ApplianceRow } from "@/lib/appliances";
+import type { ApplianceRow } from "@/lib/appliances";
 import { KitBuilder, type KitInitial } from "./KitBuilder";
 import { Loading } from "@/components/Loading";
 import { TOKEN_RE } from "@/lib/quote-share";
@@ -26,8 +26,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
   const [values, setValues] = useState<ReviewValues>(emptyValues);
   const [sources, setSources] = useState<Sources>({});
   const [byAppliances, setByAppliances] = useState(false); // de dónde viene el consumo: define a qué paso vuelve «Atrás»
-  const [rows, setRows] = useState<ApplianceRow[]>(() => [newRow("a0")]);
-  const rowSeq = useRef(1);
+  const [rows, setRows] = useState<ApplianceRow[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [sent, setSent] = useState<{ id: string; total: number; fulfillment: string } | null>(null);
   // Cálculo guardado: si la URL trae ?s=<token> se recupera y se salta directo al kit.
@@ -83,8 +82,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
   }
 
   function restart() {
-    setRows([newRow("a0")]);
-    rowSeq.current = 1;
+    setRows([]);
     setByAppliances(false);
     setValues(emptyValues());
     setSources({});
@@ -118,7 +116,7 @@ export function BillWizard({ t, lang }: { t: Dict; lang: Locale }) {
         {restore === "loading" && <Loading label={w.save.restoring} rows={4} />}
         {restore === "error" && <p className="wiz__hint" role="alert">{w.save.restoreError}</p>}
         {step === "upload" && restore !== "loading" && <BillUpload t={t} lang={lang} onExtracted={onExtracted} onManual={() => setStep("review")} onAppliances={() => setStep("appliances")} />}
-        {step === "appliances" && <ApplianceEstimator t={t} rows={rows} onChange={setRows} nextId={() => `a${rowSeq.current++}`} onBack={() => setStep("upload")} onUse={onAppliances} />}
+        {step === "appliances" && <ApplianceEstimator t={t} rows={rows} onChange={setRows} onBack={() => setStep("upload")} onUse={onAppliances} />}
         {step === "review" && (
           <BillReview
             t={t}

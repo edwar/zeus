@@ -1624,49 +1624,112 @@ button.auth__back {
   overflow-wrap: anywhere;
 }
 
-.appl__list {
+.appl__grid {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   gap: var(--s3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.appl__row {
+.appl__card {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(5rem, 0.7fr) minmax(6rem, 0.8fr) minmax(0, 1fr) auto;
-  gap: var(--s3);
-  align-items: end;
-  padding: var(--s3);
-  border: 1px solid var(--line);
+  align-content: start;
+  border: 1.5px solid var(--line);
   border-radius: var(--r-md);
+  background: var(--paper, #fff);
+  overflow: hidden;
 }
 
-.appl__sum {
+.appl__card.is-on {
+  border-color: var(--emerald-deep);
+  background: color-mix(in srgb, var(--emerald-deep) 6%, transparent);
+}
+
+.appl__pick {
+  appearance: none;
   display: grid;
-  gap: var(--s1);
-  justify-items: end;
-  white-space: nowrap;
+  justify-items: center;
+  gap: var(--s2);
+  padding: var(--s4) var(--s3);
+  border: 0;
+  background: none;
+  font: 600 0.95rem var(--font-ui);
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
 }
 
-.appl__err {
-  grid-column: 1 / -1;
+.appl__pick svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.appl__card.is-on .appl__pick {
+  color: var(--emerald-deep);
+}
+
+.appl__ctl {
+  display: grid;
+  gap: var(--s3);
+  padding: 0 var(--s3) var(--s3);
+}
+
+.appl__qty {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr 2.75rem;
+  align-items: center;
+  text-align: center;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-md);
+  background: #fff;
+}
+
+.appl__qty output {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.appl__qty button {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  min-height: 2.75rem;
+  border: 0;
+  background: none;
+  color: var(--emerald-deep);
+  cursor: pointer;
+}
+
+.appl__qty button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.appl__qty svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.appl__label summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--emerald-deep);
+}
+
+.appl__label .field {
+  margin-top: var(--s2);
+}
+
+.appl__kwh {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .appl__total {
   font-size: 1.1rem;
-}
-
-@media (max-width: 720px) {
-  .appl__row {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .appl__row > .field:first-child,
-  .appl__sum {
-    grid-column: 1 / -1;
-    justify-items: start;
-  }
 }
 
 .wiz__link {

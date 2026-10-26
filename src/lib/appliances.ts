@@ -37,12 +37,14 @@ export type ApplianceRow = {
   label: string; // kWh/mes por unidad leídos de la etiqueta; si se escribe, reemplaza la tabla
 };
 
+export const MAX_QTY = 99;
+
 const num = (s: string) => (s.trim() === "" ? NaN : Number(s.replace(",", ".")));
 const find = (id: string) => APPLIANCES.find((a) => a.id === id);
 
-/** El id lo pone quien llama (un contador): nada aleatorio al renderizar, para que el servidor y el navegador coincidan. */
-export const newRow = (id: string, appliance: ApplianceId = "fridge"): ApplianceRow => ({
-  id,
+/** Un equipo por fila: el id de la fila es el del equipo (nada aleatorio al renderizar, así servidor y navegador coinciden). */
+export const newRow = (appliance: ApplianceId): ApplianceRow => ({
+  id: appliance,
   appliance,
   qty: "1",
   cls: "D",
@@ -60,10 +62,10 @@ export function unitKwh(r: ApplianceRow): number {
   return a.kwhD * (a.labeled ? CLASS_FACTOR[r.cls] : 1);
 }
 
-/** Una fila cuenta solo si tiene una cantidad entera válida. */
+/** Una fila cuenta solo si tiene una cantidad entera válida (el selector de cantidad no deja otra). */
 export const rowQty = (r: ApplianceRow): number => {
   const q = num(r.qty);
-  return Number.isInteger(q) && q > 0 && q <= 99 ? q : 0;
+  return Number.isInteger(q) && q > 0 && q <= MAX_QTY ? q : 0;
 };
 
 export const rowKwh = (r: ApplianceRow): number => unitKwh(r) * rowQty(r);
