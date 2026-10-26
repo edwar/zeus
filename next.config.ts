@@ -48,6 +48,7 @@ const nextConfig: NextConfig = {
   // de cada petición y se pinta con un Client Component (AppShell), así que la validación implícita fallaba en todas sus
   // rutas con "Could not validate `instant`…". Es solo un aviso de desarrollo; no afecta al build.
   experimental: {
+    agentUpgrade: "security",
     instantInsights: { validationLevel: "manual-warning" },
     // 404 para URLs que no coinciden con ninguna ruta: el layout raíz depende de [lang], así que no puede componerlo.
     globalNotFound: true,
