@@ -297,6 +297,9 @@ export const es = {
       qty: "Cantidad",
       class: "Clase",
       labelHint: "Escribe los kWh/mes (por unidad) que dice la etiqueta de cada equipo; reemplazan el valor típico.",
+      otherLabel: "Otro: kWh/mes por unidad",
+      otherInvalid: "Escribe cuántos kWh al mes consume cada unidad.",
+      required: "Obligatorio",
       labelToggle: "Tengo el consumo de la etiqueta",
       labelPlaceholder: "Opcional",
       less: "Menos",
@@ -310,7 +313,7 @@ export const es = {
       names: {
         fridge: "Nevera", freezer: "Congelador", washer: "Lavadora", dryer: "Secadora", dishwasher: "Lavavajillas", ac: "Aire acondicionado",
         tv: "Televisor", bulb: "Bombillo LED", waterHeater: "Calentador de agua eléctrico", microwave: "Microondas", oven: "Horno eléctrico",
-        fan: "Ventilador", computer: "Computador", iron: "Plancha",
+        fan: "Ventilador", computer: "Computador", iron: "Plancha", blender: "Licuadora", airFryer: "Air fryer", coffeeMaker: "Cafetera", hairDryer: "Secador de cabello", evCharger: "Cargador de vehículo eléctrico", other: "Otro",
       },
     },
     errors: {

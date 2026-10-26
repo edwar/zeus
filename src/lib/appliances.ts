@@ -25,6 +25,12 @@ export const APPLIANCES = [
   { id: "fan", kwhD: 11, labeled: false },
   { id: "computer", kwhD: 25, labeled: false },
   { id: "iron", kwhD: 6, labeled: false },
+  { id: "blender", kwhD: 2, labeled: false }, // ~400 W × 10 min al día
+  { id: "airFryer", kwhD: 15, labeled: false }, // ~1,5 kW × 20 min al día
+  { id: "coffeeMaker", kwhD: 6, labeled: false }, // ~800 W × 15 min al día
+  { id: "hairDryer", kwhD: 8, labeled: false }, // ~1,8 kW × 9 min al día
+  { id: "evCharger", kwhD: 150, labeled: false }, // ~1.000 km al mes × ~15 kWh por cada 100 km
+  { id: "other", kwhD: 0, labeled: false }, // sin valor típico: el usuario escribe el consumo por unidad
 ] as const;
 export type ApplianceId = (typeof APPLIANCES)[number]["id"];
 
@@ -72,6 +78,13 @@ export const rowKwh = (r: ApplianceRow): number => unitKwh(r) * rowQty(r);
 
 export const totalKwh = (rows: ApplianceRow[]): number => rows.reduce((n, r) => n + rowKwh(r), 0);
 
-/** Filas con cantidad o consumo de etiqueta mal escritos: se avisa en vez de ignorarlas en silencio. */
+/**
+ * Filas con cantidad o consumo escrito mal: se avisa en vez de ignorarlas en silencio.
+ * «Otro» no tiene valor típico, así que su consumo por unidad es obligatorio.
+ */
 export const invalidRows = (rows: ApplianceRow[]): Set<string> =>
-  new Set(rows.filter((r) => rowQty(r) === 0 || (r.label.trim() !== "" && !(num(r.label) > 0))).map((r) => r.id));
+  new Set(
+    rows
+      .filter((r) => rowQty(r) === 0 || (r.label.trim() !== "" || r.appliance === "other" ? !(num(r.label) > 0) : false))
+      .map((r) => r.id),
+  );

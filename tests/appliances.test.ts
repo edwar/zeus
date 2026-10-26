@@ -30,3 +30,12 @@ test("el total suma las filas y las cantidades inválidas no cuentan pero se avi
   assert.equal(totalKwh([ok, bad, frac]), 45);
   assert.deepEqual([...invalidRows([ok, bad, frac])].sort(), [bad.id, frac.id].sort());
 });
+
+test("«Otro» no tiene valor típico: sin consumo escrito es inválido y con consumo suma por cantidad", () => {
+  const other = newRow("other");
+  assert.equal(rowKwh(other), 0);
+  assert.deepEqual([...invalidRows([other])], ["other"]);
+  const ok = { ...other, qty: "3", label: "10,5" };
+  assert.equal(rowKwh(ok), 31.5);
+  assert.equal(invalidRows([ok]).size, 0);
+});
