@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { AirVent, Blend, Coffee, CookingPot, Drumstick, Ellipsis, Fan, Laptop, Lightbulb, Microwave, Minus, Plus, Refrigerator, Scissors, ShowerHead, Shirt, Snowflake, Tv, Utensils, WashingMachine, Wind, type LucideIcon } from "lucide-react";
+import { AirVent, Blend, Coffee, CookingPot, Drumstick, Ellipsis, Fan, Laptop, Lightbulb, Microwave, Minus, PlugZap, Plus, Refrigerator, Scissors, ShowerHead, Shirt, Snowflake, Tv, Utensils, WashingMachine, Wind, type LucideIcon } from "lucide-react";
 import type { Dict } from "@/i18n";
 import { APPLIANCES, CLASSES, MAX_QTY, type ApplianceId, type ApplianceRow, invalidRows, newRow, rowKwh, rowQty, totalKwh } from "@/lib/appliances";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ type Props = { t: Dict; rows: ApplianceRow[]; onChange: (rows: ApplianceRow[]) =
 
 const ICONS: Record<ApplianceId, LucideIcon> = {
   fridge: Refrigerator, freezer: Snowflake, washer: WashingMachine, dryer: Wind, dishwasher: Utensils, ac: AirVent, tv: Tv,
-  bulb: Lightbulb, waterHeater: ShowerHead, microwave: Microwave, oven: CookingPot, fan: Fan, computer: Laptop, iron: Shirt, blender: Blend, airFryer: Drumstick, coffeeMaker: Coffee, hairDryer: Scissors, other: Ellipsis,
+  bulb: Lightbulb, waterHeater: ShowerHead, microwave: Microwave, oven: CookingPot, fan: Fan, computer: Laptop, iron: Shirt, blender: Blend, airFryer: Drumstick, coffeeMaker: Coffee, hairDryer: Scissors, evCharger: PlugZap, other: Ellipsis,
 };
 
 const fmt = (n: number) => (Math.round(n * 10) / 10).toLocaleString("es-CO", { maximumFractionDigits: 1 });

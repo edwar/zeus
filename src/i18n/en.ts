@@ -315,7 +315,7 @@ export const en: Dict = {
       names: {
         fridge: "Refrigerator", freezer: "Freezer", washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher", ac: "Air conditioner",
         tv: "TV", bulb: "LED bulb", waterHeater: "Electric water heater", microwave: "Microwave", oven: "Electric oven",
-        fan: "Fan", computer: "Computer", iron: "Iron", blender: "Blender", airFryer: "Air fryer", coffeeMaker: "Coffee maker", hairDryer: "Hair dryer", other: "Other",
+        fan: "Fan", computer: "Computer", iron: "Iron", blender: "Blender", airFryer: "Air fryer", coffeeMaker: "Coffee maker", hairDryer: "Hair dryer", evCharger: "EV charger", other: "Other",
       },
     },
     errors: {

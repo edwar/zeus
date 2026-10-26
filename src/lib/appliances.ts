@@ -29,6 +29,7 @@ export const APPLIANCES = [
   { id: "airFryer", kwhD: 15, labeled: false }, // ~1,5 kW × 20 min al día
   { id: "coffeeMaker", kwhD: 6, labeled: false }, // ~800 W × 15 min al día
   { id: "hairDryer", kwhD: 8, labeled: false }, // ~1,8 kW × 9 min al día
+  { id: "evCharger", kwhD: 150, labeled: false }, // ~1.000 km al mes × ~15 kWh por cada 100 km
   { id: "other", kwhD: 0, labeled: false }, // sin valor típico: el usuario escribe el consumo por unidad
 ] as const;
 export type ApplianceId = (typeof APPLIANCES)[number]["id"];

@@ -50,11 +50,15 @@ test("el consumo se calcula marcando electrodomésticos, su cantidad y su clase,
 test("«Otro» exige el consumo por unidad y los equipos nuevos están disponibles", async ({ page }) => {
   await page.goto("/es/simulator");
   await page.getByRole("button", { name: "Prefiero estimar con mis electrodomésticos" }).click();
-  for (const n of ["Licuadora", "Air fryer", "Cafetera", "Secador de cabello"]) await expect(page.getByRole("button", { name: n, exact: true })).toBeVisible();
+  for (const n of ["Licuadora", "Air fryer", "Cafetera", "Secador de cabello", "Cargador de vehículo eléctrico"]) await expect(page.getByRole("button", { name: n, exact: true })).toBeVisible();
 
   const total = page.locator(".appl__total strong");
   await page.getByRole("button", { name: "Licuadora", exact: true }).click();
   await expect(total).toContainText("2 kWh/mes");
+
+  await page.getByRole("button", { name: "Cargador de vehículo eléctrico", exact: true }).click();
+  await expect(total).toContainText("152 kWh/mes"); // 2 + 150
+  await page.getByRole("button", { name: "Menos: Cargador de vehículo eléctrico" }).click(); // con 1 unidad lo desmarca
 
   await page.getByRole("button", { name: "Otro", exact: true }).click();
   const kwh = page.getByRole("spinbutton", { name: "Otro: kWh/mes por unidad" });

@@ -313,7 +313,7 @@ export const es = {
       names: {
         fridge: "Nevera", freezer: "Congelador", washer: "Lavadora", dryer: "Secadora", dishwasher: "Lavavajillas", ac: "Aire acondicionado",
         tv: "Televisor", bulb: "Bombillo LED", waterHeater: "Calentador de agua eléctrico", microwave: "Microondas", oven: "Horno eléctrico",
-        fan: "Ventilador", computer: "Computador", iron: "Plancha", blender: "Licuadora", airFryer: "Air fryer", coffeeMaker: "Cafetera", hairDryer: "Secador de cabello", other: "Otro",
+        fan: "Ventilador", computer: "Computador", iron: "Plancha", blender: "Licuadora", airFryer: "Air fryer", coffeeMaker: "Cafetera", hairDryer: "Secador de cabello", evCharger: "Cargador de vehículo eléctrico", other: "Otro",
       },
     },
     errors: {
