@@ -299,6 +299,9 @@ export const en: Dict = {
       qty: "Quantity",
       class: "Class",
       labelHint: "Type the kWh/month (per unit) shown on each appliance label; it replaces the typical value.",
+      otherLabel: "Other: kWh/month per unit",
+      otherInvalid: "Enter how many kWh per month each unit uses.",
+      required: "Required",
       labelToggle: "I have the label consumption",
       labelPlaceholder: "Optional",
       less: "Fewer",
@@ -312,7 +315,7 @@ export const en: Dict = {
       names: {
         fridge: "Refrigerator", freezer: "Freezer", washer: "Washing machine", dryer: "Dryer", dishwasher: "Dishwasher", ac: "Air conditioner",
         tv: "TV", bulb: "LED bulb", waterHeater: "Electric water heater", microwave: "Microwave", oven: "Electric oven",
-        fan: "Fan", computer: "Computer", iron: "Iron",
+        fan: "Fan", computer: "Computer", iron: "Iron", blender: "Blender", airFryer: "Air fryer", coffeeMaker: "Coffee maker", hairDryer: "Hair dryer", other: "Other",
       },
     },
     errors: {

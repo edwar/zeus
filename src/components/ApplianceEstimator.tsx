@@ -1,7 +1,7 @@
 "use client";
 
-import { useId } from "react";
-import { AirVent, CookingPot, Fan, Laptop, Lightbulb, Microwave, Minus, Plus, Refrigerator, ShowerHead, Shirt, Snowflake, Tv, Utensils, WashingMachine, Wind, type LucideIcon } from "lucide-react";
+import { useId, useState } from "react";
+import { AirVent, Blend, Coffee, CookingPot, Drumstick, Ellipsis, Fan, Laptop, Lightbulb, Microwave, Minus, Plus, Refrigerator, Scissors, ShowerHead, Shirt, Snowflake, Tv, Utensils, WashingMachine, Wind, type LucideIcon } from "lucide-react";
 import type { Dict } from "@/i18n";
 import { APPLIANCES, CLASSES, MAX_QTY, type ApplianceId, type ApplianceRow, invalidRows, newRow, rowKwh, rowQty, totalKwh } from "@/lib/appliances";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ type Props = { t: Dict; rows: ApplianceRow[]; onChange: (rows: ApplianceRow[]) =
 
 const ICONS: Record<ApplianceId, LucideIcon> = {
   fridge: Refrigerator, freezer: Snowflake, washer: WashingMachine, dryer: Wind, dishwasher: Utensils, ac: AirVent, tv: Tv,
-  bulb: Lightbulb, waterHeater: ShowerHead, microwave: Microwave, oven: CookingPot, fan: Fan, computer: Laptop, iron: Shirt,
+  bulb: Lightbulb, waterHeater: ShowerHead, microwave: Microwave, oven: CookingPot, fan: Fan, computer: Laptop, iron: Shirt, blender: Blend, airFryer: Drumstick, coffeeMaker: Coffee, hairDryer: Scissors, other: Ellipsis,
 };
 
 const fmt = (n: number) => (Math.round(n * 10) / 10).toLocaleString("es-CO", { maximumFractionDigits: 1 });
@@ -24,6 +24,9 @@ export function ApplianceEstimator({ t, rows, onChange, onBack, onUse }: Props) 
   const total = totalKwh(rows);
   const canUse = rows.length > 0 && bad.size === 0 && total > 0;
   const byId = new Map(rows.map((r) => [r.appliance, r]));
+  // «Otro» necesita su consumo por unidad: el desplegable se abre solo al marcarlo.
+  const [labelsOpen, setLabelsOpen] = useState(false);
+  const needsLabel = byId.has("other");
 
   const patch = (id: ApplianceId, p: Partial<ApplianceRow>) => onChange(rows.map((r) => (r.appliance === id ? { ...r, ...p } : r)));
   const toggle = (id: ApplianceId) => onChange(byId.has(id) ? rows.filter((r) => r.appliance !== id) : [...rows, newRow(id)]);
@@ -71,15 +74,15 @@ export function ApplianceEstimator({ t, rows, onChange, onBack, onUse }: Props) 
       </ul>
 
       {rows.length > 0 && (
-        <details className="appl__label">
+        <details className="appl__label" open={labelsOpen || needsLabel} onToggle={(e) => setLabelsOpen(e.currentTarget.open)}>
           <summary>{a.labelToggle}</summary>
           <p className="wiz__hint">{a.labelHint}</p>
           <div className="appl__labels">
             {rows.map((r) => (
               <div key={r.id} className="field">
-                <label htmlFor={`${uid}${r.id}l`}>{a.names[r.appliance]}</label>
-                <Input id={`${uid}${r.id}l`} type="number" inputMode="decimal" min={0} step="any" value={r.label} placeholder={a.labelPlaceholder} onChange={(e) => patch(r.appliance, { label: e.target.value })} aria-invalid={bad.has(r.id) || undefined} aria-describedby={bad.has(r.id) ? `${uid}${r.id}e` : undefined} />
-                {bad.has(r.id) && <span id={`${uid}${r.id}e`} className="field-error">{a.invalid}</span>}
+                <label htmlFor={`${uid}${r.id}l`}>{r.appliance === "other" ? a.otherLabel : a.names[r.appliance]}</label>
+                <Input id={`${uid}${r.id}l`} type="number" inputMode="decimal" min={0} step="any" value={r.label} placeholder={r.appliance === "other" ? a.required : a.labelPlaceholder} onChange={(e) => patch(r.appliance, { label: e.target.value })} aria-invalid={bad.has(r.id) || undefined} aria-describedby={bad.has(r.id) ? `${uid}${r.id}e` : undefined} />
+                {bad.has(r.id) && <span id={`${uid}${r.id}e`} className="field-error">{r.appliance === "other" ? a.otherInvalid : a.invalid}</span>}
               </div>
             ))}
           </div>
