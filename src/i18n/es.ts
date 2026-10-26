@@ -296,7 +296,7 @@ export const es = {
       empty: "Toca un electrodoméstico para agregarlo.",
       qty: "Cantidad",
       class: "Clase",
-      label: "kWh/mes de la etiqueta",
+      labelHint: "Escribe los kWh/mes (por unidad) que dice la etiqueta de cada equipo; reemplazan el valor típico.",
       labelToggle: "Tengo el consumo de la etiqueta",
       labelPlaceholder: "Opcional",
       less: "Menos",

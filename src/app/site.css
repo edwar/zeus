@@ -1626,7 +1626,7 @@ button.auth__back {
 
 .appl__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   gap: var(--s3);
   margin: 0;
   padding: 0;
@@ -1672,15 +1672,21 @@ button.auth__back {
 
 .appl__ctl {
   display: grid;
-  gap: var(--s3);
+  grid-template-columns: minmax(0, 1fr) 4.25rem;
+  gap: var(--s2);
   padding: 0 var(--s3) var(--s3);
+}
+
+.appl__ctl--solo {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .appl__qty {
   display: grid;
-  grid-template-columns: 2.75rem 1fr 2.75rem;
+  grid-template-columns: 2.25rem minmax(1.25rem, 1fr) 2.25rem;
   align-items: center;
   text-align: center;
+  min-height: 2.75rem;
   border: 1.5px solid var(--line);
   border-radius: var(--r-md);
   background: #fff;
@@ -1695,7 +1701,7 @@ button.auth__back {
   appearance: none;
   display: grid;
   place-items: center;
-  min-height: 2.75rem;
+  height: 100%;
   border: 0;
   background: none;
   color: var(--emerald-deep);
@@ -1708,24 +1714,27 @@ button.auth__back {
 }
 
 .appl__qty svg {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.appl__ctl [data-slot="select-trigger"] {
+  min-height: 2.75rem;
+  padding-inline: var(--s2);
 }
 
 .appl__label summary {
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--emerald-deep);
 }
 
-.appl__label .field {
-  margin-top: var(--s2);
-}
-
-.appl__kwh {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+.appl__labels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--s3);
+  margin-top: var(--s3);
 }
 
 .appl__total {

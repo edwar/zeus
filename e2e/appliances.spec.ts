@@ -18,14 +18,14 @@ test("el consumo se calcula marcando electrodomésticos, su cantidad y su clase,
   await page.getByRole("button", { name: "Más: Nevera" }).click();
   await expect(total).toContainText("90 kWh/mes");
   await page.getByRole("button", { name: "Menos: Nevera" }).click();
-  await page.getByRole("combobox", { name: "Clase" }).click();
+  await page.getByRole("combobox", { name: "Clase: Nevera" }).click();
   await page.getByRole("option", { name: "A", exact: true }).click();
   await expect(total).toContainText("22,5 kWh/mes");
 
   await page.getByRole("button", { name: "Televisor", exact: true }).click();
   await page.getByRole("button", { name: "Más: Televisor" }).click(); // 2 televisores
-  await page.getByText("Tengo el consumo de la etiqueta").last().click();
-  await page.getByRole("spinbutton", { name: "kWh/mes de la etiqueta" }).last().fill("18.67");
+  await page.getByText("Tengo el consumo de la etiqueta").click();
+  await page.getByRole("spinbutton", { name: "Televisor" }).fill("18.67");
   await expect(total).toContainText("59,8 kWh/mes"); // 22,5 + 2 × 18,67
 
   await page.getByRole("button", { name: "Menos: Televisor" }).click();
@@ -34,8 +34,7 @@ test("el consumo se calcula marcando electrodomésticos, su cantidad y su clase,
   await expect(total).toContainText("22,5 kWh/mes");
   await page.getByRole("button", { name: "Televisor", exact: true }).click();
   await page.getByRole("button", { name: "Más: Televisor" }).click();
-  await page.getByText("Tengo el consumo de la etiqueta").last().click();
-  await page.getByRole("spinbutton", { name: "kWh/mes de la etiqueta" }).last().fill("18.67");
+  await page.getByRole("spinbutton", { name: "Televisor" }).fill("18.67");
 
   await page.getByRole("button", { name: "Usar este consumo" }).click();
   await expect(page.getByRole("spinbutton", { name: /Consumo mensual/ })).toHaveValue("59.8");

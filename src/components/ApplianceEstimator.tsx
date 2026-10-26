@@ -51,38 +51,42 @@ export function ApplianceEstimator({ t, rows, onChange, onBack, onUse }: Props) 
               </button>
 
               {r && (
-                <div className="appl__ctl">
+                <div className={`appl__ctl ${x.labeled ? "" : "appl__ctl--solo"}`}>
                   <div className="appl__qty" role="group" aria-label={`${a.qty}: ${name}`}>
                     <button type="button" aria-label={`${a.less}: ${name}`} onClick={() => step(r, -1)}><Minus aria-hidden="true" /></button>
                     <output aria-live="polite">{rowQty(r) || r.qty}</output>
                     <button type="button" aria-label={`${a.more}: ${name}`} onClick={() => step(r, 1)} disabled={rowQty(r) >= MAX_QTY}><Plus aria-hidden="true" /></button>
                   </div>
                   {x.labeled && (
-                    <div className="field">
-                      <label htmlFor={`${uid}${x.id}c`}>{a.class}</label>
-                      <Select value={r.cls} onValueChange={(v) => patch(x.id, { cls: v as ApplianceRow["cls"] })}>
-                        <SelectTrigger id={`${uid}${x.id}c`}><SelectValue>{r.cls}</SelectValue></SelectTrigger>
-                        <SelectContent>
-                          {CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Select value={r.cls} onValueChange={(v) => patch(x.id, { cls: v as ApplianceRow["cls"] })}>
+                      <SelectTrigger aria-label={`${a.class}: ${name}`}><SelectValue>{r.cls}</SelectValue></SelectTrigger>
+                      <SelectContent>
+                        {CLASSES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   )}
-                  <details className="appl__label" open={r.label !== ""}>
-                    <summary>{a.labelToggle}</summary>
-                    <div className="field">
-                      <label htmlFor={`${uid}${x.id}l`}>{a.label}</label>
-                      <Input id={`${uid}${x.id}l`} type="number" inputMode="decimal" min={0} step="any" value={r.label} placeholder={a.labelPlaceholder} onChange={(e) => patch(x.id, { label: e.target.value })} aria-invalid={bad.has(r.id) || undefined} aria-describedby={bad.has(r.id) ? `${uid}${x.id}e` : undefined} />
-                      {bad.has(r.id) && <span id={`${uid}${x.id}e`} className="field-error">{a.invalid}</span>}
-                    </div>
-                  </details>
-                  <strong className="appl__kwh">{fmt(rowKwh(r))} kWh/{a.month}</strong>
                 </div>
               )}
             </li>
           );
         })}
       </ul>
+
+      {rows.length > 0 && (
+        <details className="appl__label">
+          <summary>{a.labelToggle}</summary>
+          <p className="wiz__hint">{a.labelHint}</p>
+          <div className="appl__labels">
+            {rows.map((r) => (
+              <div key={r.id} className="field">
+                <label htmlFor={`${uid}${r.id}l`}>{a.names[r.appliance]}</label>
+                <Input id={`${uid}${r.id}l`} type="number" inputMode="decimal" min={0} step="any" value={r.label} placeholder={a.labelPlaceholder} onChange={(e) => patch(r.appliance, { label: e.target.value })} aria-invalid={bad.has(r.id) || undefined} aria-describedby={bad.has(r.id) ? `${uid}${r.id}e` : undefined} />
+                {bad.has(r.id) && <span id={`${uid}${r.id}e`} className="field-error">{a.invalid}</span>}
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
 
       <p className="appl__total" role="status" aria-live="polite">
         {a.total}: <strong>{fmt(total)} kWh/{a.month}</strong>

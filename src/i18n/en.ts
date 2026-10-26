@@ -298,7 +298,7 @@ export const en: Dict = {
       empty: "Tap an appliance to add it.",
       qty: "Quantity",
       class: "Class",
-      label: "Label kWh/month",
+      labelHint: "Type the kWh/month (per unit) shown on each appliance label; it replaces the typical value.",
       labelToggle: "I have the label consumption",
       labelPlaceholder: "Optional",
       less: "Fewer",
